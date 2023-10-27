@@ -8,8 +8,8 @@ import (
 
 	"github.com/gorilla/mux" // Import Gorilla Mux
 	"github.com/priyanshu360/lab-rank/dashboard/api/handler"
+	user_svc "github.com/priyanshu360/lab-rank/dashboard/internal/user"
 	"github.com/priyanshu360/lab-rank/dashboard/repository/postgres"
-	user_svc "github.com/priyanshu360/lab-rank/dashboard/service/user"
 )
 
 // ServerConfig is your server configuration interface.
