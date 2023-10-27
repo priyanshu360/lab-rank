@@ -8,11 +8,14 @@ import (
 )
 
 type userHandler struct {
+	Handler
 	svc user_svc.UserService
 }
 
 func NewUserHandler(svc user_svc.UserService) Handler {
-	return &userHandler{svc}
+	return &userHandler{
+		svc : svc,
+	}
 }
 
 
