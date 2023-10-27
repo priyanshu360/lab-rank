@@ -8,7 +8,6 @@ import (
 
 	"github.com/gorilla/mux" // Import Gorilla Mux
 	"github.com/priyanshu360/lab-rank/dashboard/api/handler"
-	user_handler "github.com/priyanshu360/lab-rank/dashboard/api/handler/user"
 	"github.com/priyanshu360/lab-rank/dashboard/repository/postgres"
 	user_svc "github.com/priyanshu360/lab-rank/dashboard/service/user"
 )
@@ -35,7 +34,7 @@ func NewServer(config ServerConfig) *HTTPServer {
 }
 
 func (s *HTTPServer) initRoutes() {
-	s.Handlers["/user"] = user_handler.NewUserHandler(user_svc.NewUserAPIService(postgres.NewPostgresRepo())) // Initialize with the repository
+	s.Handlers["/user"] = handler.NewUserHandler(user_svc.NewUserAPIService(postgres.NewPostgresRepo())) // Initialize with the repository
 	// Add more routes and custom handlers as needed
 }
 

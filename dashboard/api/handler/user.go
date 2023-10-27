@@ -1,10 +1,8 @@
-package user
+package handler
 
 import (
 	"net/http"
 
-	"github.com/priyanshu360/lab-rank/dashboard/api/handler"
-	api "github.com/priyanshu360/lab-rank/dashboard/api/handler"
 	"github.com/priyanshu360/lab-rank/dashboard/models"
 	user_svc "github.com/priyanshu360/lab-rank/dashboard/service/user"
 )
@@ -13,14 +11,14 @@ type userHandler struct {
 	svc user_svc.UserService
 }
 
-func NewUserHandler(svc user_svc.UserService) api.Handler {
+func NewUserHandler(svc user_svc.UserService) Handler {
 	return &userHandler{svc}
 }
 
 
 func (h *userHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	var request handler.HTTPRequest
-	var response handler.HTTPResponse
+	var request HTTPRequest
+	var response HTTPResponse
 	switch r.Method {
 	case http.MethodPost:
 		request = &models.UserAPIPostRequest{}
@@ -72,7 +70,7 @@ func (h *userHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 // 	// Serialize the data and write it to the response
 // }
 
-func (h *userHandler) handleCreate(r handler.HTTPRequest) handler.HTTPResponse {
+func (h *userHandler) handleCreate(r HTTPRequest) HTTPResponse {
 	// Handle the POST request to create a new user
 	// Parse the request body to extract user data
 	// Call the user service to create the user
