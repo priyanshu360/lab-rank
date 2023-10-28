@@ -2,6 +2,7 @@ package models
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -17,21 +18,7 @@ type APIError struct {
 	Reason string `json:"reason"` 
 }
 
-type HTTPRequest interface {
-	Parse(*http.Request) error
-}
 
-type HTTPResponse interface {
-	Write(http.ResponseWriter) error
-}
-
-type ServiceRequest interface{
-	Parse(HTTPRequest) error
-}
-
-type ServiceResponse interface{
-	Write(HTTPResponse) error
-}
 
 func NewAPIError(code int, err string) APIError {
 	return APIError{
@@ -41,9 +28,14 @@ func NewAPIError(code int, err string) APIError {
 	}
 }
 
-func (e APIError) Error(err error) APIError {
-	e.Reason = fmt.Sprintf("%s : %s", e.Reason, err)
+func (e APIError) Add(err error) APIError {
+	fmt.Println(err)
+	e.Reason = fmt.Sprintf("%s : %s", e.Reason, err.Error())
 	return e
+}
+
+func (e APIError) Error() string {
+	return e.Reason
 }
 
 func (e APIError) Write(w http.ResponseWriter) error {
@@ -61,3 +53,15 @@ var (
 )
 
 var CustomError = NewAPIError(http.StatusInternalServerError, "internal server error")
+var BadRequest = NewAPIError(http.StatusBadRequest, "bad request")
+
+type DBError error
+
+// Define specific DBError variables for different errors.
+var (
+    ErrUserNotFound   DBError = errors.New("user not found")
+    ErrDuplicateUser  DBError = errors.New("duplicate user")
+    // Add more DBError variables for other database-related errors as needed.
+)
+
+type ServiceError error

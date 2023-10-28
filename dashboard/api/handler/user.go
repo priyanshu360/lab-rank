@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"fmt"
+	"context"
 	"log"
 	"net/http"
 
@@ -19,25 +19,20 @@ func NewUserHandler(svc user_svc.UserService) Handler {
 	}
 }
 
+type HandleFunc func(*apiRequest) apiResponse
 
 func (h *userHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	var request models.HTTPRequest
-	var response models.HTTPResponse
+	var response apiResponse
+	var ctx = r.Context()
+
 	switch r.Method {
 	case http.MethodPost:
-		request = &models.CreateUserAPIRequest{}
-		log.Println("hellow ", request)
-		if err := request.Parse(r); err != nil {
-			log.Println(err)
-			http.Error(w, "Failed to parse request", http.StatusBadRequest)
-			return
-		}
-		response = h.handleCreate(request)
-
+		response = h.handleCreate(ctx, r)
 	default:
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
+
 
 
 	if err := response.Write(w); err != nil {
@@ -48,11 +43,24 @@ func (h *userHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 
 
-func (h *userHandler) handleCreate(r models.HTTPRequest) models.HTTPResponse {
-	// Handle the POST request to create a new user
-	// Parse the request body to extract user data
-	// Call the user service to create the user
-	// Return a response, possibly with the newly created user's information
-	return models.CustomError.Error(fmt.Errorf("Custom Error"))
+
+func (h *userHandler) handleCreate(ctx context.Context, r *http.Request) apiResponse {
+	var request models.CreateUserAPIRequest
+	if err := request.Parse(r); err != nil {
+		log.Println(err)
+		return models.BadRequest.Add(err)
+	}
+
+
+
+	user := request.ToUser()
+	response, err := h.svc.Create(ctx,user)
+	if err != nil {
+		return models.CustomError.Add(err)
+	}
+
+	return &models.CreateUserapiResponse{
+		Message: response,
+	}
 }
 

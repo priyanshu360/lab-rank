@@ -6,6 +6,7 @@ import (
 )
 
 func main() {
+	server.InitDB()
 	config := config.NewEnvServerConfig()
 	server.StartHttpServer(config)
 }

@@ -7,6 +7,39 @@ CREATE SCHEMA IF NOT EXISTS lab_rank;
 -- Define the "lab-rank" schema for the rest of the tables
 SET search_path TO lab_rank;
 
+CREATE TYPE lab_rank.access_level_mode_enum AS ENUM (
+    'ADMIN',
+    'TEACHER',
+    'STUDENT'
+);
+CREATE TYPE lab_rank.programming_language_enum AS ENUM (
+    'C',
+    'C++',
+    'Java',
+    'Python',
+    'JavaScript',
+    'Go',
+    'Rust'
+    -- Add more programming languages as needed
+);
+CREATE TYPE lab_rank.difficulty_enum AS ENUM (
+    'EASY',
+    'MEDIUM',
+    'HARD'
+);
+CREATE TYPE lab_rank.syllabus_level_enum AS ENUM (
+    'UNIVERSITY',
+    'COLLEGE',
+    'GLOBAL'
+);
+
+CREATE TYPE lab_rank.user_status_enum AS ENUM (
+    'ACTIVE',
+    'INACTIVE',
+    'DELETED',
+    'SPAM'
+);
+
 -- Create the "access_level" table with all fields NOT NULL
 CREATE TABLE lab_rank.access_level (
     id UUID PRIMARY KEY NOT NULL,
@@ -84,7 +117,7 @@ CREATE TABLE lab_rank.college (
 );
 
 -- Define the "user" table with all fields NOT NULL
-CREATE TABLE lab_rank."user" (
+CREATE TABLE lab_rank.user (
     id UUID PRIMARY KEY NOT NULL,
     college_id UUID REFERENCES lab_rank.college(id) NOT NULL,
     status lab_rank.user_status_enum NOT NULL,
