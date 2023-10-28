@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/go-playground/validator"
 	"github.com/google/uuid"
 )
 
@@ -29,21 +30,42 @@ type User struct {
     DOB        time.Time `json:"dob" validate:"required"`
 }
 
+func (u *User) Parse(req *CreateUserAPIRequest) error {
+	if err := req.validate(); err != nil {
+		return err
+	}
+	u.CollegeID = req.CollegeID
+	u.ContactNo = req.ContactNo
+	u.DOB = req.DOB
+	u.Email = req.Email
+	u.CreatedAt = time.Now()
+	u.ID = uuid.New()
+	return nil
+}
+
 
 
 type CreateUserAPIRequest struct {
     CollegeID   uuid.UUID `json:"college_id" validate:"required"`
-    Status      string    `json:"status" validate:"required"`
     AccessID    uuid.UUID `json:"access_id" validate:"required"`
     Email       string    `json:"email" validate:"required,email"`
     ContactNo   string    `json:"contact_no" validate:"required,contact_number"`
-    UniversityID string    `json:"university_id"`
     DOB         time.Time `json:"dob" validate:"required"`
 }
 
 // UserAPIResponse for all request methods
 type CreateUserAPIResponse struct {
 	Message *User 
+}
+
+
+func (r *CreateUserAPIRequest) validate() error {
+	if err := validate.Struct(r); err != nil {
+		return err.(validator.ValidationErrors)
+	}
+
+	// Todo : add custom validations
+	return nil
 }
 
 

@@ -16,10 +16,3 @@ type Decorator interface {
 	Decorate(handler Handler) Handler
 }
 
-type HTTPRequest interface {
-	Parse(r *http.Request) error
-}
-
-type HTTPResponse interface {
-	Write(w http.ResponseWriter) error
-}

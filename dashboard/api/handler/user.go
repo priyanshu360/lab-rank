@@ -10,7 +10,6 @@ import (
 )
 
 type userHandler struct {
-	Handler
 	svc user_svc.UserService
 }
 
@@ -22,8 +21,8 @@ func NewUserHandler(svc user_svc.UserService) Handler {
 
 
 func (h *userHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	var request HTTPRequest
-	var response HTTPResponse
+	var request models.HTTPRequest
+	var response models.HTTPResponse
 	switch r.Method {
 	case http.MethodPost:
 		request = &models.CreateUserAPIRequest{}
@@ -49,7 +48,7 @@ func (h *userHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 
 
-func (h *userHandler) handleCreate(r HTTPRequest) HTTPResponse {
+func (h *userHandler) handleCreate(r models.HTTPRequest) models.HTTPResponse {
 	// Handle the POST request to create a new user
 	// Parse the request body to extract user data
 	// Call the user service to create the user
