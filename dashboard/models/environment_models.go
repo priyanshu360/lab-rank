@@ -60,3 +60,9 @@ func (r *CreateEnvironmentAPIRequest) ToEnvironment() *Environment {
         LiveDockerCIDs: r.LiveDockerCIDs,
     }
 }
+
+func NewCreateEnvironmentAPIResponse(environment *Environment) *EnvironmentAPIResponse {
+    return &EnvironmentAPIResponse{
+        Message: environment,
+    }
+}

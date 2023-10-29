@@ -51,3 +51,9 @@ func (r *CreateCollegeAPIRequest) ToCollege() *College {
         Description:  r.Description,
     }
 }
+
+func NewCreateCollegeAPIResponse(college *College) *CollegeAPIResponse {
+    return &CollegeAPIResponse{
+        Message: college,
+    }
+}

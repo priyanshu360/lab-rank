@@ -60,3 +60,9 @@ func (r *CreateSyllabusAPIRequest) ToSyllabus() *Syllabus {
         SyllabusLevel: r.SyllabusLevel,
     }
 }
+
+func NewCreateSyllabusAPIResponse(syllabus *Syllabus) *SyllabusAPIResponse {
+    return &SyllabusAPIResponse{
+        Message: syllabus,
+    }
+}

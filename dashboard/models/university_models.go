@@ -49,3 +49,9 @@ func (r *CreateUniversityAPIRequest) ToUniversity() University {
         Description: r.Description,
     }
 }
+
+func NewCreateUniversityAPIResponse(university *University) *UniversityAPIResponse {
+    return &UniversityAPIResponse{
+        Message: university,
+    }
+}

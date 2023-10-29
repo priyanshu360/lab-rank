@@ -74,3 +74,9 @@ func (r *CreateProblemAPIRequest) ToProblem() *Problem {
         TestLink:     r.TestLink,
     }
 }
+
+func NewCreateProblemAPIResponse(problem *Problem) *ProblemAPIResponse {
+    return &ProblemAPIResponse{
+        Message: problem,
+    }
+}

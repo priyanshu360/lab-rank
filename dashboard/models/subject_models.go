@@ -52,3 +52,9 @@ func (r *CreateSubjectAPIRequest) ToSubject() *Subject {
         UniversityID:   r.UniversityID,
     }
 }
+
+func NewCreateSubjectAPIResponse(subject *Subject) *SubjectAPIResponse {
+    return &SubjectAPIResponse{
+        Message: subject,
+    }
+}

@@ -82,3 +82,9 @@ func (r *CreateSubmissionAPIRequest) ToSubmissions() *Submission {
         Language:        r.Language,
     }
 }
+
+func NewCreateSubmissionAPIResponse(submission *Submission) *SubmissionAPIResponse {
+    return &SubmissionAPIResponse{
+        Message: submission,
+    }
+}

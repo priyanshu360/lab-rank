@@ -5,15 +5,15 @@ import (
 	"log"
 	"net/http"
 
-	submissions_svc "github.com/priyanshu360/lab-rank/dashboard/internal/submission"
+	"github.com/priyanshu360/lab-rank/dashboard/internal/submission"
 	"github.com/priyanshu360/lab-rank/dashboard/models"
 )
 
 type submissionsHandler struct {
-    svc submissions_svc.SubmissionsService
+    svc submission.SubmissionsService
 }
 
-func NewSubmissionsHandler(svc submissions_svc.SubmissionsService) Handler {
+func NewSubmissionsHandler(svc submission.SubmissionsService) Handler {
     return &submissionsHandler{
         svc: svc,
     }

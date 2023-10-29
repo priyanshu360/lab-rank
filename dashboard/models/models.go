@@ -39,6 +39,13 @@ func (e AppError) Error() string {
 
 var (
 	UserNotFoundError = NewAppError(ErrorNotFound, "user not found")
+	CollegeNotFoundError = NewAppError(ErrorNotFound, "college not found")
+    EnvironmentNotFoundError = NewAppError(ErrorNotFound, "environment not found")
+    ProblemNotFoundError = NewAppError(ErrorNotFound, "problem not found")
+    SubmissionNotFoundError = NewAppError(ErrorNotFound, "submission not found")
+    SyllabusNotFoundError = NewAppError(ErrorNotFound, "syllabus not found")
+    SubjectNotFoundError = NewAppError(ErrorNotFound, "subject not found")
+    UniversityNotFoundError = NewAppError(ErrorNotFound, "university not found")
 	UserInvalidInput = NewAppError(ErrorBadData, "invalid input")
 	InternalError = NewAppError(ErrorInternal, "internal server error")
 	BadRequest = NewAppError(ErrorBadData, "bad request")
