@@ -10,10 +10,10 @@ import (
 )
 
 type problemsHandler struct {
-    svc problems_svc.ProblemsService
+    svc problems_svc.ProblemService
 }
 
-func NewProblemsHandler(svc problems_svc.ProblemsService) Handler {
+func NewProblemsHandler(svc problems_svc.ProblemService) Handler {
     return &problemsHandler{
         svc: svc,
     }
@@ -38,19 +38,19 @@ func (h *problemsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *problemsHandler) handleCreate(ctx context.Context, r *http.Request) apiResponse {
-    var request models.CreateProblemsAPIRequest
+    var request models.CreateProblemAPIRequest
     if err := request.Parse(r); err != nil {
         log.Println(err)
         return newAPIError(models.BadRequest.Add(err))
     }
 
-    problem := request.ToProblems()
+    problem := request.ToProblem()
     problem, err := h.svc.Create(ctx, problem)
     if err != models.NoError {
         return newAPIError(models.InternalError.Add(err))
     }
 
-    return models.NewCreateProblemsAPIResponse(problem)
+    return models.NewCreateProblemAPIResponse(problem)
 }
 
 // Implement other handler methods for problems-related operations

@@ -7,7 +7,14 @@ import (
 
 	"github.com/gorilla/mux" // Import Gorilla Mux
 	"github.com/priyanshu360/lab-rank/dashboard/api/handler"
-	user_svc "github.com/priyanshu360/lab-rank/dashboard/internal/user"
+	"github.com/priyanshu360/lab-rank/dashboard/internal/college"
+	"github.com/priyanshu360/lab-rank/dashboard/internal/environment"
+	"github.com/priyanshu360/lab-rank/dashboard/internal/problem"
+	"github.com/priyanshu360/lab-rank/dashboard/internal/subject"
+	"github.com/priyanshu360/lab-rank/dashboard/internal/submission"
+	"github.com/priyanshu360/lab-rank/dashboard/internal/syllabus"
+	"github.com/priyanshu360/lab-rank/dashboard/internal/university"
+	"github.com/priyanshu360/lab-rank/dashboard/internal/user"
 	psql "github.com/priyanshu360/lab-rank/dashboard/repository/postgres"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -38,29 +45,29 @@ func NewServer(config ServerConfig) *APIServer {
 
 func (s *APIServer) initRoutes() {
 	// Initialize routes and handlers for different entities
-    userHandler := handler.NewUserHandler(user_svc.NewUserService(psql.NewUserPostgresRepo(db)))
-    s.Handlers["/user"] = handler.NewReqIDMiddleware().Decorate(userHandler)
+	userHandler := handler.NewUserHandler(user.NewUserService(psql.NewUserPostgresRepo(db)))
+	s.Handlers["/user"] = handler.NewReqIDMiddleware().Decorate(userHandler)
 
-    subjectHandler := handler.NewSubjectHandler(subject_svc.NewSubjectService(psql.NewSubjectPostgresRepo(db)))
-    s.Handlers["/subject"] = handler.NewReqIDMiddleware().Decorate(subjectHandler)
+	subjectHandler := handler.NewSubjectHandler(subject.NewSubjectService(psql.NewSubjectPostgresRepo(db)))
+	s.Handlers["/subject"] = handler.NewReqIDMiddleware().Decorate(subjectHandler)
 
-    collegeHandler := handler.NewCollegeHandler(college_svc.NewCollegeService(psql.NewCollegePostgresRepo(db)))
-    s.Handlers["/college"] = handler.NewReqIDMiddleware().Decorate(collegeHandler)
+	collegeHandler := handler.NewCollegeHandler(college.NewCollegeService(psql.NewCollegePostgresRepo(db)))
+	s.Handlers["/college"] = handler.NewReqIDMiddleware().Decorate(collegeHandler)
 
-    universityHandler := handler.NewUniversityHandler(university_svc.NewUniversityService(psql.NewUniversityPostgresRepo(db)))
-    s.Handlers["/university"] = handler.NewReqIDMiddleware().Decorate(universityHandler)
+	universityHandler := handler.NewUniversityHandler(university.NewUniversityService(psql.NewUniversityPostgresRepo(db)))
+	s.Handlers["/university"] = handler.NewReqIDMiddleware().Decorate(universityHandler)
 
-    submissionsHandler := handler.NewSubmissionsHandler(submissions_svc.NewSubmissionsService(psql.NewSubmissionsPostgresRepo(db)))
-    s.Handlers["/submissions"] = handler.NewReqIDMiddleware().Decorate(submissionsHandler)
+	submissionsHandler := handler.NewSubmissionsHandler(submission.NewSubmissionService(psql.NewSubmissionPostgresRepo(db)))
+	s.Handlers["/submission"] = handler.NewReqIDMiddleware().Decorate(submissionsHandler)
 
-    environmentHandler := handler.NewEnvironmentHandler(environment_svc.NewEnvironmentService(psql.NewEnvironmentPostgresRepo(db)))
-    s.Handlers["/environment"] = handler.NewReqIDMiddleware().Decorate(environmentHandler)
+	environmentHandler := handler.NewEnvironmentHandler(environment.NewEnvironmentService(psql.NewEnvironmentPostgresRepo(db)))
+	s.Handlers["/environment"] = handler.NewReqIDMiddleware().Decorate(environmentHandler)
 
-    problemsHandler := handler.NewProblemsHandler(problems_svc.NewProblemsService(psql.NewProblemsPostgresRepo(db)))
-    s.Handlers["/problems"] = handler.NewReqIDMiddleware().Decorate(problemsHandler)
+	problemsHandler := handler.NewProblemsHandler(problem.NewProblemService(psql.NewProblemPostgresRepo(db)))
+	s.Handlers["/problem"] = handler.NewReqIDMiddleware().Decorate(problemsHandler)
 
-    syllabusHandler := handler.NewSyllabusHandler(syllabus_svc.NewSyllabusService(psql.NewSyllabusPostgresRepo(db)))
-    s.Handlers["/syllabus"] = handler.NewReqIDMiddleware().Decorate(syllabusHandler)
+	syllabusHandler := handler.NewSyllabusHandler(syllabus.NewSyllabusService(psql.NewSyllabusPostgresRepo(db)))
+	s.Handlers["/syllabus"] = handler.NewReqIDMiddleware().Decorate(syllabusHandler)
 }
 
 func (s *APIServer) run() {
@@ -88,9 +95,9 @@ func StartHttpServer(config ServerConfig) {
 	server.run()
 }
 
-func InitDB(){
+func InitDB() {
 	dbURL := "postgres://baeldung:baeldung@localhost:5432/postgres"
-	var err error 
+	var err error
 	if db, err = gorm.Open(postgres.Open(dbURL), &gorm.Config{}); err != nil {
 		log.Fatal(err)
 	}

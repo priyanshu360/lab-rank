@@ -42,8 +42,8 @@ func (ur *UniversityAPIResponse) Write(w http.ResponseWriter) error {
 }
 
 
-func (r *CreateUniversityAPIRequest) ToUniversity() University {
-    return University{
+func (r *CreateUniversityAPIRequest) ToUniversity() *University {
+    return &University{
         ID:          uuid.New(),
         Title:       r.Title,
         Description: r.Description,
