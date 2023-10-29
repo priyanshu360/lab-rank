@@ -8,10 +8,10 @@ import (
 )
 
 type UserRepository interface {
-	CreateUser(context.Context, models.User)  error
-    GetUserByID(context.Context, uuid.UUID) (models.User, error)
-    GetUserByEmail(context.Context, string) (models.User, error)
-    UpdateUser(context.Context, uuid.UUID, models.User) error
-    DeleteUser(context.Context, uuid.UUID) error
-    ListUsers(context.Context, int, int) ([]models.User, error)
+	CreateUser(context.Context, models.User)  models.AppError
+    GetUserByID(context.Context, uuid.UUID) (models.User, models.AppError)
+    GetUserByEmail(context.Context, string) (models.User, models.AppError)
+    UpdateUser(context.Context, uuid.UUID, models.User) models.AppError
+    DeleteUser(context.Context, uuid.UUID) models.AppError
+    ListUsers(context.Context, int, int) ([]models.User, models.AppError)
 }

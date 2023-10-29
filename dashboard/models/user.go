@@ -83,13 +83,19 @@ func (r *CreateUserAPIRequest) Parse(req *http.Request) error {
 	return r.validate()
 }
 
-type CreateUserapiResponse struct {
+type CreateUserAPIResponse struct {
 	Message *User
 }
 
 
 // Implement the Write method for UserapiResponse
-func (cr *CreateUserapiResponse) Write(w http.ResponseWriter) error {
+func (cr *CreateUserAPIResponse) Write(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	return json.NewEncoder(w).Encode(cr)
 }
+
+func NewCreateUserAPIResponse(user *User) *CreateUserAPIResponse {
+	return &CreateUserAPIResponse{
+		Message: user,
+	}
+} 
