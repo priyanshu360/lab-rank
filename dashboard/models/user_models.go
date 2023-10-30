@@ -38,6 +38,25 @@ type CreateUserAPIRequest struct {
 	UniversityID string		`json:"university_id"`
 }
 
+type GetUserAPIRequest struct{
+	UserID      uuid.UUID  `json:"user_id"`
+	EmailID      string 	`json:"email_id"`
+}
+
+func (r *GetUserAPIRequest) Parse(req *http.Request) error {
+	if err := json.NewDecoder(req.Body).Decode(r); err != nil {
+		return err
+	}
+	return r.validate()
+}
+
+func (r *GetUserAPIRequest) validate() error{
+	if (r.UserID == uuid.Nil && r.EmailID == ""){
+		return BadRequest 
+	}
+	return nil
+}
+
 func (r *CreateUserAPIRequest) validate() error {
 	if err := validate.Struct(r); err != nil {
 		return err.(validator.ValidationErrors)
@@ -90,6 +109,7 @@ type CreateUserAPIResponse struct {
 
 // Implement the Write method for UserapiResponse
 func (cr *CreateUserAPIResponse) Write(w http.ResponseWriter) error {
+	w.WriteHeader(http.StatusOK)
 	w.Header().Set("Content-Type", "application/json")
 	return json.NewEncoder(w).Encode(cr)
 }

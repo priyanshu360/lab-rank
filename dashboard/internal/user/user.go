@@ -13,7 +13,7 @@ import (
 type UserService interface {
 	Create(context.Context,  *models.User) (*models.User, models.AppError)
 	// Update(models.ServiceRequest) models.ServiceResponse
-	// Fetch(models.ServiceRequest) models.ServiceResponse
+	Fetch(context.Context,  models.GetUserAPIRequest) (*models.User, models.AppError)
 	// Delete(models.ServiceRequest) models.ServiceResponse
 }
 
@@ -45,4 +45,25 @@ func (s *userService) Create(ctx context.Context, user *models.User) (*models.Us
 	}
     
 	return user, models.NoError  
+}
+
+func (s *userService) Fetch(ctx context.Context, req models.GetUserAPIRequest) (*models.User, models.AppError) {
+
+    switch {
+	case req.UserID != uuid.Nil:
+        userID := req.UserID
+		if user, err := s.repo.GetUserByID(ctx, userID); err != models.NoError {
+			return nil, err
+		}else {return &user, models.NoError}
+			
+    case req.EmailID != "":
+		emailID := req.EmailID
+		if user, err := s.repo.GetUserByEmail(ctx, emailID); err != models.NoError {
+			return nil, err
+		}else {return &user, models.NoError}
+	
+	default:
+		return nil,models.BadRequest
+
+}	
 }
