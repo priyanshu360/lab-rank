@@ -1,6 +1,6 @@
 module github.com/priyanshu360/lab-rank/dashboard
 
-go 1.19
+go 1.21
 
 require (
 	github.com/go-playground/validator v9.31.0+incompatible

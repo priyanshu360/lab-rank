@@ -35,12 +35,12 @@ type CreateUserAPIRequest struct {
 	Email        string    `json:"email" validate:"required,email"`
 	ContactNo    string    `json:"contact_no" validate:"required"`
 	DOB          time.Time `json:"dob" validate:"required"`
-	UniversityID string		`json:"university_id"`
+	UniversityID string    `json:"university_id"`
 }
 
-type GetUserAPIRequest struct{
-	UserID      uuid.UUID  `json:"user_id"`
-	EmailID      string 	`json:"email_id"`
+type GetUserAPIRequest struct {
+	UserID  uuid.UUID `json:"user_id"`
+	EmailID string    `json:"email_id"`
 }
 
 func (r *GetUserAPIRequest) Parse(req *http.Request) error {
@@ -50,9 +50,9 @@ func (r *GetUserAPIRequest) Parse(req *http.Request) error {
 	return r.validate()
 }
 
-func (r *GetUserAPIRequest) validate() error{
-	if (r.UserID == uuid.Nil && r.EmailID == ""){
-		return BadRequest 
+func (r *GetUserAPIRequest) validate() error {
+	if r.UserID == uuid.Nil && r.EmailID == "" {
+		return BadRequest
 	}
 	return nil
 }
@@ -106,7 +106,6 @@ type CreateUserAPIResponse struct {
 	Message *User
 }
 
-
 // Implement the Write method for UserapiResponse
 func (cr *CreateUserAPIResponse) Write(w http.ResponseWriter) error {
 	w.WriteHeader(http.StatusOK)
@@ -118,4 +117,4 @@ func NewCreateUserAPIResponse(user *User) *CreateUserAPIResponse {
 	return &CreateUserAPIResponse{
 		Message: user,
 	}
-} 
+}
