@@ -43,7 +43,7 @@ type LoggerConfig struct {
 	// Add other logger configuration options as needed
 }
 
-func NewLoggerConfig() LoggerConfig {
+func InitLoggerConfig() LoggerConfig {
 	return LoggerConfig{
 		LogLevel:  GetEnvWithDefault("LOG_LEVEL", "INFO"),  // Default log level
 		LogFormat: GetEnvWithDefault("LOG_FORMAT", "json"), // Default log format
