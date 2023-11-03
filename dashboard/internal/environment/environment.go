@@ -10,6 +10,7 @@ import (
 
 type EnvironmentService interface {
 	Create(context.Context, *models.Environment) (*models.Environment, models.AppError)
+	Fetch(context.Context, string) (*models.Environment, models.AppError)
 }
 
 type environmentService struct {
@@ -30,4 +31,16 @@ func (s *environmentService) Create(ctx context.Context, environment *models.Env
 	}
 
 	return environment, models.NoError
+}
+
+func(s *environmentService) Fetch(ctx context.Context, id string) (*models.Environment, models.AppError){
+	if envID,err := uuid.Parse(id); err != nil{
+		return nil,models.InternalError.Add(err)
+	}else{
+		if environment,err := s.repo.GetEnvironmentByID(ctx,envID); err != models.NoError{
+			return nil, err
+		}else{
+			return &environment,models.NoError
+		}
+	}
 }

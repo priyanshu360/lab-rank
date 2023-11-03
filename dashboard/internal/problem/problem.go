@@ -10,6 +10,8 @@ import (
 
 type ProblemService interface {
 	Create(context.Context, *models.Problem) (*models.Problem, models.AppError)
+	Fetch(context.Context, string) (*models.Problem, models.AppError)
+
 }
 
 type problemService struct {
@@ -30,4 +32,16 @@ func (s *problemService) Create(ctx context.Context, problem *models.Problem) (*
 	}
 
 	return problem, models.NoError
+}
+
+func(s *problemService) Fetch(ctx context.Context, id string) (*models.Problem, models.AppError){
+	if problemID,err := uuid.Parse(id); err != nil{
+		return nil,models.InternalError.Add(err)
+	}else{
+		if problem,err := s.repo.GetProblemByID(ctx,problemID); err != models.NoError{
+			return nil, err
+		}else{
+			return &problem,models.NoError
+		}
+	}
 }

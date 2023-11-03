@@ -10,6 +10,8 @@ import (
 
 type SubmissionService interface {
 	Create(context.Context, *models.Submission) (*models.Submission, models.AppError)
+	Fetch(context.Context, string) (*models.Submission, models.AppError)
+
 }
 
 type submissionService struct {
@@ -30,4 +32,16 @@ func (s *submissionService) Create(ctx context.Context, submission *models.Submi
 	}
 
 	return submission, models.NoError
+}
+
+func(s *submissionService) Fetch(ctx context.Context, id string) (*models.Submission, models.AppError){
+	if submissionID,err := uuid.Parse(id); err != nil{
+		return nil,models.InternalError.Add(err)
+	}else{
+		if submission,err := s.repo.GetSubmissionByID(ctx,submissionID); err != models.NoError{
+			return nil, err
+		}else{
+			return &submission,models.NoError
+		}
+	}
 }
