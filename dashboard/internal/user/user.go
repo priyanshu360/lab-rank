@@ -9,14 +9,12 @@ import (
 	"github.com/priyanshu360/lab-rank/dashboard/repository"
 )
 
-
 type UserService interface {
 	Create(context.Context,  *models.User) (*models.User, models.AppError)
-	// Update(models.ServiceRequest) models.ServiceResponse
-	// Fetch(models.ServiceRequest) models.ServiceResponse
-	// Delete(models.ServiceRequest) models.ServiceResponse
+	Update(context.Context,  *models.UpdateUserAPIRequest) (*models.User, models.AppError)
+	Fetch(context.Context,   *models.GetUserAPIRequest) (*models.User, models.AppError)
+	Delete(context.Context, string) models.AppError
 }
-
 
 type userService struct {
 	// You can add any dependencies or data storage components here
@@ -28,7 +26,6 @@ func NewUserService(repo repository.UserRepository) *userService {
 		repo: repo,
 	}
 }
-
 
 func (s *userService) Create(ctx context.Context, user *models.User) (*models.User, models.AppError) {
 
@@ -43,6 +40,57 @@ func (s *userService) Create(ctx context.Context, user *models.User) (*models.Us
 	if err := s.repo.CreateUser(ctx, *user); err != models.NoError {
 		return nil, err
 	}
-    
-	return user, models.NoError  
+
+	return user, models.NoError
+}
+
+func (s *userService) Fetch(ctx context.Context, req *models.GetUserAPIRequest) (*models.User, models.AppError) {
+
+	switch {
+	case req.EmailID != "":
+		emailID := req.EmailID
+		if user, err := s.repo.GetUserByEmail(ctx, emailID); err != models.NoError {
+			return nil, err
+		}else {return &user, models.NoError}
+
+	case req.UserID != "":
+		if userID,err := uuid.Parse(req.UserID); err != nil{
+			return nil, models.InternalError.Add(err)
+		}else{
+			if user, err := s.repo.GetUserByID(ctx, userID); err != models.NoError {
+				return nil, err
+			}else {return &user, models.NoError}
+		}
+	
+	default:
+		return nil,models.BadRequest
+
+}	
+}
+
+func (s *userService) Update(ctx context.Context, request *models.UpdateUserAPIRequest) (*models.User, models.AppError) {
+
+	defaultUser,err :=  s.repo.GetUserByID(ctx, request.ID)
+	if err != models.NoError {
+		return nil,err
+	}
+	updatedUser := request.ToUser(defaultUser)
+	if err := s.repo.UpdateUser(ctx, request.ID, *updatedUser); err != models.NoError{
+		return nil, err
+	}
+
+	return updatedUser, models.NoError
+}
+
+func (s *userService) Delete(ctx context.Context, id string) models.AppError {
+	if userID,err := uuid.Parse(id); err != nil{
+		return models.InternalError.Add(err)
+	}else {
+		if err := s.repo.DeleteUser(ctx, userID); err != models.NoError{
+			return err
+		}
+		
+		return models.NoError
+	}
+	
 }

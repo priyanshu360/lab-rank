@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"time"
+	"reflect"
 
 	"github.com/go-playground/validator"
 	"github.com/google/uuid"
@@ -35,8 +36,62 @@ type CreateUserAPIRequest struct {
 	Email        string    `json:"email" validate:"required,email"`
 	ContactNo    string    `json:"contact_no" validate:"required"`
 	DOB          time.Time `json:"dob" validate:"required"`
-	UniversityID string		`json:"university_id"`
+	UniversityID string    `json:"university_id"`
 }
+
+type GetUserAPIRequest struct{
+	UserID      string `json:"user_id"`
+	EmailID     string 	`json:"email_id"`
+}
+
+type UpdateUserAPIRequest struct{
+	ID           uuid.UUID  `json:"id" validate:"required"`
+	Status       UserStatus `json:"status" validate:"oneof=ACTIVE INACTIVE DELETED SPAM"`
+	Email        string     `json:"email" validate:"email"`
+	ContactNo    string     `json:"contact_no"`
+}
+
+func (r *UpdateUserAPIRequest) Parse(req *http.Request) error {
+	if err := json.NewDecoder(req.Body).Decode(r); err != nil {
+		return err
+	}
+	return r.validate()
+}
+
+func (r *UpdateUserAPIRequest) validate() error {
+	if err := validate.Struct(r); err != nil {
+		return err.(validator.ValidationErrors)
+	}
+
+	// Todo : add custom validations
+	return nil
+}
+
+func (r *UpdateUserAPIRequest) ToUser(user User) *User {
+	newUser := &User{
+		ID:           user.ID,
+		CollegeID:    user.CollegeID,
+		UniversityID: user.UniversityID,
+		DOB:          user.DOB,
+	}
+
+	setField(&newUser.Email, r.Email, user.Email)
+	setField(&newUser.ContactNo, r.ContactNo, user.ContactNo)
+	setField(&newUser.Status, r.Status, user.Status)
+
+	return newUser
+}
+
+func setField(field interface{}, value, defaultValue interface{}) {
+	fieldValue := reflect.ValueOf(field).Elem()
+	if value != nil {
+		fieldValue.Set(reflect.ValueOf(value))
+	} else {
+		fieldValue.Set(reflect.ValueOf(defaultValue))
+	}
+}
+
+
 
 func (r *CreateUserAPIRequest) validate() error {
 	if err := validate.Struct(r); err != nil {
@@ -87,9 +142,9 @@ type CreateUserAPIResponse struct {
 	Message *User
 }
 
-
 // Implement the Write method for UserapiResponse
 func (cr *CreateUserAPIResponse) Write(w http.ResponseWriter) error {
+	w.WriteHeader(http.StatusOK)
 	w.Header().Set("Content-Type", "application/json")
 	return json.NewEncoder(w).Encode(cr)
 }
@@ -97,5 +152,23 @@ func (cr *CreateUserAPIResponse) Write(w http.ResponseWriter) error {
 func NewCreateUserAPIResponse(user *User) *CreateUserAPIResponse {
 	return &CreateUserAPIResponse{
 		Message: user,
+	}
+} 
+
+type DeleteUserAPIResponse struct {
+	user_id string
+}
+
+
+// Implement the Write method for UserapiResponse
+func (cr *DeleteUserAPIResponse) Write(w http.ResponseWriter) error {
+	w.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type", "application/json")
+	return json.NewEncoder(w).Encode(cr)
+}
+
+func NewDeleteUserAPIResponse(userId string) *DeleteUserAPIResponse {
+	return &DeleteUserAPIResponse{
+		user_id: userId,
 	}
 } 

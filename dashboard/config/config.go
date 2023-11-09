@@ -1,6 +1,8 @@
 package config
 
-import "os"
+import (
+	"os"
+)
 
 type ServerConfig interface {
 	GetAddress() string
@@ -25,4 +27,26 @@ func (c envServerConfig) GetPort() string {
 
 func NewEnvServerConfig() ServerConfig {
 	return envServerConfig{}
+}
+
+func GetEnvWithDefault(key, defaultValue string) string {
+	value := os.Getenv(key)
+	if value == "" {
+		return defaultValue
+	}
+	return value
+}
+
+type LoggerConfig struct {
+	LogLevel  string
+	LogFormat string
+	// Add other logger configuration options as needed
+}
+
+func InitLoggerConfig() LoggerConfig {
+	return LoggerConfig{
+		LogLevel:  GetEnvWithDefault("LOG_LEVEL", "INFO"),  // Default log level
+		LogFormat: GetEnvWithDefault("LOG_FORMAT", "json"), // Default log format
+		// Initialize other configuration options with default values
+	}
 }

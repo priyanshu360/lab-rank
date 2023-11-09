@@ -26,6 +26,8 @@ func (h *subjectHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
     switch r.Method {
     case http.MethodPost:
         response = h.handleCreate(ctx, r)
+    case http.MethodGet:
+        response = h.handleGet(ctx, r)
     default:
         http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
         return
@@ -50,4 +52,14 @@ func (h *subjectHandler) handleCreate(ctx context.Context, r *http.Request) apiR
     }
 
     return models.NewCreateSubjectAPIResponse(subject)
+}
+
+func (h *subjectHandler) handleGet(ctx context.Context, r *http.Request) apiResponse {
+	id := r.URL.Query().Get("id")
+	subject,err := h.svc.Fetch(ctx,id)
+	if err != models.NoError {
+		return newAPIError(models.InternalError.Add(err))
+	}
+
+	return models.NewCreateSubjectAPIResponse(subject) // Reusing the same Response from Create in Get 
 }

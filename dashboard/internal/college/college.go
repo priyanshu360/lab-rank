@@ -10,6 +10,7 @@ import (
 
 type CollegeService interface {
 	Create(context.Context, *models.College) (*models.College, models.AppError)
+	Fetch(context.Context, string) (*models.College, models.AppError)
 }
 
 type collegeService struct {
@@ -30,4 +31,16 @@ func (s *collegeService) Create(ctx context.Context, college *models.College) (*
 	}
 
 	return college, models.NoError
+}
+
+func (s *collegeService) Fetch(ctx context.Context, id string) (*models.College, models.AppError) {
+	if collegeID, err := uuid.Parse(id); err != nil {
+		return nil, models.InternalError.Add(err)
+	} else {
+		if college, err := s.repo.GetCollegeByID(ctx, collegeID); err != models.NoError {
+			return nil, err
+		} else {
+			return &college, models.NoError
+		}
+	}
 }
