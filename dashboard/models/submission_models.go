@@ -34,6 +34,7 @@ const (
 	NonzeroExitStatus   Status = "Nonzero Exit Status"
 	Signalled           Status = "Signalled"
 	InternalErrorStatus Status = "Internal Error" // system error
+	Queued              Status = "Queued"
 )
 
 // Submission struct
