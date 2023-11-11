@@ -96,10 +96,24 @@ func StartHttpServer(config ServerConfig) {
 }
 
 func InitDB() {
-	dbURL := "postgres://baeldung:baeldung@localhost:5432/postgres"
+	dbURL := "postgres://baeldung:baeldung@localhost:5432/baeldung"
 	var err error
 	if db, err = gorm.Open(postgres.Open(dbURL), &gorm.Config{}); err != nil {
 		log.Fatal(err)
+	}
+
+	err = db.Exec("SET search_path TO lab_rank").Error
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	tables, err := db.Migrator().GetTables()
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println("Tables in the database:")
+	for _, table := range tables {
+		fmt.Println(table)
 	}
 
 }
