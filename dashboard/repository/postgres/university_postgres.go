@@ -19,7 +19,7 @@ func NewUniversityPostgresRepo(db *gorm.DB) *universityPostgres {
 
 // CreateUniversity creates a new university.
 func (psql *universityPostgres) CreateUniversity(ctx context.Context, university models.University) models.AppError {
-	result := psql.db.WithContext(ctx).Create(university)
+	result := psql.db.Table("lab_rank.university").WithContext(ctx).Create(university)
 	if result.Error != nil {
 		return models.InternalError.Add(result.Error)
 	}

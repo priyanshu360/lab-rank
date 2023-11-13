@@ -24,6 +24,6 @@ func NewSubmissionData(submission dashboard_models.Submission) SubmissionData {
 		SubmissionId: submission.ID,
 		ProblemID:    submission.ProblemID,
 		Status:       dashboard_models.Queued,
-		Language:     submission.Language,
+		Language:     submission.Lang,
 	}
 }

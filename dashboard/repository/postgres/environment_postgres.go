@@ -19,7 +19,7 @@ func NewEnvironmentPostgresRepo(db *gorm.DB) *environmentPostgres {
 
 // CreateEnvironment creates a new environment.
 func (psql *environmentPostgres) CreateEnvironment(ctx context.Context, environment models.Environment) models.AppError {
-	result := psql.db.WithContext(ctx).Create(environment)
+	result := psql.db.WithContext(ctx).Table("lab_rank.environment").Create(environment)
 	if result.Error != nil {
 		return models.InternalError.Add(result.Error)
 	}

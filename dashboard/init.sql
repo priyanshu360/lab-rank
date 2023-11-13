@@ -105,7 +105,7 @@ CREATE TABLE lab_rank.subject (
     id UUID PRIMARY KEY NOT NULL,
     title VARCHAR(50) NOT NULL,
     description JSONB NOT NULL,
-    university UUID REFERENCES lab_rank.university(id) NOT NULL
+    university_id UUID REFERENCES lab_rank.university(id) NOT NULL
 );
 
 -- Define the College table with all fields NOT NULL
