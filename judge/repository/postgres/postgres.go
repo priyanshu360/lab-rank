@@ -7,6 +7,7 @@ import (
 
 	"github.com/google/uuid"
 	dashboard_models "github.com/priyanshu360/lab-rank/dashboard/models"
+	"github.com/priyanshu360/lab-rank/judge/models"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -28,7 +29,7 @@ func (r *SubmissionRepository) GetNextBatch(ctx context.Context, status dashboar
 	return submissions
 }
 
-func (r *SubmissionRepository) Update(ctx context.Context, submission dashboard_models.Submission) {
+func (r *SubmissionRepository) Update(ctx context.Context, submission models.SubmissionData) {
 	r.db.WithContext(ctx).
 		Clauses(clause.OnConflict{
 			Columns:   []clause.Column{{Name: "id"}},

@@ -18,6 +18,6 @@ type QueueRepository interface {
 
 type SubmissionRepository interface {
 	GetNextBatch(context.Context, dashboard_models.Status, int) []dashboard_models.Submission
-	Update(context.Context, dashboard_models.Submission)
+	Update(context.Context, models.SubmissionData)
 	GetEnvFromPIDAndLang(context.Context, uuid.UUID, dashboard_models.ProgrammingLanguageEnum) dashboard_models.Environment
 }
