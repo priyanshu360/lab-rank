@@ -12,7 +12,7 @@ type Watcher struct {
 	queue queue.Queue
 }
 
-func (w Watcher) NewWatcher(svc executer.Executer, queue queue.Queue) Watcher {
+func NewWatcher(svc executer.Executer, queue queue.Queue) Watcher {
 	return Watcher{
 		svc:   svc,
 		queue: queue,
@@ -22,6 +22,8 @@ func (w Watcher) NewWatcher(svc executer.Executer, queue queue.Queue) Watcher {
 func (w Watcher) Run(ctx context.Context) {
 	for {
 		w.queue.Refresh(ctx)
-		w.svc.Run(w.queue.Front(ctx))
+		for !w.queue.IsEmpty(ctx) {
+			w.svc.Run(ctx, w.queue.Front(ctx))
+		}
 	}
 }

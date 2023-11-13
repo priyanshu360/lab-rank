@@ -63,3 +63,13 @@ func (q *InMemoryQueue) Update(ctx context.Context, updatedSubmission models.Sub
 		}
 	}
 }
+
+func (q *InMemoryQueue) IsEmpty(ctx context.Context) bool {
+	q.mu.Lock()
+	defer q.mu.Unlock()
+	return len(q.submissions) == 0
+}
+
+func NewInMemoryQueue() *InMemoryQueue {
+	return &InMemoryQueue{}
+}
