@@ -19,7 +19,7 @@ func NewCollegePostgresRepo(db *gorm.DB) *collegePostgres {
 
 // CreateCollege creates a new college.
 func (psql *collegePostgres) CreateCollege(ctx context.Context, college models.College) models.AppError {
-	result := psql.db.WithContext(ctx).Create(college)
+	result := psql.db.WithContext(ctx).Table("lab_rank.college").Create(college)
 	if result.Error != nil {
 		return models.InternalError.Add(result.Error)
 	}

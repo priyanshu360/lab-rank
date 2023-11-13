@@ -3,8 +3,8 @@ package models
 import (
 	"encoding/json"
 	"net/http"
-	"time"
 	"reflect"
+	"time"
 
 	"github.com/go-playground/validator"
 	"github.com/google/uuid"
@@ -28,6 +28,7 @@ type User struct {
 	ContactNo    string     `json:"contact_no" validate:"required,len=10"`
 	UniversityID string     `json:"university_id"`
 	DOB          time.Time  `json:"dob" validate:"required"`
+	// Name         string
 }
 
 type CreateUserAPIRequest struct {
@@ -37,18 +38,19 @@ type CreateUserAPIRequest struct {
 	ContactNo    string    `json:"contact_no" validate:"required"`
 	DOB          time.Time `json:"dob" validate:"required"`
 	UniversityID string    `json:"university_id"`
+	// Name         string    `json:"name"`
 }
 
-type GetUserAPIRequest struct{
-	UserID      string `json:"user_id"`
-	EmailID     string 	`json:"email_id"`
+type GetUserAPIRequest struct {
+	UserID  string `json:"user_id"`
+	EmailID string `json:"email_id"`
 }
 
-type UpdateUserAPIRequest struct{
-	ID           uuid.UUID  `json:"id" validate:"required"`
-	Status       UserStatus `json:"status" validate:"oneof=ACTIVE INACTIVE DELETED SPAM"`
-	Email        string     `json:"email" validate:"email"`
-	ContactNo    string     `json:"contact_no"`
+type UpdateUserAPIRequest struct {
+	ID        uuid.UUID  `json:"id" validate:"required"`
+	Status    UserStatus `json:"status" validate:"oneof=ACTIVE INACTIVE DELETED SPAM"`
+	Email     string     `json:"email" validate:"email"`
+	ContactNo string     `json:"contact_no"`
 }
 
 func (r *UpdateUserAPIRequest) Parse(req *http.Request) error {
@@ -91,8 +93,6 @@ func setField(field interface{}, value, defaultValue interface{}) {
 	}
 }
 
-
-
 func (r *CreateUserAPIRequest) validate() error {
 	if err := validate.Struct(r); err != nil {
 		return err.(validator.ValidationErrors)
@@ -127,6 +127,7 @@ func (r *CreateUserAPIRequest) ToUser() *User {
 		ContactNo:    r.ContactNo,
 		UniversityID: r.UniversityID,
 		DOB:          r.DOB,
+		// Name:         r.Name,
 	}
 }
 
@@ -153,12 +154,11 @@ func NewCreateUserAPIResponse(user *User) *CreateUserAPIResponse {
 	return &CreateUserAPIResponse{
 		Message: user,
 	}
-} 
+}
 
 type DeleteUserAPIResponse struct {
 	user_id string
 }
-
 
 // Implement the Write method for UserapiResponse
 func (cr *DeleteUserAPIResponse) Write(w http.ResponseWriter) error {
@@ -171,4 +171,4 @@ func NewDeleteUserAPIResponse(userId string) *DeleteUserAPIResponse {
 	return &DeleteUserAPIResponse{
 		user_id: userId,
 	}
-} 
+}

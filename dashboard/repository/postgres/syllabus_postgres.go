@@ -19,7 +19,7 @@ func NewSyllabusPostgresRepo(db *gorm.DB) *syllabusPostgres {
 
 // CreateSyllabus creates a new syllabus.
 func (psql *syllabusPostgres) CreateSyllabus(ctx context.Context, syllabus models.Syllabus) models.AppError {
-	result := psql.db.WithContext(ctx).Create(syllabus)
+	result := psql.db.WithContext(ctx).Table("lab_rank.syllabus").Create(syllabus)
 	if result.Error != nil {
 		return models.InternalError.Add(result.Error)
 	}

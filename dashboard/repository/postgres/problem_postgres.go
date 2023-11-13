@@ -19,7 +19,7 @@ func NewProblemPostgresRepo(db *gorm.DB) *problemPostgres {
 
 // CreateProblem creates a new problem.
 func (psql *problemPostgres) CreateProblem(ctx context.Context, problem models.Problem) models.AppError {
-	result := psql.db.WithContext(ctx).Create(problem)
+	result := psql.db.WithContext(ctx).Table("lab_rank.problems").Create(problem)
 	if result.Error != nil {
 		return models.InternalError.Add(result.Error)
 	}

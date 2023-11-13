@@ -19,7 +19,7 @@ func NewSubjectPostgresRepo(db *gorm.DB) *subjectPostgres {
 
 // CreateSubject creates a new subject.
 func (psql *subjectPostgres) CreateSubject(ctx context.Context, subject models.Subject) models.AppError {
-	result := psql.db.WithContext(ctx).Create(subject)
+	result := psql.db.WithContext(ctx).Table("lab_rank.subject").Create(subject)
 	if result.Error != nil {
 		return models.InternalError.Add(result.Error)
 	}

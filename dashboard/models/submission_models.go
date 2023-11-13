@@ -47,19 +47,18 @@ type Submission struct {
 	Score     float64                 `json:"score" validate:"required,min=0,max=100"`
 	RunTime   string                  `json:"run_time" validate:"required"`
 	Metadata  json.RawMessage         `json:"metadata" validate:"required"`
-	Language  ProgrammingLanguageEnum `json:"lang" validate:"required"`
+	Lang      ProgrammingLanguageEnum `json:"lang" validate:"required"`
 	Status    Status                  `json:"status"`
 }
 
 // CreateSubmissionAPIRequest struct
+// Todo ; change Lang to Language / add status in sql
 type CreateSubmissionAPIRequest struct {
 	ProblemID uuid.UUID               `json:"problem_id" validate:"required"`
 	Link      string                  `json:"link" validate:"required"`
 	CreatedBy uuid.UUID               `json:"created_by" validate:"required"`
-	Score     float64                 `json:"score" validate:"required,min=0,max=100"`
-	RunTime   string                  `json:"run_time" validate:"required"`
-	Metadata  json.RawMessage         `json:"metadata" validate:"required"`
-	Language  ProgrammingLanguageEnum `json:"lang" validate:"required"`
+	Metadata  json.RawMessage         `json:"metadata"`
+	Lang      ProgrammingLanguageEnum `json:"lang" validate:"required"`
 }
 
 // SubmissionAPIResponse struct
@@ -88,10 +87,9 @@ func (r *CreateSubmissionAPIRequest) ToSubmissions() *Submission {
 		Link:      r.Link,
 		CreatedBy: r.CreatedBy,
 		CreatedAt: time.Now(),
-		Score:     r.Score,
-		RunTime:   r.RunTime,
 		Metadata:  r.Metadata,
-		Language:  r.Language,
+		Lang:      r.Lang,
+		Status:    Queued,
 	}
 }
 
