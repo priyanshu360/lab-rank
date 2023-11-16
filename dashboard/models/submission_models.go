@@ -35,6 +35,7 @@ const (
 	Signalled           Status = "Signalled"
 	InternalErrorStatus Status = "Internal Error" // system error
 	Queued              Status = "Queued"
+	Running             Status = "Running"
 )
 
 // Submission struct
@@ -49,13 +50,15 @@ type Submission struct {
 	Metadata  json.RawMessage         `json:"metadata" validate:"required"`
 	Lang      ProgrammingLanguageEnum `json:"lang" validate:"required"`
 	Status    Status                  `json:"status"`
+	Solution  string                  `json:"solution" gorm:"-"`
 }
 
 // CreateSubmissionAPIRequest struct
 // Todo ; change Lang to Language / add status in sql
+
 type CreateSubmissionAPIRequest struct {
 	ProblemID uuid.UUID               `json:"problem_id" validate:"required"`
-	Link      string                  `json:"link" validate:"required"`
+	Solution  string                  `json:"solution" validate:"required"`
 	CreatedBy uuid.UUID               `json:"created_by" validate:"required"`
 	Metadata  json.RawMessage         `json:"metadata"`
 	Lang      ProgrammingLanguageEnum `json:"lang" validate:"required"`
@@ -84,7 +87,7 @@ func (r *CreateSubmissionAPIRequest) ToSubmissions() *Submission {
 	return &Submission{
 		ID:        uuid.New(),
 		ProblemID: r.ProblemID,
-		Link:      r.Link,
+		Solution:  r.Solution,
 		CreatedBy: r.CreatedBy,
 		CreatedAt: time.Now(),
 		Metadata:  r.Metadata,
