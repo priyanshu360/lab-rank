@@ -105,7 +105,10 @@ func InitDB() {
 	if !pass_present {
 		log.Fatal("db_password is missing in env")
 	}
-	var dbName string = os.Getenv("db_name")
+	var dbName, name_present = os.LookupEnv("db_name")
+	if !name_present {
+		log.Fatal("db_name is missing in env")
+	}
 	dbURL := "postgres://" + userName + ":" + password + "@localhost:5432/" + dbName
 	var err error
 	if db, err = gorm.Open(postgres.Open(dbURL), &gorm.Config{}); err != nil {
