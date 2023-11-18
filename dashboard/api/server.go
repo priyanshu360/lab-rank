@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/gorilla/mux" // Import Gorilla Mux
 	"github.com/priyanshu360/lab-rank/dashboard/api/handler"
@@ -96,7 +97,16 @@ func StartHttpServer(config ServerConfig) {
 }
 
 func InitDB() {
-	dbURL := "postgres://new_admin_user:your_password@localhost:5432/postgres"
+	var userName, present = os.LookupEnv("db_userName")
+	if !present {
+		log.Fatal("db_userName is missing in env")
+	}
+	var password, pass_present = os.LookupEnv("db_password")
+	if !pass_present {
+		log.Fatal("db_password is missing in env")
+	}
+	var dbName string = os.Getenv("db_name")
+	dbURL := "postgres://" + userName + ":" + password + "@localhost:5432/" + dbName
 	var err error
 	if db, err = gorm.Open(postgres.Open(dbURL), &gorm.Config{}); err != nil {
 		log.Fatal(err)
