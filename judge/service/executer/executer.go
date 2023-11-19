@@ -17,8 +17,3 @@ func (e Executer) Run(ctx context.Context, submission models.SubmissionData) {
 func NewExecuter() Executer {
 	return Executer{}
 }
-
-// psql db
-// queue
-// logic
-// watcher

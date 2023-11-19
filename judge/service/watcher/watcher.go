@@ -29,7 +29,7 @@ func (w Watcher) Run(ctx context.Context) {
 			candidate := w.queue.Front(ctx)
 			candidate.Status = dashboard_models.Accepted
 			w.repo.Update(ctx, candidate)
-			w.svc.Run(ctx, w.queue.Front(ctx))
+			w.svc.Run(ctx, candidate)
 		}
 	}
 }
