@@ -26,7 +26,7 @@ func NewCollegeService(repo repository.CollegeRepository) *collegeService {
 func (s *collegeService) Create(ctx context.Context, college *models.College) (*models.College, models.AppError) {
 	college.ID = uuid.New()
 
-	if err := s.repo.CreateCollege(ctx, *college); err != models.NoError {
+	if err := s.repo.CreateCollege(ctx, *college); err != models.NoError { // Todo: Check if university id exists
 		return nil, err
 	}
 

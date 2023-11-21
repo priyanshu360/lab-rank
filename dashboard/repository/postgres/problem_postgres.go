@@ -29,7 +29,7 @@ func (psql *problemPostgres) CreateProblem(ctx context.Context, problem models.P
 // GetProblemByID retrieves a problem by its ID.
 func (psql *problemPostgres) GetProblemByID(ctx context.Context, problemID uuid.UUID) (models.Problem, models.AppError) {
 	var problem models.Problem
-	result := psql.db.WithContext(ctx).First(&problem, problemID)
+	result := psql.db.WithContext(ctx).Table("lab_rank.problems").First(&problem, problemID)
 	if result.Error != nil {
 		if result.Error == gorm.ErrRecordNotFound {
 			// Problem not found

@@ -10,19 +10,6 @@ import (
 	"github.com/google/uuid"
 )
 
-type ProgrammingLanguageEnum string
-
-const (
-	ProgrammingLanguageC          ProgrammingLanguageEnum = "C"
-	ProgrammingLanguageCPlusPlus  ProgrammingLanguageEnum = "C++"
-	ProgrammingLanguageJava       ProgrammingLanguageEnum = "Java"
-	ProgrammingLanguagePython     ProgrammingLanguageEnum = "Python"
-	ProgrammingLanguageJavaScript ProgrammingLanguageEnum = "JavaScript"
-	ProgrammingLanguageGo         ProgrammingLanguageEnum = "Go"
-	ProgrammingLanguageRust       ProgrammingLanguageEnum = "Rust"
-	// Add more programming languages as needed
-)
-
 type Status string
 
 const (
@@ -50,7 +37,7 @@ type Submission struct {
 	Metadata  json.RawMessage         `json:"metadata" validate:"required"`
 	Lang      ProgrammingLanguageEnum `json:"lang" validate:"required"`
 	Status    Status                  `json:"status"`
-	Solution  string                  `json:"solution" gorm:"-"`
+	Solution  []byte                  `json:"solution" gorm:"-"`
 }
 
 // CreateSubmissionAPIRequest struct
@@ -58,7 +45,7 @@ type Submission struct {
 
 type CreateSubmissionAPIRequest struct {
 	ProblemID uuid.UUID               `json:"problem_id" validate:"required"`
-	Solution  string                  `json:"solution" validate:"required"`
+	Solution  []byte                  `json:"solution" validate:"required"`
 	CreatedBy uuid.UUID               `json:"created_by" validate:"required"`
 	Metadata  json.RawMessage         `json:"metadata"`
 	Lang      ProgrammingLanguageEnum `json:"lang" validate:"required"`

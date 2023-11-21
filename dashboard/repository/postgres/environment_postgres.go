@@ -29,7 +29,7 @@ func (psql *environmentPostgres) CreateEnvironment(ctx context.Context, environm
 // GetEnvironmentByID retrieves an environment by its ID.
 func (psql *environmentPostgres) GetEnvironmentByID(ctx context.Context, environmentID uuid.UUID) (models.Environment, models.AppError) {
 	var environment models.Environment
-	result := psql.db.WithContext(ctx).First(&environment, environmentID)
+	result := psql.db.WithContext(ctx).Table("lab_rank.environment").First(&environment, environmentID)
 	if result.Error != nil {
 		if result.Error == gorm.ErrRecordNotFound {
 			// Environment not found

@@ -29,7 +29,7 @@ func (psql *collegePostgres) CreateCollege(ctx context.Context, college models.C
 // GetCollegeByID retrieves a college by its ID.
 func (psql *collegePostgres) GetCollegeByID(ctx context.Context, collegeID uuid.UUID) (models.College, models.AppError) {
 	var college models.College
-	result := psql.db.WithContext(ctx).First(&college, collegeID)
+	result := psql.db.WithContext(ctx).Table("lab_rank.college").First(&college, collegeID)
 	if result.Error != nil {
 		if result.Error == gorm.ErrRecordNotFound {
 			// College not found

@@ -3,7 +3,12 @@ package config
 import (
 	"fmt"
 	"os"
+	"path/filepath"
+
+	"k8s.io/client-go/util/homedir"
 )
+
+var BasePathFS = getEnvWithDefault("BASE_PATH_FS", "./uploads/")
 
 // TODO : Follow singelton for configs
 type ServerConfig struct {
@@ -68,3 +73,5 @@ func InitLoggerConfig() LoggerConfig {
 		// Initialize other configuration options with default values
 	}
 }
+
+var K8sConfig = getEnvWithDefault("KUBE_CONFIG", filepath.Join(homedir.HomeDir(), ".kube", "config"))

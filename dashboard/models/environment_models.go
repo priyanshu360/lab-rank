@@ -19,15 +19,16 @@ type Environment struct {
 	CreatedAt      time.Time       `json:"created_at" validate:"required"`
 	UpdateEvents   json.RawMessage `json:"update_events" validate:"required"`
 	LiveDockerCIDs json.RawMessage `json:"live_dockerc_ids" validate:"required" gorm:"column:live_dockerc_ids"`
+	File           []byte          `json:"file" gorm:"-"`
 }
 
 // CreateEnvironmentAPIRequest struct
 type CreateEnvironmentAPIRequest struct {
 	Title          string          `json:"title" validate:"required"`
-	Link           string          `json:"link" validate:"required"`
 	CreatedBy      uuid.UUID       `json:"created_by" validate:"required"`
 	UpdateEvents   json.RawMessage `json:"update_events"`
 	LiveDockerCIDs json.RawMessage `json:"live_dockerc_ids"`
+	File           []byte          `json:"file" validate:"required"`
 }
 
 // EnvironmentAPIResponse struct
@@ -53,11 +54,11 @@ func (r *CreateEnvironmentAPIRequest) ToEnvironment() *Environment {
 	return &Environment{
 		ID:             uuid.New(),
 		Title:          r.Title,
-		Link:           r.Link,
 		CreatedBy:      r.CreatedBy,
 		CreatedAt:      time.Now(),
 		UpdateEvents:   []byte("[]"),
 		LiveDockerCIDs: []byte("[]"),
+		File:           r.File,
 	}
 }
 

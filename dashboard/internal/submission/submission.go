@@ -15,22 +15,23 @@ type SubmissionService interface {
 
 type submissionService struct {
 	repo repository.SubmissionRepository
+	fs   repository.FileSystem
 }
 
-func NewSubmissionService(repo repository.SubmissionRepository) *submissionService {
+func NewSubmissionService(repo repository.SubmissionRepository, fs repository.FileSystem) *submissionService {
 	return &submissionService{
 		repo: repo,
+		fs:   fs,
 	}
 }
 
 func (s *submissionService) Create(ctx context.Context, submission *models.Submission) (*models.Submission, models.AppError) {
 	submission.ID = uuid.New()
 
-	_, err := s.storeFile(ctx, []byte(submission.Solution), "SOLUTION", submission.ID, string(submission.Lang))
-	if err != models.NoError {
+	var err models.AppError
+	if submission.Link, err = s.fs.StoreFile(ctx, []byte(submission.Solution), submission.ID, models.SOLUTION, submission.Lang.GetExtension()); err != models.NoError {
 		return nil, err
 	}
-	submission.Link = generateFileLink(submission.ID, "SOLUTION")
 
 	if err := s.repo.CreateSubmission(ctx, *submission); err != models.NoError {
 		return nil, err

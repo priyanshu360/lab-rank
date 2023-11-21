@@ -21,22 +21,22 @@ const (
 )
 
 type TestFilesType struct {
-	Language string `json:"language" validate:"required"`
-	File     string `json:"file" validate:"required"`
-	Title    string `json:"title" validate:"requierd"`
+	Language ProgrammingLanguageEnum `json:"language" validate:"required"`
+	File     []byte                  `json:"file" validate:"required"`
+	Title    string                  `json:"title" validate:"requierd"`
 }
 
 type ProblemEnvironmentType struct {
-	Language string    `json:"language" validate:"required"`
-	Id       uuid.UUID `json:"id" validate:"required"`
+	Language ProgrammingLanguageEnum `json:"language" validate:"required"`
+	Id       uuid.UUID               `json:"id" validate:"required"`
 }
 
 type EnvironmentJSON []ProblemEnvironmentType
 
 type TestLinkType struct {
-	Language string `json:"language" validate:"required"`
-	Link     string `json:"link" validate:"required"`
-	Title    string `json:"title"`
+	Language ProgrammingLanguageEnum `json:"language" validate:"required"`
+	Link     string                  `json:"link" validate:"required"`
+	Title    string                  `json:"title"`
 }
 
 type TestLinkJSON []TestLinkType
@@ -52,7 +52,7 @@ type Problem struct {
 	Difficulty  DifficultyEnum  `json:"difficulty" validate:"required"`
 	SyllabusID  uuid.UUID       `json:"syllabus_id" validate:"required"`
 	TestLinks   TestLinkJSON    `json:"test_links" validate:"required"`
-	ProblemFile string          `json:"problem_file" validate:"required" gorm:"-"`
+	ProblemFile []byte          `json:"problem_file" validate:"required" gorm:"-"`
 	TestFiles   []TestFilesType `json:"test_files" validate:"required" gorm:"-"`
 }
 
@@ -61,7 +61,7 @@ type CreateProblemAPIRequest struct {
 	Title       string          `json:"title" validate:"required"`
 	CreatedBy   uuid.UUID       `json:"created_by" validate:"required"`
 	Environment EnvironmentJSON `json:"environment" validate:"required"`
-	ProblemFile string          `json:"problem_file" validate:"required"`
+	ProblemFile []byte          `json:"problem_file" validate:"required"`
 	Difficulty  DifficultyEnum  `json:"difficulty" validate:"required"`
 	SyllabusID  uuid.UUID       `json:"syllabus_id" validate:"required"`
 	TestFiles   []TestFilesType `json:"test_files" validate:"required"`

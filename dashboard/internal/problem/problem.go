@@ -15,37 +15,29 @@ type ProblemService interface {
 
 type problemService struct {
 	repo repository.ProblemRepository
+	fs   repository.FileSystem
 }
 
-func NewProblemService(repo repository.ProblemRepository) *problemService {
+func NewProblemService(repo repository.ProblemRepository, fs repository.FileSystem) *problemService {
 	return &problemService{
 		repo: repo,
+		fs:   fs,
 	}
 }
-
-const (
-	TESTFILE = "testfile"
-	PROBLEM  = "problem"
-)
 
 func (s *problemService) Create(ctx context.Context, problem *models.Problem) (*models.Problem, models.AppError) {
 	problem.ID = uuid.New()
 
-	problemFileID, err := s.storeFile(ctx, []byte(problem.ProblemFile), PROBLEM, problem.ID, problem.Title)
-	if err != models.NoError {
+	var err models.AppError
+	if problem.ProblemLink, err = s.fs.StoreFile(ctx, []byte(problem.ProblemFile), problem.ID, models.PROBLEM, models.Text.GetExtension()); err != models.NoError {
 		return nil, err
 	}
-	problem.ProblemLink = generateFileLink(problemFileID, PROBLEM)
 
 	testLinks := make([]models.TestLinkType, len(problem.TestFiles))
 	for i, testFile := range problem.TestFiles {
-		testFileID, err := s.storeFile(ctx, []byte(testFile.File), TESTFILE, problem.ID, testFile.Title)
-		if err != models.NoError {
+		testLinks[i].Language = testFile.Language
+		if testLinks[i].Link, err = s.fs.StoreFile(ctx, []byte(testFile.File), problem.ID, models.TESTFILE, testFile.Language.GetExtension()); err != models.NoError {
 			return nil, err
-		}
-		testLinks[i] = models.TestLinkType{
-			Language: testFile.Language,
-			Link:     generateFileLink(testFileID, TESTFILE),
 		}
 	}
 	problem.TestLinks = testLinks

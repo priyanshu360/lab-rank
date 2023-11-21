@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"log/slog"
 
 	"github.com/joho/godotenv"
@@ -19,6 +20,9 @@ func main() {
 	serverConf := config.NewServerConfig()
 
 	api.InitDB(dbConf)
+	if err := api.InitK8sClientset(config.K8sConfig); err != nil {
+		log.Fatal(err)
+	}
 	api.StartHttpServer(serverConf)
 
 	logger := utils.NewLogger(loggerConf)

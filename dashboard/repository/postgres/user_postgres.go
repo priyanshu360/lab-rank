@@ -21,7 +21,7 @@ func NewUserPostgresRepo(db *gorm.DB) *userPostgres {
 // GetUserByID retrieves a user by their user ID.
 func (psql *userPostgres) GetUserByID(ctx context.Context, userID uuid.UUID) (models.User, models.AppError) {
 	var user models.User
-	result := psql.db.WithContext(ctx).First(&user, userID)
+	result := psql.db.WithContext(ctx).Table("lab_rank.user").First(&user, userID)
 	if result.Error != nil {
 		if result.Error == gorm.ErrRecordNotFound {
 			// User not found
@@ -35,7 +35,7 @@ func (psql *userPostgres) GetUserByID(ctx context.Context, userID uuid.UUID) (mo
 // GetUserByEmail retrieves a user by their email.
 func (psql *userPostgres) GetUserByEmail(ctx context.Context, email string) (models.User, models.AppError) {
 	var user models.User
-	result := psql.db.WithContext(ctx).Where("email = ?", email).First(&user)
+	result := psql.db.WithContext(ctx).Where("email = ?", email).Table("lab_rank.user").First(&user)
 	if result.Error != nil {
 		if result.Error == gorm.ErrRecordNotFound {
 			// User not found
