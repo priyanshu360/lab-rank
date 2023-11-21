@@ -5,6 +5,8 @@ import (
 	"os"
 )
 
+var BasePathFS = getEnvWithDefault("BASE_PATH_FS", "./uploads/")
+
 // TODO : Follow singelton for configs
 type ServerConfig struct {
 	address string

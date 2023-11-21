@@ -16,6 +16,7 @@ import (
 	"github.com/priyanshu360/lab-rank/dashboard/internal/syllabus"
 	"github.com/priyanshu360/lab-rank/dashboard/internal/university"
 	"github.com/priyanshu360/lab-rank/dashboard/internal/user"
+	filesys "github.com/priyanshu360/lab-rank/dashboard/repository/fs"
 	psql "github.com/priyanshu360/lab-rank/dashboard/repository/postgres"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -40,6 +41,7 @@ func NewServer(cfg config.ServerConfig) *APIServer {
 	}
 }
 
+// TODO: change this not looking good (maybe option or decorator pattern)
 func (s *APIServer) initRoutes() {
 	// Initialize routes and handlers for different entities
 	userHandler := handler.NewUserHandler(user.NewUserService(psql.NewUserPostgresRepo(db)))
@@ -54,13 +56,13 @@ func (s *APIServer) initRoutes() {
 	universityHandler := handler.NewUniversityHandler(university.NewUniversityService(psql.NewUniversityPostgresRepo(db)))
 	s.Handlers["/university"] = handler.NewReqIDMiddleware().Decorate(universityHandler)
 
-	submissionsHandler := handler.NewSubmissionsHandler(submission.NewSubmissionService(psql.NewSubmissionPostgresRepo(db)))
+	submissionsHandler := handler.NewSubmissionsHandler(submission.NewSubmissionService(psql.NewSubmissionPostgresRepo(db), filesys.NewLocalFS(config.BasePathFS)))
 	s.Handlers["/submission"] = handler.NewReqIDMiddleware().Decorate(submissionsHandler)
 
-	environmentHandler := handler.NewEnvironmentHandler(environment.NewEnvironmentService(psql.NewEnvironmentPostgresRepo(db)))
+	environmentHandler := handler.NewEnvironmentHandler(environment.NewEnvironmentService(psql.NewEnvironmentPostgresRepo(db), filesys.NewLocalFS(config.BasePathFS)))
 	s.Handlers["/environment"] = handler.NewReqIDMiddleware().Decorate(environmentHandler)
 
-	problemsHandler := handler.NewProblemsHandler(problem.NewProblemService(psql.NewProblemPostgresRepo(db)))
+	problemsHandler := handler.NewProblemsHandler(problem.NewProblemService(psql.NewProblemPostgresRepo(db), filesys.NewLocalFS(config.BasePathFS)))
 	s.Handlers["/problem"] = handler.NewReqIDMiddleware().Decorate(problemsHandler)
 
 	syllabusHandler := handler.NewSyllabusHandler(syllabus.NewSyllabusService(psql.NewSyllabusPostgresRepo(db)))
