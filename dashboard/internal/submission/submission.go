@@ -2,6 +2,7 @@ package submission
 
 import (
 	"context"
+	"strconv"
 
 	"github.com/google/uuid"
 	"github.com/priyanshu360/lab-rank/dashboard/models"
@@ -10,7 +11,7 @@ import (
 
 type SubmissionService interface {
 	Create(context.Context, *models.Submission) (*models.Submission, models.AppError)
-	Fetch(context.Context, string) (*models.Submission, models.AppError)
+	Fetch(context.Context, string, string) ([]*models.Submission, models.AppError)
 }
 
 type submissionService struct {
@@ -40,14 +41,30 @@ func (s *submissionService) Create(ctx context.Context, submission *models.Submi
 	return submission, models.NoError
 }
 
-func (s *submissionService) Fetch(ctx context.Context, id string) (*models.Submission, models.AppError) {
-	if submissionID, err := uuid.Parse(id); err != nil {
-		return nil, models.InternalError.Add(err)
-	} else {
-		if submission, err := s.repo.GetSubmissionByID(ctx, submissionID); err != models.NoError {
-			return nil, err
+func (s *submissionService) Fetch(ctx context.Context, id, limit string) ([]*models.Submission, models.AppError) {
+	var submissions []*models.Submission
+	switch {
+	case id != "":
+		if submissionID, err := uuid.Parse(id); err != nil {
+			return submissions, models.InternalError.Add(err)
 		} else {
-			return &submission, models.NoError
+			if submission, err := s.repo.GetSubmissionByID(ctx, submissionID); err != models.NoError {
+				return nil, err
+			} else {
+				submissions = append(submissions, &submission)
+				return submissions, models.NoError
+			}
 		}
+
+	case limit != "":
+		if limit, err := strconv.ParseInt(limit, 10, 64); err != nil {
+			return s.repo.GetSubmissionsListByLimit(ctx, 1, 10)
+
+		} else {
+			return s.repo.GetSubmissionsListByLimit(ctx, 1, int(limit))
+		}
+	default:
+
+		return s.repo.GetSubmissionsListByLimit(ctx, 1, 10)
 	}
 }

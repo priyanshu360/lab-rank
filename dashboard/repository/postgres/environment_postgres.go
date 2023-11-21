@@ -40,4 +40,19 @@ func (psql *environmentPostgres) GetEnvironmentByID(ctx context.Context, environ
 	return environment, models.NoError
 }
 
+func (psql *environmentPostgres) GetEnvironmentsListByLimit(ctx context.Context, page int, pageSize int) ([]*models.Environment, models.AppError) {
+	var environments []*models.Environment
+
+	// Calculate the offset
+	offset := (page - 1) * pageSize
+
+	// Fetch environments with the specified pagination
+	result := psql.db.Offset(offset).Table("lab_rank.environment").Limit(pageSize).Find(&environments)
+	if result.Error != nil {
+		return nil, models.InternalError.Add(result.Error)
+	}
+
+	return environments, models.NoError
+}
+
 // Add other repository methods for environments as needed.

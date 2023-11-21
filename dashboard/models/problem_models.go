@@ -136,6 +136,22 @@ func (pr *ProblemAPIResponse) Write(w http.ResponseWriter) error {
 	return json.NewEncoder(w).Encode(pr)
 }
 
+type ListProblemsAPIResponse struct {
+	Message []*Problem
+}
+
+// Implement the Write method for ListProblemsAPIResponse
+func (pr *ListProblemsAPIResponse) Write(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	return json.NewEncoder(w).Encode(pr)
+}
+
+func NewListProblemsAPIResponse(problems []*Problem) *ListProblemsAPIResponse {
+	return &ListProblemsAPIResponse{
+		Message: problems,
+	}
+}
+
 func (r *CreateProblemAPIRequest) ToProblem() *Problem {
 	return &Problem{
 		ID:          uuid.New(),

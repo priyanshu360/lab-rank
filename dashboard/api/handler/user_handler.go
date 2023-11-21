@@ -65,16 +65,23 @@ func (h *userHandler) handleUpdate(ctx context.Context, r *http.Request) apiResp
 func (h *userHandler) handleGet(ctx context.Context, r *http.Request) apiResponse {
 	email := r.URL.Query().Get("email")
 	userId := r.URL.Query().Get("id")
+	limit := r.URL.Query().Get("limit")
 	request := models.GetUserAPIRequest{
 		EmailID: email,
 		UserID:  userId,
+		Limit:   limit,
 	}
-	user, err := h.svc.Fetch(ctx, &request)
+	users, err := h.svc.Fetch(ctx, &request)
 	if err != models.NoError {
 		return newAPIError(models.InternalError.Add(err))
 	}
-
-	return models.NewCreateUserAPIResponse(user) // Reusing the same Response from Create in Get
+	switch len(users) {
+	case 1:
+		return models.NewCreateUserAPIResponse(users[0]) // Reusing the same Response from Create in Get
+	default:
+		response := models.NewFetchUserAPIResponse(users) // Create FetchUsersAPIResponse instance
+		return response
+	}
 }
 
 func (h *userHandler) handleCreate(ctx context.Context, r *http.Request) apiResponse {

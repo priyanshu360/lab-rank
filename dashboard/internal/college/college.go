@@ -2,6 +2,7 @@ package college
 
 import (
 	"context"
+	"strconv"
 
 	"github.com/google/uuid"
 	"github.com/priyanshu360/lab-rank/dashboard/models"
@@ -10,7 +11,7 @@ import (
 
 type CollegeService interface {
 	Create(context.Context, *models.College) (*models.College, models.AppError)
-	Fetch(context.Context, string) (*models.College, models.AppError)
+	Fetch(context.Context, string, string) ([]*models.College, models.AppError)
 }
 
 type collegeService struct {
@@ -33,14 +34,30 @@ func (s *collegeService) Create(ctx context.Context, college *models.College) (*
 	return college, models.NoError
 }
 
-func (s *collegeService) Fetch(ctx context.Context, id string) (*models.College, models.AppError) {
-	if collegeID, err := uuid.Parse(id); err != nil {
-		return nil, models.InternalError.Add(err)
-	} else {
-		if college, err := s.repo.GetCollegeByID(ctx, collegeID); err != models.NoError {
-			return nil, err
+func (s *collegeService) Fetch(ctx context.Context, id, limit string) ([]*models.College, models.AppError) {
+	var colleges []*models.College
+	switch {
+	case id != "":
+		if collegeID, err := uuid.Parse(id); err != nil {
+			return colleges, models.InternalError.Add(err)
 		} else {
-			return &college, models.NoError
+			if college, err := s.repo.GetCollegeByID(ctx, collegeID); err != models.NoError {
+				return nil, err
+			} else {
+				colleges = append(colleges, &college)
+				return colleges, models.NoError
+			}
 		}
+
+	case limit != "":
+		if limit, err := strconv.ParseInt(limit, 10, 64); err != nil {
+			return s.repo.GetCollegesListByLimit(ctx, 1, 10)
+
+		} else {
+			return s.repo.GetCollegesListByLimit(ctx, 1, int(limit))
+		}
+	default:
+
+		return s.repo.GetCollegesListByLimit(ctx, 1, 10)
 	}
 }
