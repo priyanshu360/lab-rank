@@ -29,7 +29,7 @@ func (psql *syllabusPostgres) CreateSyllabus(ctx context.Context, syllabus model
 // GetSyllabusByID retrieves a syllabus by its ID.
 func (psql *syllabusPostgres) GetSyllabusByID(ctx context.Context, syllabusID uuid.UUID) (models.Syllabus, models.AppError) {
 	var syllabus models.Syllabus
-	result := psql.db.WithContext(ctx).First(&syllabus, syllabusID)
+	result := psql.db.WithContext(ctx).Table("lab_rank.syllabus").First(&syllabus, syllabusID)
 	if result.Error != nil {
 		if result.Error == gorm.ErrRecordNotFound {
 			// Syllabus not found

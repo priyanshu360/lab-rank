@@ -33,7 +33,7 @@ type User struct {
 
 type CreateUserAPIRequest struct {
 	CollegeID    uuid.UUID `json:"college_id" validate:"required"`
-	AccessID     uuid.UUID `json:"access_id" validate:"required"`
+	AccessID     uuid.UUID `json:"access_id" validate:"required"` // To do: Implement AccessID functionality
 	Email        string    `json:"email" validate:"required,email"`
 	ContactNo    string    `json:"contact_no" validate:"required"`
 	DOB          time.Time `json:"dob" validate:"required"`

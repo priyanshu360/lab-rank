@@ -29,7 +29,7 @@ func (psql *subjectPostgres) CreateSubject(ctx context.Context, subject models.S
 // GetSubjectByID retrieves a subject by its ID.
 func (psql *subjectPostgres) GetSubjectByID(ctx context.Context, subjectID uuid.UUID) (models.Subject, models.AppError) {
 	var subject models.Subject
-	result := psql.db.WithContext(ctx).First(&subject, subjectID)
+	result := psql.db.WithContext(ctx).Table("lab_rank.subject").First(&subject, subjectID)
 	if result.Error != nil {
 		if result.Error == gorm.ErrRecordNotFound {
 			// Subject not found
