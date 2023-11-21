@@ -20,9 +20,12 @@ import (
 	psql "github.com/priyanshu360/lab-rank/dashboard/repository/postgres"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/tools/clientcmd"
 )
 
 var db *gorm.DB
+var clientset *kubernetes.Clientset
 
 // ServerConfig is your server configuration interface.
 
@@ -43,6 +46,7 @@ func NewServer(cfg config.ServerConfig) *APIServer {
 
 // TODO: change this not looking good (maybe option or decorator pattern)
 func (s *APIServer) initRoutes() {
+	fileStorage := filesys.NewK8sCMStore(clientset, "storage")
 	// Initialize routes and handlers for different entities
 	userHandler := handler.NewUserHandler(user.NewUserService(psql.NewUserPostgresRepo(db)))
 	s.Handlers["/user"] = handler.NewReqIDMiddleware().Decorate(userHandler)
@@ -56,13 +60,13 @@ func (s *APIServer) initRoutes() {
 	universityHandler := handler.NewUniversityHandler(university.NewUniversityService(psql.NewUniversityPostgresRepo(db)))
 	s.Handlers["/university"] = handler.NewReqIDMiddleware().Decorate(universityHandler)
 
-	submissionsHandler := handler.NewSubmissionsHandler(submission.NewSubmissionService(psql.NewSubmissionPostgresRepo(db), filesys.NewLocalFS(config.BasePathFS)))
+	submissionsHandler := handler.NewSubmissionsHandler(submission.NewSubmissionService(psql.NewSubmissionPostgresRepo(db), fileStorage))
 	s.Handlers["/submission"] = handler.NewReqIDMiddleware().Decorate(submissionsHandler)
 
-	environmentHandler := handler.NewEnvironmentHandler(environment.NewEnvironmentService(psql.NewEnvironmentPostgresRepo(db), filesys.NewLocalFS(config.BasePathFS)))
+	environmentHandler := handler.NewEnvironmentHandler(environment.NewEnvironmentService(psql.NewEnvironmentPostgresRepo(db), fileStorage))
 	s.Handlers["/environment"] = handler.NewReqIDMiddleware().Decorate(environmentHandler)
 
-	problemsHandler := handler.NewProblemsHandler(problem.NewProblemService(psql.NewProblemPostgresRepo(db), filesys.NewLocalFS(config.BasePathFS)))
+	problemsHandler := handler.NewProblemsHandler(problem.NewProblemService(psql.NewProblemPostgresRepo(db), fileStorage))
 	s.Handlers["/problem"] = handler.NewReqIDMiddleware().Decorate(problemsHandler)
 
 	syllabusHandler := handler.NewSyllabusHandler(syllabus.NewSyllabusService(psql.NewSyllabusPostgresRepo(db)))
@@ -114,4 +118,18 @@ func InitDB(cfg config.DBConfig) {
 		fmt.Println(table)
 	}
 
+}
+
+func InitK8sClientset(kubeconfig string) error {
+	config, err := clientcmd.BuildConfigFromFlags("", kubeconfig)
+	if err != nil {
+		return err
+	}
+
+	clientset, err = kubernetes.NewForConfig(config)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
