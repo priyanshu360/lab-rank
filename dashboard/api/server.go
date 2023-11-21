@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 
 	"github.com/gorilla/mux" // Import Gorilla Mux
 	"github.com/priyanshu360/lab-rank/dashboard/api/handler"
+	"github.com/priyanshu360/lab-rank/dashboard/config"
 	"github.com/priyanshu360/lab-rank/dashboard/internal/college"
 	"github.com/priyanshu360/lab-rank/dashboard/internal/environment"
 	"github.com/priyanshu360/lab-rank/dashboard/internal/problem"
@@ -24,21 +24,17 @@ import (
 var db *gorm.DB
 
 // ServerConfig is your server configuration interface.
-type ServerConfig interface {
-	GetAddress() string
-	GetPort() string
-}
 
 // APIServer is your API server instance.
 type APIServer struct {
-	Config   ServerConfig
+	Config   config.ServerConfig
 	Router   *mux.Router // Replace ServeMux with Gorilla Mux
 	Handlers map[string]handler.Handler
 }
 
-func NewServer(config ServerConfig) *APIServer {
+func NewServer(cfg config.ServerConfig) *APIServer {
 	return &APIServer{
-		Config:   config,
+		Config:   cfg,
 		Router:   mux.NewRouter(), // Initialize Gorilla Mux router
 		Handlers: make(map[string]handler.Handler),
 	}
@@ -90,28 +86,15 @@ func (s *APIServer) run() {
 	}
 }
 
-func StartHttpServer(config ServerConfig) {
-	server := NewServer(config)
+func StartHttpServer(cfg config.ServerConfig) {
+	server := NewServer(cfg)
 	server.initRoutes()
 	server.run()
 }
 
-func InitDB() {
-	var userName, present = os.LookupEnv("db_userName")
-	if !present {
-		log.Fatal("db_userName is missing in env")
-	}
-	var password, pass_present = os.LookupEnv("db_password")
-	if !pass_present {
-		log.Fatal("db_password is missing in env")
-	}
-	var dbName, name_present = os.LookupEnv("db_name")
-	if !name_present {
-		log.Fatal("db_name is missing in env")
-	}
-	dbURL := "postgres://" + userName + ":" + password + "@localhost:5432/" + dbName
+func InitDB(cfg config.DBConfig) {
 	var err error
-	if db, err = gorm.Open(postgres.Open(dbURL), &gorm.Config{}); err != nil {
+	if db, err = gorm.Open(postgres.Open(cfg.GetURL()), &gorm.Config{}); err != nil {
 		log.Fatal(err)
 	}
 

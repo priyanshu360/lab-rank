@@ -22,4 +22,4 @@ go.work
 
 dashboard/uploads/
 
-.env
+*.env
