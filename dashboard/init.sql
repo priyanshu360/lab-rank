@@ -47,19 +47,6 @@ CREATE TABLE lab_rank.access_level (
     syllabus_id UUID REFERENCES lab_rank.syllabus(id) NOT NULL
 );
 
--- Define the Submissions table with all fields NOT NULL
-CREATE TABLE lab_rank.submissions (
-    id UUID PRIMARY KEY NOT NULL,
-    problem_id UUID REFERENCES lab_rank.problems(id) NOT NULL,
-    link VARCHAR(100) NOT NULL,
-    created_by UUID REFERENCES lab_rank."user"(id) NOT NULL,
-    created_at TIMESTAMP NOT NULL,
-    score FLOAT,
-    run_time VARCHAR(10),
-    metadata JSONB NOT NULL,
-    lang lab_rank.programming_language_enum NOT NULL,
-    CHECK (score >= 0 AND score <= 100)
-);
 
 -- Define the Environment table with all fields NOT NULL
 CREATE TABLE lab_rank.environment (
@@ -134,4 +121,18 @@ CREATE TABLE lab_rank.auth (
     access_ids JSONB NOT NULL,
     salt CHAR(32) NOT NULL,
     password_hash CHAR(64) NOT NULL
+);
+
+-- Define the Submissions table with all fields NOT NULL
+CREATE TABLE lab_rank.submissions (
+    id UUID PRIMARY KEY NOT NULL,
+    problem_id UUID REFERENCES lab_rank.problems(id) NOT NULL,
+    link VARCHAR(100) NOT NULL,
+    created_by UUID REFERENCES lab_rank."user"(id) NOT NULL,
+    created_at TIMESTAMP NOT NULL,
+    score FLOAT,
+    run_time VARCHAR(10),
+    metadata JSONB NOT NULL,
+    lang lab_rank.programming_language_enum NOT NULL,
+    CHECK (score >= 0 AND score <= 100)
 );

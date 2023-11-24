@@ -21,7 +21,7 @@ func NewQueue(repo repository.SubmissionRepository, queue repository.QueueReposi
 }
 
 func (q *Queue) Refresh(ctx context.Context) *Queue {
-	submissions_list := q.repo.GetNextBatch(ctx, dashboard_models.Queued, 10)
+	submissions_list := q.repo.GetNextBatch(ctx, dashboard_models.Accepted, 10)
 	for _, submission := range submissions_list {
 		q.queue.Add(ctx, models.NewSubmissionData(submission))
 	}
