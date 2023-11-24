@@ -97,6 +97,21 @@ func (psql *userPostgres) ListUsers(ctx context.Context, page int, pageSize int)
 	return users, models.NoError
 }
 
+func (psql *userPostgres) ListUsersWisthLimit(ctx context.Context, page int, pageSize int) ([]*models.User, models.AppError) {
+	var users []*models.User
+
+	// Calculate the offset
+	offset := (page - 1) * pageSize
+
+	// Fetch users with the specified pagination
+	result := psql.db.Offset(offset).Table("lab_rank.user").Limit(pageSize).Find(&users)
+	if result.Error != nil {
+		return nil, models.InternalError.Add(result.Error)
+	}
+
+	return users, models.NoError
+}
+
 func (psql *userPostgres) CreateUser(ctx context.Context, user models.User) models.AppError {
 	result := psql.db.WithContext(ctx).Table("lab_rank.user").Create(user)
 	if result.Error != nil {

@@ -40,4 +40,19 @@ func (psql *syllabusPostgres) GetSyllabusByID(ctx context.Context, syllabusID uu
 	return syllabus, models.NoError
 }
 
+func (psql *syllabusPostgres) GetSyllabusListByLimit(ctx context.Context, page int, pageSize int) ([]*models.Syllabus, models.AppError) {
+	var syllabuss []*models.Syllabus
+
+	// Calculate the offset
+	offset := (page - 1) * pageSize
+
+	// Fetch syllabuss with the specified pagination
+	result := psql.db.Offset(offset).Table("lab_rank.syllabus").Limit(pageSize).Find(&syllabuss)
+	if result.Error != nil {
+		return nil, models.InternalError.Add(result.Error)
+	}
+
+	return syllabuss, models.NoError
+}
+
 // Add other repository methods for syllabi as needed.

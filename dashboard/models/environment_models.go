@@ -67,3 +67,19 @@ func NewCreateEnvironmentAPIResponse(environment *Environment) *EnvironmentAPIRe
 		Message: environment,
 	}
 }
+
+type ListEnvironmentsAPIResponse struct {
+	Message []*Environment
+}
+
+// Implement the Write method for ListenvironmentsAPIResponse
+func (pr *ListEnvironmentsAPIResponse) Write(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	return json.NewEncoder(w).Encode(pr)
+}
+
+func NewListEnvironmentsAPIResponse(environments []*Environment) *ListEnvironmentsAPIResponse {
+	return &ListEnvironmentsAPIResponse{
+		Message: environments,
+	}
+}

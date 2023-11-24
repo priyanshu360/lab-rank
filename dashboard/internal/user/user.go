@@ -3,6 +3,7 @@ package user
 import (
 	"context"
 	"log"
+	"strconv"
 
 	"github.com/google/uuid"
 	"github.com/priyanshu360/lab-rank/dashboard/models"
@@ -10,9 +11,9 @@ import (
 )
 
 type UserService interface {
-	Create(context.Context,  *models.User) (*models.User, models.AppError)
-	Update(context.Context,  *models.UpdateUserAPIRequest) (*models.User, models.AppError)
-	Fetch(context.Context,   *models.GetUserAPIRequest) (*models.User, models.AppError)
+	Create(context.Context, *models.User) (*models.User, models.AppError)
+	Update(context.Context, *models.UpdateUserAPIRequest) (*models.User, models.AppError)
+	Fetch(context.Context, *models.GetUserAPIRequest) ([]*models.User, models.AppError)
 	Delete(context.Context, string) models.AppError
 }
 
@@ -44,38 +45,50 @@ func (s *userService) Create(ctx context.Context, user *models.User) (*models.Us
 	return user, models.NoError
 }
 
-func (s *userService) Fetch(ctx context.Context, req *models.GetUserAPIRequest) (*models.User, models.AppError) {
-
+func (s *userService) Fetch(ctx context.Context, req *models.GetUserAPIRequest) ([]*models.User, models.AppError) {
+	var users []*models.User
 	switch {
 	case req.EmailID != "":
 		emailID := req.EmailID
 		if user, err := s.repo.GetUserByEmail(ctx, emailID); err != models.NoError {
-			return nil, err
-		}else {return &user, models.NoError}
+			return users, err
+		} else {
+			users = append(users, &user)
+			return users, models.NoError
+		}
 
 	case req.UserID != "":
-		if userID,err := uuid.Parse(req.UserID); err != nil{
+		if userID, err := uuid.Parse(req.UserID); err != nil {
 			return nil, models.InternalError.Add(err)
-		}else{
+		} else {
 			if user, err := s.repo.GetUserByID(ctx, userID); err != models.NoError {
-				return nil, err
-			}else {return &user, models.NoError}
+				return users, err
+			} else {
+				users = append(users, &user)
+				return users, models.NoError
+			}
 		}
-	
+	case req.Limit != "":
+		if limit, err := strconv.ParseInt(req.Limit, 10, 64); err != nil {
+			return s.repo.ListUsersWisthLimit(ctx, 1, 10)
+		} else {
+			return s.repo.ListUsersWisthLimit(ctx, 1, int(limit))
+		}
 	default:
-		return nil,models.BadRequest
 
-}	
+		return s.repo.ListUsersWisthLimit(ctx, 1, 10)
+
+	}
 }
 
 func (s *userService) Update(ctx context.Context, request *models.UpdateUserAPIRequest) (*models.User, models.AppError) {
 
-	defaultUser,err :=  s.repo.GetUserByID(ctx, request.ID)
+	defaultUser, err := s.repo.GetUserByID(ctx, request.ID)
 	if err != models.NoError {
-		return nil,err
+		return nil, err
 	}
 	updatedUser := request.ToUser(defaultUser)
-	if err := s.repo.UpdateUser(ctx, request.ID, *updatedUser); err != models.NoError{
+	if err := s.repo.UpdateUser(ctx, request.ID, *updatedUser); err != models.NoError {
 		return nil, err
 	}
 
@@ -83,14 +96,14 @@ func (s *userService) Update(ctx context.Context, request *models.UpdateUserAPIR
 }
 
 func (s *userService) Delete(ctx context.Context, id string) models.AppError {
-	if userID,err := uuid.Parse(id); err != nil{
+	if userID, err := uuid.Parse(id); err != nil {
 		return models.InternalError.Add(err)
-	}else {
-		if err := s.repo.DeleteUser(ctx, userID); err != models.NoError{
+	} else {
+		if err := s.repo.DeleteUser(ctx, userID); err != models.NoError {
 			return err
 		}
-		
+
 		return models.NoError
 	}
-	
+
 }

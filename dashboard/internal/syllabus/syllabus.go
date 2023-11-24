@@ -2,6 +2,7 @@ package syllabus
 
 import (
 	"context"
+	"strconv"
 
 	"github.com/google/uuid"
 	"github.com/priyanshu360/lab-rank/dashboard/models"
@@ -10,7 +11,7 @@ import (
 
 type SyllabusService interface {
 	Create(context.Context, *models.Syllabus) (*models.Syllabus, models.AppError)
-	Fetch(context.Context, string) (*models.Syllabus, models.AppError)
+	Fetch(context.Context, string, string) ([]*models.Syllabus, models.AppError)
 }
 
 type syllabusService struct {
@@ -33,14 +34,30 @@ func (s *syllabusService) Create(ctx context.Context, syllabus *models.Syllabus)
 	return syllabus, models.NoError
 }
 
-func(s *syllabusService) Fetch(ctx context.Context, id string) (*models.Syllabus, models.AppError){
-	if syllabusID,err := uuid.Parse(id); err != nil{
-		return nil,models.InternalError.Add(err)
-	}else{
-		if syllabus,err := s.repo.GetSyllabusByID(ctx,syllabusID); err != models.NoError{
-			return nil, err
-		}else{
-			return &syllabus,models.NoError
+func (s *syllabusService) Fetch(ctx context.Context, id, limit string) ([]*models.Syllabus, models.AppError) {
+	var syllabuss []*models.Syllabus
+	switch {
+	case id != "":
+		if syllabusID, err := uuid.Parse(id); err != nil {
+			return syllabuss, models.InternalError.Add(err)
+		} else {
+			if syllabus, err := s.repo.GetSyllabusByID(ctx, syllabusID); err != models.NoError {
+				return nil, err
+			} else {
+				syllabuss = append(syllabuss, &syllabus)
+				return syllabuss, models.NoError
+			}
 		}
+
+	case limit != "":
+		if limit, err := strconv.ParseInt(limit, 10, 64); err != nil {
+			return s.repo.GetSyllabusListByLimit(ctx, 1, 10)
+
+		} else {
+			return s.repo.GetSyllabusListByLimit(ctx, 1, int(limit))
+		}
+	default:
+
+		return s.repo.GetSyllabusListByLimit(ctx, 1, 10)
 	}
 }

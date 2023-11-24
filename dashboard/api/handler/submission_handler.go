@@ -57,12 +57,17 @@ func (h *submissionsHandler) handleCreate(ctx context.Context, r *http.Request) 
 
 func (h *submissionsHandler) handleGet(ctx context.Context, r *http.Request) apiResponse {
 	id := r.URL.Query().Get("id")
-	submission,err := h.svc.Fetch(ctx,id)
+	limit := r.URL.Query().Get("limit")
+	submissions, err := h.svc.Fetch(ctx, id, limit)
 	if err != models.NoError {
 		return newAPIError(models.InternalError.Add(err))
 	}
-
-	return models.NewCreateSubmissionAPIResponse(submission) // Reusing the same Response from Create in Get 
+	if len(submissions) == 1 {
+		return models.NewCreateSubmissionAPIResponse(submissions[0]) // Reusing the same Response from Create in Get
+	} else {
+		response := models.NewListSubmissionsAPIResponse(submissions)
+		return response
+	}
 }
 
 // Implement other handler methods for submissions-related operations

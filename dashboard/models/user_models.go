@@ -42,8 +42,9 @@ type CreateUserAPIRequest struct {
 }
 
 type GetUserAPIRequest struct {
-	UserID  string `json:"user_id"`
-	EmailID string `json:"email_id"`
+	UserID  string
+	EmailID string
+	Limit   string
 }
 
 type UpdateUserAPIRequest struct {
@@ -153,6 +154,23 @@ func (cr *CreateUserAPIResponse) Write(w http.ResponseWriter) error {
 func NewCreateUserAPIResponse(user *User) *CreateUserAPIResponse {
 	return &CreateUserAPIResponse{
 		Message: user,
+	}
+}
+
+type FetchUsersAPIResponse struct {
+	Message []*User
+}
+
+// Implement the Write method for UserapiResponse
+func (cr *FetchUsersAPIResponse) Write(w http.ResponseWriter) error {
+	w.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type", "application/json")
+	return json.NewEncoder(w).Encode(cr)
+}
+
+func NewFetchUserAPIResponse(users []*User) *FetchUsersAPIResponse {
+	return &FetchUsersAPIResponse{
+		Message: users,
 	}
 }
 

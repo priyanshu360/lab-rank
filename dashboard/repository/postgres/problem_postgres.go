@@ -40,4 +40,19 @@ func (psql *problemPostgres) GetProblemByID(ctx context.Context, problemID uuid.
 	return problem, models.NoError
 }
 
+func (psql *problemPostgres) GetProblemsListByLimit(ctx context.Context, page int, pageSize int) ([]*models.Problem, models.AppError) {
+	var problems []*models.Problem
+
+	// Calculate the offset
+	offset := (page - 1) * pageSize
+
+	// Fetch problems with the specified pagination
+	result := psql.db.Offset(offset).Table("lab_rank.problem").Limit(pageSize).Find(&problems)
+	if result.Error != nil {
+		return nil, models.InternalError.Add(result.Error)
+	}
+
+	return problems, models.NoError
+}
+
 // Add other repository methods for problems as needed.

@@ -40,4 +40,19 @@ func (psql *universityPostgres) GetUniversityByID(ctx context.Context, universit
 	return university, models.NoError
 }
 
+func (psql *universityPostgres) GetUniversitiesListByLimit(ctx context.Context, page int, pageSize int) ([]*models.University, models.AppError) {
+	var universities []*models.University
+
+	// Calculate the offset
+	offset := (page - 1) * pageSize
+
+	// Fetch universities with the specified pagination
+	result := psql.db.Offset(offset).Table("lab_rank.university").Limit(pageSize).Find(&universities)
+	if result.Error != nil {
+		return nil, models.InternalError.Add(result.Error)
+	}
+
+	return universities, models.NoError
+}
+
 // Add other repository methods for universities as needed.

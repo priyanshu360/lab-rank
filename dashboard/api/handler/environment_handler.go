@@ -54,15 +54,19 @@ func (h *environmentHandler) handleCreate(ctx context.Context, r *http.Request) 
 	return models.NewCreateEnvironmentAPIResponse(environment)
 }
 
-
 func (h *environmentHandler) handleGet(ctx context.Context, r *http.Request) apiResponse {
 	id := r.URL.Query().Get("id")
-	environment,err := h.svc.Fetch(ctx,id)
+	limit := r.URL.Query().Get("limit")
+	environments, err := h.svc.Fetch(ctx, id, limit)
 	if err != models.NoError {
 		return newAPIError(models.InternalError.Add(err))
 	}
-
-	return models.NewCreateEnvironmentAPIResponse(environment) // Reusing the same Response from Create in Get 
+	if len(environments) == 1 {
+		return models.NewCreateEnvironmentAPIResponse(environments[0]) // Reusing the same Response from Create in Get
+	} else {
+		response := models.NewListEnvironmentsAPIResponse(environments)
+		return response
+	}
 }
 
 // Implement other handler methods for environment-related operations

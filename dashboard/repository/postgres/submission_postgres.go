@@ -40,4 +40,19 @@ func (psql *submissionPostgres) GetSubmissionByID(ctx context.Context, submissio
 	return submission, models.NoError
 }
 
+func (psql *submissionPostgres) GetSubmissionsListByLimit(ctx context.Context, page int, pageSize int) ([]*models.Submission, models.AppError) {
+	var submissions []*models.Submission
+
+	// Calculate the offset
+	offset := (page - 1) * pageSize
+
+	// Fetch submissions with the specified pagination
+	result := psql.db.Offset(offset).Table("lab_rank.submissions").Limit(pageSize).Find(&submissions)
+	if result.Error != nil {
+		return nil, models.InternalError.Add(result.Error)
+	}
+
+	return submissions, models.NoError
+}
+
 // Add other repository methods for submissions as needed.
