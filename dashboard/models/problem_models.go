@@ -157,7 +157,6 @@ func (r *CreateProblemAPIRequest) Parse(req *http.Request) error {
 
 // Implement the Write method for ProblemAPIResponse
 func (pr *ProblemAPIResponse) Write(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
 	return json.NewEncoder(w).Encode(pr)
 }
 
@@ -167,7 +166,6 @@ type ListProblemsAPIResponse struct {
 
 // Implement the Write method for ListProblemsAPIResponse
 func (pr *ListProblemsAPIResponse) Write(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
 	return json.NewEncoder(w).Encode(pr)
 }
 
