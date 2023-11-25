@@ -8,12 +8,10 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/priyanshu360/lab-rank/judge/repository/inmemory"
-	psql "github.com/priyanshu360/lab-rank/judge/repository/postgres"
 	"github.com/priyanshu360/lab-rank/judge/service/executer"
 	"github.com/priyanshu360/lab-rank/judge/service/k8s"
-	"github.com/priyanshu360/lab-rank/judge/service/queue"
 	"github.com/priyanshu360/lab-rank/judge/service/watcher"
+	q "github.com/priyanshu360/lab-rank/queue/queue"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"k8s.io/client-go/util/homedir"
@@ -25,8 +23,9 @@ func main() {
 	fmt.Println("running")
 	InitDB()
 
+	// Todo : take config from env
 	kubeconfig := flag.String("kubeconfig", filepath.Join(homedir.HomeDir(), ".kube", "config"), "path to kubeconfig file")
-	namespace := flag.String("namespace", "default", "Kubernetes namespace")
+	namespace := flag.String("namespace", "storage", "Kubernetes namespace")
 	flag.Parse()
 
 	k8s, err := k8s.NewKubernetesManager(*kubeconfig, *namespace)
@@ -35,11 +34,13 @@ func main() {
 		os.Exit(1)
 	}
 
-	repo := psql.NewSubmissionRepository(db)
-	inMemory := inmemory.NewInMemoryQueue()
 	executer := executer.NewExecuter(k8s)
-	queue := queue.NewQueue(repo, inMemory)
-	watcher := watcher.NewWatcher(executer, *queue)
+	// todo : make env, handle error
+	consumer, err := q.InitRabbitMQConsumer("lab-rank")
+	if err != nil {
+		log.Fatal(err)
+	}
+	watcher := watcher.NewWatcher(executer, consumer)
 	watcher.Run(context.Background())
 }
 
