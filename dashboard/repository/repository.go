@@ -5,6 +5,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/priyanshu360/lab-rank/dashboard/models"
+	queue_models "github.com/priyanshu360/lab-rank/queue/models"
 )
 
 type UserRepository interface {
@@ -56,6 +57,7 @@ type SubmissionRepository interface {
 	CreateSubmission(context.Context, models.Submission) models.AppError
 	GetSubmissionByID(context.Context, uuid.UUID) (models.Submission, models.AppError)
 	GetSubmissionsListByLimit(context.Context, int, int) ([]*models.Submission, models.AppError)
+	GetQueueData(context.Context, models.Submission) (queue_models.QueueObj, models.AppError)
 	// Add other repository methods specific to Submission
 }
 

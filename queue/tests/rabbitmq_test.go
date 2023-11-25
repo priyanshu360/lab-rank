@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/priyanshu360/lab-rank/queue/internal"
+	"github.com/priyanshu360/lab-rank/queue/queue"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -12,12 +12,12 @@ func TestRabbitMQ_PublishConsume(t *testing.T) {
 	queueName := "test_queue"
 
 	// Initialize RabbitMQ publisher
-	publisher, err := internal.InitRabbitMQPublisher(queueName)
+	publisher, err := queue.InitRabbitMQPublisher(queueName)
 	assert.NoError(t, err, "Error initializing RabbitMQ publisher")
 	defer publisher.Close()
 
 	// Initialize RabbitMQ consumer
-	consumer, err := internal.InitRabbitMQConsumer(queueName)
+	consumer, err := queue.InitRabbitMQConsumer(queueName)
 	assert.NoError(t, err, "Error initializing RabbitMQ consumer")
 	defer consumer.Close()
 

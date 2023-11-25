@@ -18,6 +18,7 @@ import (
 	"github.com/priyanshu360/lab-rank/dashboard/internal/user"
 	filesys "github.com/priyanshu360/lab-rank/dashboard/repository/fs"
 	psql "github.com/priyanshu360/lab-rank/dashboard/repository/postgres"
+	"github.com/priyanshu360/lab-rank/queue/queue"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"k8s.io/client-go/kubernetes"
@@ -47,6 +48,8 @@ func NewServer(cfg config.ServerConfig) *APIServer {
 // TODO: change this not looking good (maybe option or decorator pattern)
 func (s *APIServer) initRoutes() {
 	fileStorage := filesys.NewK8sCMStore(clientset, "storage")
+	// Todo : make queue name env / handle error
+	publisher, _ := queue.InitRabbitMQPublisher("lab-rank")
 	// Initialize routes and handlers for different entities
 	userHandler := handler.NewUserHandler(user.NewUserService(psql.NewUserPostgresRepo(db)))
 	s.Handlers["/user"] = handler.NewReqIDMiddleware().Decorate(userHandler)
@@ -60,7 +63,7 @@ func (s *APIServer) initRoutes() {
 	universityHandler := handler.NewUniversityHandler(university.NewUniversityService(psql.NewUniversityPostgresRepo(db)))
 	s.Handlers["/university"] = handler.NewReqIDMiddleware().Decorate(universityHandler)
 
-	submissionsHandler := handler.NewSubmissionsHandler(submission.NewSubmissionService(psql.NewSubmissionPostgresRepo(db), fileStorage))
+	submissionsHandler := handler.NewSubmissionsHandler(submission.NewSubmissionService(psql.NewSubmissionPostgresRepo(db), fileStorage, publisher))
 	s.Handlers["/submission"] = handler.NewReqIDMiddleware().Decorate(submissionsHandler)
 
 	environmentHandler := handler.NewEnvironmentHandler(environment.NewEnvironmentService(psql.NewEnvironmentPostgresRepo(db), fileStorage))

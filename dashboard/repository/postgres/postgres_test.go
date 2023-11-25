@@ -32,7 +32,7 @@ func TestGetQueueData(t *testing.T) {
 		log.Fatal(err)
 	}
 	r := NewSubmissionPostgresRepo(db)
-	id, err := uuid.Parse("2251d214-4546-40e5-b12f-adcaf61c4d6e")
+	id, err := uuid.Parse("b340ca7a-a487-4228-bb7a-9bc38843c1f9")
 	if err != nil {
 		log.Fatal(err)
 	}

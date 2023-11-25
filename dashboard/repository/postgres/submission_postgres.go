@@ -59,14 +59,14 @@ func (psql *submissionPostgres) GetSubmissionsListByLimit(ctx context.Context, p
 
 // Add other repository methods for submissions as needed.
 
-func (psql *submissionPostgres) GetQueueData(ctx context.Context, submission models.Submission) (queue_models.QueueObj, error) {
+func (psql *submissionPostgres) GetQueueData(ctx context.Context, submission models.Submission) (queue_models.QueueObj, models.AppError) {
 	log.Println(submission.ProblemID)
 	var envArray models.EnvironmentJSON
 	if err := psql.db.Model(&models.Problem{}).
 		Select("environment").
 		Where("id = ?", submission.ProblemID).
 		First(&envArray).Error; err != nil {
-		return queue_models.QueueObj{}, err
+		return queue_models.QueueObj{}, models.InternalError.Add(err)
 	}
 
 	var environmentID uuid.UUID
@@ -81,7 +81,7 @@ func (psql *submissionPostgres) GetQueueData(ctx context.Context, submission mod
 		Select("link").Table("environment").
 		Where("id = ?", environmentID).
 		First(&environmentLink).Error; err != nil {
-		return queue_models.QueueObj{}, err
+		return queue_models.QueueObj{}, models.InternalError.Add(err)
 	}
 
 	var testData models.TestLinkJSON
@@ -89,7 +89,7 @@ func (psql *submissionPostgres) GetQueueData(ctx context.Context, submission mod
 		Select("test_links").
 		Where("id = ?", submission.ProblemID).
 		First(&testData).Error; err != nil {
-		return queue_models.QueueObj{}, err
+		return queue_models.QueueObj{}, models.InternalError.Add(err)
 	}
 
 	var testLink string
@@ -101,5 +101,5 @@ func (psql *submissionPostgres) GetQueueData(ctx context.Context, submission mod
 
 	queue := *queue_models.NewQueueObj(submission.ID, submission.Link, environmentID, environmentLink, testLink)
 
-	return queue, nil
+	return queue, models.NoError
 }
