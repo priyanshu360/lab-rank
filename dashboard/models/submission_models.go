@@ -27,28 +27,29 @@ const (
 
 // Submission struct
 type Submission struct {
-	ID           uuid.UUID               `json:"id" validate:"required"`
-	SubmissionID uuid.UUID               `json:"Submission_id" validate:"required"`
-	Link         string                  `json:"link" validate:"required"`
-	CreatedBy    uuid.UUID               `json:"created_by" validate:"required"`
-	CreatedAt    time.Time               `json:"created_at" validate:"required"`
-	Score        float64                 `json:"score" validate:"required,min=0,max=100"`
-	RunTime      string                  `json:"run_time" validate:"required"`
-	Metadata     json.RawMessage         `json:"metadata" validate:"required"`
-	Lang         ProgrammingLanguageEnum `json:"lang" validate:"required"`
-	Status       Status                  `json:"status"`
-	Solution     []byte                  `json:"solution" gorm:"-"`
+	ID        uuid.UUID               `json:"id" validate:"required"`
+	ProblemID uuid.UUID               `json:"problem_id" validate:"required"`
+	Link      string                  `json:"link" validate:"required"`
+	CreatedBy uuid.UUID               `json:"created_by" validate:"required"`
+	CreatedAt time.Time               `json:"created_at" validate:"required"`
+	Score     float64                 `json:"score" validate:"required,min=0,max=100"`
+	RunTime   string                  `json:"run_time" validate:"required"`
+	Metadata  json.RawMessage         `json:"metadata" validate:"required"`
+	Lang      ProgrammingLanguageEnum `json:"lang" validate:"required"`
+	Status    Status                  `json:"status"`
+	Solution  []byte                  `json:"solution" gorm:"-"`
 }
 
 // CreateSubmissionAPIRequest struct
 // Todo ; change Lang to Language / add status in sql
 
 type CreateSubmissionAPIRequest struct {
-	SubmissionID uuid.UUID               `json:"Submission_id" validate:"required"`
-	Solution     []byte                  `json:"solution" validate:"required"`
-	CreatedBy    uuid.UUID               `json:"created_by" validate:"required"`
-	Metadata     json.RawMessage         `json:"metadata"`
-	Lang         ProgrammingLanguageEnum `json:"lang" validate:"required"`
+	ID        uuid.UUID               `json:"id" validate:"required"`
+	ProblemID uuid.UUID               `json:"problem_id" validate:"required"`
+	Solution  []byte                  `json:"solution" validate:"required"`
+	CreatedBy uuid.UUID               `json:"created_by" validate:"required"`
+	Metadata  json.RawMessage         `json:"metadata"`
+	Lang      ProgrammingLanguageEnum `json:"lang" validate:"required"`
 }
 
 // SubmissionAPIResponse struct
@@ -72,14 +73,14 @@ func (sr *SubmissionAPIResponse) Write(w http.ResponseWriter) error {
 
 func (r *CreateSubmissionAPIRequest) ToSubmissions() *Submission {
 	return &Submission{
-		ID:           uuid.New(),
-		SubmissionID: r.SubmissionID,
-		Solution:     r.Solution,
-		CreatedBy:    r.CreatedBy,
-		CreatedAt:    time.Now(),
-		Metadata:     r.Metadata,
-		Lang:         r.Lang,
-		Status:       Queued,
+		ID:        uuid.New(),
+		ProblemID: r.ProblemID,
+		Solution:  r.Solution,
+		CreatedBy: r.CreatedBy,
+		CreatedAt: time.Now(),
+		Metadata:  r.Metadata,
+		Lang:      r.Lang,
+		Status:    Queued,
 	}
 }
 

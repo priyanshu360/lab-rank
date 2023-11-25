@@ -38,7 +38,13 @@ func (s *submissionService) Create(ctx context.Context, submission *models.Submi
 		return nil, err
 	}
 
+	go s.addToQueue(ctx, submission)
+
 	return submission, models.NoError
+}
+
+func (s *submissionService) addToQueue(ctx context.Context, submission *models.Submission) {
+
 }
 
 func (s *submissionService) Fetch(ctx context.Context, id, limit string) ([]*models.Submission, models.AppError) {

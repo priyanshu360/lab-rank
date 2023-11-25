@@ -2,9 +2,11 @@ package postgres
 
 import (
 	"context"
+	"log"
 
 	"github.com/google/uuid"
 	"github.com/priyanshu360/lab-rank/dashboard/models"
+	queue_models "github.com/priyanshu360/lab-rank/queue/models"
 	"gorm.io/gorm"
 )
 
@@ -56,3 +58,48 @@ func (psql *submissionPostgres) GetSubmissionsListByLimit(ctx context.Context, p
 }
 
 // Add other repository methods for submissions as needed.
+
+func (psql *submissionPostgres) GetQueueData(ctx context.Context, submission models.Submission) (queue_models.QueueObj, error) {
+	log.Println(submission.ProblemID)
+	var envArray models.EnvironmentJSON
+	if err := psql.db.Model(&models.Problem{}).
+		Select("environment").
+		Where("id = ?", submission.ProblemID).
+		First(&envArray).Error; err != nil {
+		return queue_models.QueueObj{}, err
+	}
+
+	var environmentID uuid.UUID
+	var environmentLink string
+	for _, env := range envArray {
+		if env.Language == submission.Lang {
+			environmentID = env.Id
+		}
+	}
+
+	if err := psql.db.Model(&models.Environment{}).
+		Select("link").Table("environment").
+		Where("id = ?", environmentID).
+		First(&environmentLink).Error; err != nil {
+		return queue_models.QueueObj{}, err
+	}
+
+	var testData models.TestLinkJSON
+	if err := psql.db.Model(&models.Problem{}).
+		Select("test_links").
+		Where("id = ?", submission.ProblemID).
+		First(&testData).Error; err != nil {
+		return queue_models.QueueObj{}, err
+	}
+
+	var testLink string
+	for _, test := range testData {
+		if test.Language == submission.Lang {
+			testLink = test.Link
+		}
+	}
+
+	queue := *queue_models.NewQueueObj(submission.ID, submission.Link, environmentID, environmentLink, testLink)
+
+	return queue, nil
+}

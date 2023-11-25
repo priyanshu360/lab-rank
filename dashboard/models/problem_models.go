@@ -97,6 +97,31 @@ func (tl TestLinkJSON) Value() (driver.Value, error) {
 	return json.Marshal(tl)
 }
 
+func (e *ProblemEnvironmentType) Scan(value interface{}) error {
+	if value == nil {
+		*e = ProblemEnvironmentType{}
+		return nil
+	}
+
+	switch v := value.(type) {
+	case []byte:
+		var env []ProblemEnvironmentType
+		if err := json.Unmarshal(v, &env); err != nil {
+			return err
+		}
+		// Todo: code might break in case of empty
+		*e = env[0]
+		return nil
+	default:
+		return errors.New("unsupported type for ProblemEnvironmentType")
+	}
+}
+
+// Value implements the driver.Valuer interface
+func (tl ProblemEnvironmentType) Value() (driver.Value, error) {
+	return json.Marshal(tl)
+}
+
 // Scan implements the sql.Scanner interface
 func (tl *TestLinkJSON) Scan(value interface{}) error {
 	if value == nil {
@@ -170,4 +195,29 @@ func NewCreateProblemAPIResponse(problem *Problem) *ProblemAPIResponse {
 	return &ProblemAPIResponse{
 		Message: problem,
 	}
+}
+
+func (e *TestLinkType) Scan(value interface{}) error {
+	if value == nil {
+		*e = TestLinkType{}
+		return nil
+	}
+
+	switch v := value.(type) {
+	case []byte:
+		var t []TestLinkType
+		if err := json.Unmarshal(v, &t); err != nil {
+			return err
+		}
+		// Todo: code might break in case of empty
+		*e = t[0]
+		return nil
+	default:
+		return errors.New("unsupported type for TestLinkType")
+	}
+}
+
+// Value implements the driver.Valuer interface
+func (tl TestLinkType) Value() (driver.Value, error) {
+	return json.Marshal(tl)
 }

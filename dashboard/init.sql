@@ -82,7 +82,7 @@ CREATE TABLE lab_rank.problems (
     problem_link VARCHAR(100) NOT NULL,
     difficulty lab_rank.difficulty_enum NOT NULL,
     syllabus_id UUID REFERENCES lab_rank.syllabus(id) NOT NULL,
-    test_links VARCHAR(100) NOT NULL
+    test_links JSONB NOT NULL
 );
 
 -- Define the Syllabus table with all fields NOT NULL
