@@ -8,17 +8,17 @@ import (
 )
 
 type submissionData struct {
-	id   uuid.UUID
-	link string
+	Id   uuid.UUID
+	Link string
 }
 
 type environmentData struct {
-	id   uuid.UUID
-	link string
+	Id   uuid.UUID
+	Link string
 }
 
 type testData struct {
-	link string
+	Link string
 }
 
 type QueueObj struct {
@@ -37,9 +37,9 @@ type RabbitMQ struct {
 // Todo : dirty constructor
 func NewQueueObj(submissionID uuid.UUID, submissionLink string, environmentID uuid.UUID, environmentLink, testLink string) *QueueObj {
 	return &QueueObj{
-		Submission:  submissionData{id: submissionID, link: submissionLink},
-		Environment: environmentData{id: environmentID, link: environmentLink},
-		TestData:    testData{link: testLink},
+		Submission:  submissionData{Id: submissionID, Link: submissionLink},
+		Environment: environmentData{Id: environmentID, Link: environmentLink},
+		TestData:    testData{Link: testLink},
 	}
 }
 

@@ -3,6 +3,7 @@ package submission
 import (
 	"context"
 	"encoding/json"
+	"log"
 	"log/slog"
 	"strconv"
 
@@ -55,6 +56,8 @@ func (s *submissionService) addToQueue(ctx context.Context, submission *models.S
 	if err != models.NoError {
 		slog.Error(err.Error())
 	}
+
+	log.Print(queueObj)
 
 	message, _ := json.Marshal(queueObj)
 	s.msgq.Publish(message)

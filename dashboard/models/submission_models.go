@@ -44,7 +44,6 @@ type Submission struct {
 // Todo ; change Lang to Language / add status in sql
 
 type CreateSubmissionAPIRequest struct {
-	ID        uuid.UUID               `json:"id" validate:"required"`
 	ProblemID uuid.UUID               `json:"problem_id" validate:"required"`
 	Solution  []byte                  `json:"solution" validate:"required"`
 	CreatedBy uuid.UUID               `json:"created_by" validate:"required"`

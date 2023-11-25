@@ -7,6 +7,20 @@ CREATE SCHEMA IF NOT EXISTS lab_rank;
 -- Define the "lab-rank" schema for the rest of the tables
 SET search_path TO lab_rank;
 
+CREATE TYPE lab_rank.status AS ENUM (
+    'Accepted',
+    'Memory Limit Exceeded',
+    'Time Limit Exceeded',
+    'Output Limit Exceeded',
+    'File Error',
+    'Nonzero Exit Status',
+    'Signalled',
+    'Internal Error',
+    'Queued',
+    'Running'
+);
+
+
 CREATE TYPE lab_rank.access_level_mode_enum AS ENUM (
     'ADMIN',
     'TEACHER',
@@ -134,5 +148,6 @@ CREATE TABLE lab_rank.submissions (
     run_time VARCHAR(10),
     metadata JSONB NOT NULL,
     lang lab_rank.programming_language_enum NOT NULL,
+    status lab_rank.status DEFAULT 'Queued'::lab_rank.status NOT NULL,
     CHECK (score >= 0 AND score <= 100)
 );
