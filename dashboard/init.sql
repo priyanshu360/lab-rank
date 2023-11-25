@@ -7,6 +7,20 @@ CREATE SCHEMA IF NOT EXISTS lab_rank;
 -- Define the "lab-rank" schema for the rest of the tables
 SET search_path TO lab_rank;
 
+CREATE TYPE lab_rank.status AS ENUM (
+    'Accepted',
+    'Memory Limit Exceeded',
+    'Time Limit Exceeded',
+    'Output Limit Exceeded',
+    'File Error',
+    'Nonzero Exit Status',
+    'Signalled',
+    'Internal Error',
+    'Queued',
+    'Running'
+);
+
+
 CREATE TYPE lab_rank.access_level_mode_enum AS ENUM (
     'ADMIN',
     'TEACHER',
@@ -47,19 +61,6 @@ CREATE TABLE lab_rank.access_level (
     syllabus_id UUID REFERENCES lab_rank.syllabus(id) NOT NULL
 );
 
--- Define the Submissions table with all fields NOT NULL
-CREATE TABLE lab_rank.submissions (
-    id UUID PRIMARY KEY NOT NULL,
-    problem_id UUID REFERENCES lab_rank.problems(id) NOT NULL,
-    link VARCHAR(100) NOT NULL,
-    created_by UUID REFERENCES lab_rank."user"(id) NOT NULL,
-    created_at TIMESTAMP NOT NULL,
-    score FLOAT,
-    run_time VARCHAR(10),
-    metadata JSONB NOT NULL,
-    lang lab_rank.programming_language_enum NOT NULL,
-    CHECK (score >= 0 AND score <= 100)
-);
 
 -- Define the Environment table with all fields NOT NULL
 CREATE TABLE lab_rank.environment (
@@ -82,7 +83,7 @@ CREATE TABLE lab_rank.problems (
     problem_link VARCHAR(100) NOT NULL,
     difficulty lab_rank.difficulty_enum NOT NULL,
     syllabus_id UUID REFERENCES lab_rank.syllabus(id) NOT NULL,
-    test_links VARCHAR(100) NOT NULL
+    test_links JSONB NOT NULL
 );
 
 -- Define the Syllabus table with all fields NOT NULL
@@ -134,4 +135,19 @@ CREATE TABLE lab_rank.auth (
     access_ids JSONB NOT NULL,
     salt CHAR(32) NOT NULL,
     password_hash CHAR(64) NOT NULL
+);
+
+-- Define the Submissions table with all fields NOT NULL
+CREATE TABLE lab_rank.submissions (
+    id UUID PRIMARY KEY NOT NULL,
+    problem_id UUID REFERENCES lab_rank.problems(id) NOT NULL,
+    link VARCHAR(100) NOT NULL,
+    created_by UUID REFERENCES lab_rank."user"(id) NOT NULL,
+    created_at TIMESTAMP NOT NULL,
+    score FLOAT,
+    run_time VARCHAR(10),
+    metadata JSONB NOT NULL,
+    lang lab_rank.programming_language_enum NOT NULL,
+    status lab_rank.status DEFAULT 'Queued'::lab_rank.status NOT NULL,
+    CHECK (score >= 0 AND score <= 100)
 );

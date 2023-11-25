@@ -2,11 +2,15 @@ package submission
 
 import (
 	"context"
+	"encoding/json"
+	"log"
+	"log/slog"
 	"strconv"
 
 	"github.com/google/uuid"
 	"github.com/priyanshu360/lab-rank/dashboard/models"
 	"github.com/priyanshu360/lab-rank/dashboard/repository"
+	queue_models "github.com/priyanshu360/lab-rank/queue/models"
 )
 
 type SubmissionService interface {
@@ -17,12 +21,15 @@ type SubmissionService interface {
 type submissionService struct {
 	repo repository.SubmissionRepository
 	fs   repository.FileSystem
+	// Todo : use interface of msgq
+	msgq *queue_models.RabbitMQ
 }
 
-func NewSubmissionService(repo repository.SubmissionRepository, fs repository.FileSystem) *submissionService {
+func NewSubmissionService(repo repository.SubmissionRepository, fs repository.FileSystem, msgq *queue_models.RabbitMQ) *submissionService {
 	return &submissionService{
 		repo: repo,
 		fs:   fs,
+		msgq: msgq,
 	}
 }
 
@@ -38,7 +45,22 @@ func (s *submissionService) Create(ctx context.Context, submission *models.Submi
 		return nil, err
 	}
 
+	go s.addToQueue(ctx, submission)
+
 	return submission, models.NoError
+}
+
+func (s *submissionService) addToQueue(ctx context.Context, submission *models.Submission) {
+	// Todo : how to handle failures
+	queueObj, err := s.repo.GetQueueData(ctx, *submission)
+	if err != models.NoError {
+		slog.Error(err.Error())
+	}
+
+	log.Print(queueObj)
+
+	message, _ := json.Marshal(queueObj)
+	s.msgq.Publish(message)
 }
 
 func (s *submissionService) Fetch(ctx context.Context, id, limit string) ([]*models.Submission, models.AppError) {

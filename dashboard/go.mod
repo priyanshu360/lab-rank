@@ -1,12 +1,13 @@
 module github.com/priyanshu360/lab-rank/dashboard
 
-go 1.21
+go 1.21.3
 
 require (
 	github.com/go-playground/validator v9.31.0+incompatible
 	github.com/google/uuid v1.4.0
 	github.com/gorilla/mux v1.8.0
 	github.com/joho/godotenv v1.5.1
+	github.com/priyanshu360/lab-rank/queue v0.0.0-00010101000000-000000000000
 	gorm.io/driver/postgres v1.5.4
 	gorm.io/gorm v1.25.5
 	k8s.io/api v0.28.4
@@ -42,9 +43,10 @@ require (
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
+	github.com/streadway/amqp v1.1.0 // indirect
 	golang.org/x/crypto v0.14.0 // indirect
 	golang.org/x/net v0.17.0 // indirect
-	golang.org/x/oauth2 v0.8.0 // indirect
+	golang.org/x/oauth2 v0.10.0 // indirect
 	golang.org/x/sys v0.13.0 // indirect
 	golang.org/x/term v0.13.0 // indirect
 	golang.org/x/text v0.13.0 // indirect
@@ -62,3 +64,5 @@ require (
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.3 // indirect
 	sigs.k8s.io/yaml v1.3.0 // indirect
 )
+
+replace github.com/priyanshu360/lab-rank/queue => ../queue
