@@ -47,7 +47,7 @@ func (psql *problemPostgres) GetProblemsListByLimit(ctx context.Context, page in
 	offset := (page - 1) * pageSize
 
 	// Fetch problems with the specified pagination
-	result := psql.db.Offset(offset).Table("lab_rank.problem").Limit(pageSize).Find(&problems)
+	result := psql.db.Offset(offset).Table("lab_rank.problems").Limit(pageSize).Find(&problems)
 	if result.Error != nil {
 		return nil, models.InternalError.Add(result.Error)
 	}

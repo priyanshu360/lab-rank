@@ -60,6 +60,7 @@ func (s *problemService) Fetch(ctx context.Context, id, limit string) ([]*models
 			if problem, err := s.repo.GetProblemByID(ctx, problemID); err != models.NoError {
 				return nil, err
 			} else {
+				problem.ProblemFile, _ = s.fs.GetFile(ctx, problem.ProblemLink)
 				problems = append(problems, &problem)
 				return problems, models.NoError
 			}

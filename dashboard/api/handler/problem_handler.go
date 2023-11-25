@@ -34,6 +34,9 @@ func (h *problemsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
 	if err := response.Write(w); err != nil {
 		http.Error(w, "Failed to serialize response", http.StatusInternalServerError)
 	}
