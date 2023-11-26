@@ -24,6 +24,7 @@ type TestFilesType struct {
 	Language ProgrammingLanguageEnum `json:"language" validate:"required"`
 	File     []byte                  `json:"file" validate:"required"`
 	Title    string                  `json:"title" validate:"requierd"`
+	InitCode []byte                  `json:"init_code" validate:"required"`
 }
 
 type ProblemEnvironmentType struct {
@@ -31,14 +32,16 @@ type ProblemEnvironmentType struct {
 	Id       uuid.UUID               `json:"id" validate:"required"`
 }
 
+// TODO : instead of list maybe have map
 type EnvironmentJSON []ProblemEnvironmentType
 
 type TestLinkType struct {
 	Language ProgrammingLanguageEnum `json:"language" validate:"required"`
 	Link     string                  `json:"link" validate:"required"`
-	Title    string                  `json:"title"`
+	Title    string                  `json:"title" validate:"required"`
 }
 
+// TODO : instead of list maybe have map
 type TestLinkJSON []TestLinkType
 
 // Problem struct
@@ -172,6 +175,23 @@ func (pr *ListProblemsAPIResponse) Write(w http.ResponseWriter) error {
 func NewListProblemsAPIResponse(problems []*Problem) *ListProblemsAPIResponse {
 	return &ListProblemsAPIResponse{
 		Message: problems,
+	}
+}
+
+// todo : rename
+type InitProblemCode struct {
+	Message []byte
+}
+
+// Implement the Write method for ListProblemsAPIResponse
+func (pr *InitProblemCode) Write(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	return json.NewEncoder(w).Encode(pr)
+}
+
+func NewInitProblemCode(code []byte) *InitProblemCode {
+	return &InitProblemCode{
+		Message: code,
 	}
 }
 
