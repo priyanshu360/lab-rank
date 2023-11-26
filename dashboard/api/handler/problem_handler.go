@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/google/uuid"
 	problems_svc "github.com/priyanshu360/lab-rank/dashboard/internal/problem"
 	"github.com/priyanshu360/lab-rank/dashboard/models"
 )
@@ -59,7 +60,15 @@ func (h *problemsHandler) handleCreate(ctx context.Context, r *http.Request) api
 }
 
 func (h *problemsHandler) handleGet(ctx context.Context, r *http.Request) apiResponse {
+	// Todo : cleanup
+	lang := r.URL.Query().Get("lang")
 	id := r.URL.Query().Get("id")
+
+	if id != "" && lang != "" {
+		uuid, _ := uuid.Parse(id)
+		h.svc.GetInitCode(ctx, uuid, lang)
+	}
+
 	limit := r.URL.Query().Get("limit")
 	problems, err := h.svc.Fetch(ctx, id, limit)
 	if err != models.NoError {
