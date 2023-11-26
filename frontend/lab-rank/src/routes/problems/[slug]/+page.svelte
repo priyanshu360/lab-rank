@@ -10,7 +10,7 @@
   export let problem_title;
   export let problem_file;
 
-  let code = "";
+  export let code;
 
   onMount(async () => {
     try {
@@ -21,15 +21,47 @@
 
       problem_title = responseData.Message.title;
       problem_file = atob(responseData.Message.problem_file);
-      console.log(problem_file);
+    } catch (error) {
+      console.error("Error fetching problem details:", error);
+    }
+    try {
+      const response = await fetch(
+        `http://localhost:8080/problem?id=${data.slug}&lang=Go`
+      );
+      const responseData = await response.json();
+      console.log(responseData);
+
+      code = atob(responseData.Message);
     } catch (error) {
       console.error("Error fetching problem details:", error);
     }
   });
 
-  const submitCode = () => {
-    // Access the code through the 'code' variable
-    console.log("Code submitted:", code);
+  const submitCode = async () => {
+    try {
+      const response = await fetch("http://localhost:8080/submission", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          problem_id: data.slug,
+          link: "submission_link",
+          created_by: "f77ad338-7fe7-4093-bdbb-c24ec489e10c",
+          score: null,
+          run_time: null,
+          metadata: {},
+          lang: "Go",
+          status: "QUEUED",
+          solution: btoa(code),
+        }),
+      });
+
+      const responseData = await response.json();
+      console.log("Submission response:", responseData);
+    } catch (error) {
+      console.error("Error submitting code:", error);
+    }
   };
 
   // This function is called when the CodeMirror editor instance is ready
@@ -57,11 +89,6 @@
         lineNumbers: true,
         theme: "default", // Adjust the theme based on your preferences
       }}
-      styles={{
-        "&": {
-          height: "20rem",
-        },
-      }}
       on:editorReady={editorReady}
     />
 
@@ -85,7 +112,9 @@
     max-width: 800px;
     max-height: 1000px;
     overflow: auto;
+    display: flex;
     word-wrap: break-word; /* Allow words to break and wrap onto the next line */
+    flex-direction: column;
   }
   .code-editor-container {
     flex: 1;
