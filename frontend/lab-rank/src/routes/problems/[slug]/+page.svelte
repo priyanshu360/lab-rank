@@ -46,7 +46,7 @@
 <main>
   <section class="problem-description">
     <h2>{problem_title}</h2>
-    <p>{problem_file}</p>
+    <p>{@html problem_file}</p>
   </section>
 
   <section class="code-editor-container">
@@ -82,9 +82,9 @@
 
   .problem-description {
     flex: 1;
-    max-width: 600px;
-    /* max-height: 1000px; Adjust the max-height based on your design */
-    overflow: auto; /* Use auto or scroll based on your preference */
+    max-width: 800px;
+    max-height: 1000px;
+    overflow: auto;
     word-wrap: break-word; /* Allow words to break and wrap onto the next line */
   }
   .code-editor-container {
