@@ -12,6 +12,7 @@ import (
 type ProblemService interface {
 	Create(context.Context, *models.Problem) (*models.Problem, models.AppError)
 	Fetch(context.Context, string, string) ([]*models.Problem, models.AppError)
+	GetInitCode(context.Context, uuid.UUID, string) (*models.InitProblemCode, models.AppError)
 }
 
 type problemService struct {
@@ -60,6 +61,7 @@ func (s *problemService) Fetch(ctx context.Context, id, limit string) ([]*models
 			if problem, err := s.repo.GetProblemByID(ctx, problemID); err != models.NoError {
 				return nil, err
 			} else {
+				problem.ProblemFile, _ = s.fs.GetFile(ctx, problem.ProblemLink)
 				problems = append(problems, &problem)
 				return problems, models.NoError
 			}
@@ -76,4 +78,22 @@ func (s *problemService) Fetch(ctx context.Context, id, limit string) ([]*models
 
 		return s.repo.GetProblemsListByLimit(ctx, 1, 10)
 	}
+}
+
+func (s *problemService) GetInitCode(ctx context.Context, id uuid.UUID, lang string) (*models.InitProblemCode, models.AppError) {
+	problem, err := s.repo.GetProblemByID(ctx, id)
+	if err != models.NoError {
+		return nil, err
+	}
+
+	var link string
+	for _, test := range problem.TestLinks {
+		if test.Language == models.ProgrammingLanguageEnum(lang) {
+			link = test.Link
+			break
+		}
+	}
+
+	code, err := s.fs.GetFile(ctx, link)
+	return models.NewInitProblemCode(code), err
 }

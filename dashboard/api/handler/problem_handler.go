@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/google/uuid"
 	problems_svc "github.com/priyanshu360/lab-rank/dashboard/internal/problem"
 	"github.com/priyanshu360/lab-rank/dashboard/models"
 )
@@ -34,6 +35,9 @@ func (h *problemsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
 	if err := response.Write(w); err != nil {
 		http.Error(w, "Failed to serialize response", http.StatusInternalServerError)
 	}
@@ -56,7 +60,15 @@ func (h *problemsHandler) handleCreate(ctx context.Context, r *http.Request) api
 }
 
 func (h *problemsHandler) handleGet(ctx context.Context, r *http.Request) apiResponse {
+	// Todo : cleanup
+	lang := r.URL.Query().Get("lang")
 	id := r.URL.Query().Get("id")
+
+	if id != "" && lang != "" {
+		uuid, _ := uuid.Parse(id)
+		h.svc.GetInitCode(ctx, uuid, lang)
+	}
+
 	limit := r.URL.Query().Get("limit")
 	problems, err := h.svc.Fetch(ctx, id, limit)
 	if err != models.NoError {
