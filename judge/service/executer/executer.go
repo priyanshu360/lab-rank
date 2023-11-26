@@ -46,12 +46,11 @@ func (e Executer) LoadJobTemplate(configMapName string) ([]byte, error) {
 	}
 
 	// Assuming the Job template is stored in a key named "job-template"
-	jobTemplate, found := configMap.BinaryData["file"]
-	if !found {
-		return nil, fmt.Errorf("Job template not found in ConfigMap")
+	for _, val := range configMap.BinaryData {
+		return val, nil
 	}
 
-	return jobTemplate, nil
+	return nil, fmt.Errorf("Job template not found in ConfigMap")
 }
 
 func (e Executer) CreateJobFromTemplate(jobName string, testName string, jobTemplate []byte) error {

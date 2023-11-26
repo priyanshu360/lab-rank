@@ -25,8 +25,9 @@ func NewK8sCMStore(clientset *kubernetes.Clientset, namespace string) *k8sCMStor
 
 func (fs *k8sCMStore) StoreFile(ctx context.Context, content []byte, id uuid.UUID, ftype models.FileType, extension string) (string, models.AppError) {
 	configMapName := fmt.Sprintf("%s-%s", string(ftype), id.String())
+	fname := fmt.Sprintf("file.%s", extension)
 	configMapData := map[string][]byte{
-		"file": content,
+		fname: content,
 	}
 
 	cm := &v1.ConfigMap{
@@ -51,10 +52,10 @@ func (fs *k8sCMStore) GetFile(ctx context.Context, configMapName string) ([]byte
 		return nil, models.InternalError.Add(err)
 	}
 
-	content, found := cm.BinaryData["file"]
-	if !found {
-		return nil, models.InternalError.Add(fmt.Errorf("File not found"))
+	for _, val := range cm.BinaryData {
+		return []byte(val), models.NoError
 	}
 
-	return []byte(content), models.NoError
+	return nil, models.InternalError.Add(fmt.Errorf("File not found"))
+
 }

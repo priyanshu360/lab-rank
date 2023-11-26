@@ -38,7 +38,7 @@ func (s *problemService) Create(ctx context.Context, problem *models.Problem) (*
 	testLinks := make([]models.TestLinkType, len(problem.TestFiles))
 	for i, testFile := range problem.TestFiles {
 		testLinks[i].Language = testFile.Language
-		if testLinks[i].Link, err = s.fs.StoreFile(ctx, []byte(testFile.File), problem.ID, models.TESTFILE, testFile.Language.GetExtension()); err != models.NoError {
+		if testLinks[i].Link, err = s.fs.StoreFile(ctx, []byte(testFile.File), uuid.New(), models.TESTFILE, testFile.Language.GetExtension()); err != models.NoError {
 			return nil, err
 		}
 	}
