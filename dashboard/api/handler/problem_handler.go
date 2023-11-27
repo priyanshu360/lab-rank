@@ -64,9 +64,11 @@ func (h *problemsHandler) handleGet(ctx context.Context, r *http.Request) apiRes
 	lang := r.URL.Query().Get("lang")
 	id := r.URL.Query().Get("id")
 
+	// todo : fix this hack
 	if id != "" && lang != "" {
 		uuid, _ := uuid.Parse(id)
-		h.svc.GetInitCode(ctx, uuid, lang)
+		resp, _ := h.svc.GetInitCode(ctx, uuid, lang)
+		return resp
 	}
 
 	limit := r.URL.Query().Get("limit")

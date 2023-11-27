@@ -16,6 +16,7 @@ import (
 type SubmissionService interface {
 	Create(context.Context, *models.Submission) (*models.Submission, models.AppError)
 	Fetch(context.Context, string, string) ([]*models.Submission, models.AppError)
+	Update(context.Context, uuid.UUID, *models.Submission) (*models.Submission, models.AppError)
 }
 
 type submissionService struct {
@@ -48,6 +49,18 @@ func (s *submissionService) Create(ctx context.Context, submission *models.Submi
 	go s.addToQueue(ctx, submission)
 
 	return submission, models.NoError
+}
+
+func (s *submissionService) Update(ctx context.Context, id uuid.UUID, updatedSubmission *models.Submission) (*models.Submission, models.AppError) {
+	submission, err := s.repo.GetSubmissionByID(ctx, id)
+	if err != models.NoError {
+		return nil, err
+	}
+
+	submission.UpdateFrom(*updatedSubmission)
+
+	err = s.repo.UpdateSubmission(ctx, id, submission)
+	return &submission, err
 }
 
 func (s *submissionService) addToQueue(ctx context.Context, submission *models.Submission) {

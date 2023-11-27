@@ -58,6 +58,7 @@ type SubmissionRepository interface {
 	GetSubmissionByID(context.Context, uuid.UUID) (models.Submission, models.AppError)
 	GetSubmissionsListByLimit(context.Context, int, int) ([]*models.Submission, models.AppError)
 	GetQueueData(context.Context, models.Submission) (queue_models.QueueObj, models.AppError)
+	UpdateSubmission(context.Context, uuid.UUID, models.Submission) models.AppError
 	// Add other repository methods specific to Submission
 }
 

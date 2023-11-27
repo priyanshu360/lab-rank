@@ -103,3 +103,14 @@ func (psql *submissionPostgres) GetQueueData(ctx context.Context, submission mod
 
 	return queue, models.NoError
 }
+
+func (psql *submissionPostgres) UpdateSubmission(ctx context.Context, id uuid.UUID, submission models.Submission) models.AppError {
+
+	if err := psql.db.Model(&models.Submission{}).
+		Where("id = ?", id).
+		Updates(submission).Error; err != nil {
+		return models.InternalError.Add(err)
+	}
+
+	return models.NoError
+}
