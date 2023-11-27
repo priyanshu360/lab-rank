@@ -54,46 +54,6 @@ CREATE TYPE lab_rank.user_status_enum AS ENUM (
     'SPAM'
 );
 
--- Create the "access_level" table with all fields NOT NULL
-CREATE TABLE lab_rank.access_level (
-    id UUID PRIMARY KEY NOT NULL,
-    mode lab_rank.access_level_mode_enum NOT NULL,
-    syllabus_id UUID REFERENCES lab_rank.syllabus(id) NOT NULL
-);
-
-
--- Define the Environment table with all fields NOT NULL
-CREATE TABLE lab_rank.environment (
-    id UUID PRIMARY KEY NOT NULL,
-    title VARCHAR(50) NOT NULL,
-    link VARCHAR(100) NOT NULL,
-    created_by UUID REFERENCES lab_rank."user"(id) NOT NULL,
-    created_at TIMESTAMP NOT NULL,
-    update_events JSONB NOT NULL,
-    live_dockerc_ids JSONB NOT NULL
-);
-
--- Define the Problems table with all fields NOT NULL
-CREATE TABLE lab_rank.problems (
-    id UUID PRIMARY KEY NOT NULL,
-    title VARCHAR(100) NOT NULL,
-    created_by UUID REFERENCES lab_rank."user"(id) NOT NULL,
-    created_at TIMESTAMP NOT NULL,
-    environment JSONB NOT NULL,
-    problem_link VARCHAR(100) NOT NULL,
-    difficulty lab_rank.difficulty_enum NOT NULL,
-    syllabus_id UUID REFERENCES lab_rank.syllabus(id) NOT NULL,
-    test_links JSONB NOT NULL
-);
-
--- Define the Syllabus table with all fields NOT NULL
-CREATE TABLE lab_rank.syllabus (
-    id UUID PRIMARY KEY NOT NULL,
-    subject_id UUID REFERENCES lab_rank.subject(id) NOT NULL,
-    uni_college_id UUID REFERENCES lab_rank.college(id) NOT NULL,
-    syllabus_level lab_rank.syllabus_level_enum NOT NULL
-);
-
 -- Define the University table with all fields NOT NULL
 CREATE TABLE lab_rank.university (
     id UUID PRIMARY KEY NOT NULL,
@@ -117,6 +77,21 @@ CREATE TABLE lab_rank.college (
     description JSONB NOT NULL
 );
 
+-- Define the Syllabus table with all fields NOT NULL
+CREATE TABLE lab_rank.syllabus (
+    id UUID PRIMARY KEY NOT NULL,
+    subject_id UUID REFERENCES lab_rank.subject(id) NOT NULL,
+    uni_college_id UUID REFERENCES lab_rank.college(id) NOT NULL,
+    syllabus_level lab_rank.syllabus_level_enum NOT NULL
+);
+
+-- Create the "access_level" table with all fields NOT NULL
+CREATE TABLE lab_rank.access_level (
+    id UUID PRIMARY KEY NOT NULL,
+    mode lab_rank.access_level_mode_enum NOT NULL,
+    syllabus_id UUID REFERENCES lab_rank.syllabus(id) NOT NULL
+);
+
 -- Define the "user" table with all fields NOT NULL
 CREATE TABLE lab_rank.user (
     id UUID PRIMARY KEY NOT NULL,
@@ -135,6 +110,30 @@ CREATE TABLE lab_rank.auth (
     access_ids JSONB NOT NULL,
     salt CHAR(32) NOT NULL,
     password_hash CHAR(64) NOT NULL
+);
+
+-- Define the Environment table with all fields NOT NULL
+CREATE TABLE lab_rank.environment (
+    id UUID PRIMARY KEY NOT NULL,
+    title VARCHAR(50) NOT NULL,
+    link VARCHAR(100) NOT NULL,
+    created_by UUID REFERENCES lab_rank."user"(id) NOT NULL,
+    created_at TIMESTAMP NOT NULL,
+    update_events JSONB NOT NULL,
+    live_dockerc_ids JSONB NOT NULL
+);
+
+-- Define the Problems table with all fields NOT NULL
+CREATE TABLE lab_rank.problems (
+    id UUID PRIMARY KEY NOT NULL,
+    title VARCHAR(100) NOT NULL,
+    created_by UUID REFERENCES lab_rank."user"(id) NOT NULL,
+    created_at TIMESTAMP NOT NULL,
+    environment JSONB NOT NULL,
+    problem_link VARCHAR(100) NOT NULL,
+    difficulty lab_rank.difficulty_enum NOT NULL,
+    syllabus_id UUID REFERENCES lab_rank.syllabus(id) NOT NULL,
+    test_links JSONB NOT NULL
 );
 
 -- Define the Submissions table with all fields NOT NULL
