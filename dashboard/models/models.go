@@ -65,6 +65,7 @@ const (
 	PROBLEM     FileType = "problem"
 	TESTFILE    FileType = "test-file"
 	SOLUTION    FileType = "solution"
+	INITCODE    FileType = "init-code"
 	ENVIRONMENT FileType = "environment"
 )
 
