@@ -40,6 +40,21 @@ type Submission struct {
 	Solution  []byte                  `json:"solution" gorm:"-"`
 }
 
+func (s *Submission) UpdateFrom(us Submission) {
+	if us.Score > 0 && us.Score < 100 {
+		s.Score = us.Score
+	}
+	if us.RunTime != "" {
+		s.RunTime = us.RunTime
+	}
+	if us.Metadata != nil {
+		s.Metadata = us.Metadata
+	}
+	if us.Status != "" {
+		s.Status = us.Status
+	}
+}
+
 // CreateSubmissionAPIRequest struct
 // Todo ; change Lang to Language / add status in sql
 
@@ -56,7 +71,29 @@ type SubmissionAPIResponse struct {
 	Message *Submission
 }
 
-// Implement the Parse method for POST request for CreateSubmissionAPIRequest
+type UpdateSubmissionAPIRequest struct {
+	Score    float64         `json:"score" validate:"min=0,max=100"`
+	RunTime  string          `json:"run_time"`
+	Metadata json.RawMessage `json:"metadata"`
+	Status   Status          `json:"status"`
+}
+
+func (r *UpdateSubmissionAPIRequest) Parse(req *http.Request) error {
+	if err := json.NewDecoder(req.Body).Decode(r); err != nil {
+		return err
+	}
+	return validate.Struct(r)
+}
+
+func (r *UpdateSubmissionAPIRequest) ToSubmissions() *Submission {
+	return &Submission{
+		Status:   r.Status,
+		RunTime:  r.RunTime,
+		Metadata: r.Metadata,
+		Score:    r.Score,
+	}
+}
+
 func (r *CreateSubmissionAPIRequest) Parse(req *http.Request) error {
 	if err := json.NewDecoder(req.Body).Decode(r); err != nil {
 		return err
@@ -84,6 +121,12 @@ func (r *CreateSubmissionAPIRequest) ToSubmissions() *Submission {
 }
 
 func NewCreateSubmissionAPIResponse(submission *Submission) *SubmissionAPIResponse {
+	return &SubmissionAPIResponse{
+		Message: submission,
+	}
+}
+
+func NewUpdateSubmissionAPIResponse(submission *Submission) *SubmissionAPIResponse {
 	return &SubmissionAPIResponse{
 		Message: submission,
 	}
