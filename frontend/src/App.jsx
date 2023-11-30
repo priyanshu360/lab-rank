@@ -1,14 +1,25 @@
 import { useState } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
-import './App.css'
+import {setCookie, getCookie} from "./Utils";
+import { Navigate } from 'react-router-dom';
 
 function App() {
+  const [isloggedout, changeLoggedOut] = useState(getCookie("loginKey") == "")
   const [count, setCount] = useState(0)
-
+  const handleClick = () => {
+    setCookie("loginKey", "")
+    changeLoggedOut(true)
+  };
+  if(isloggedout){
+    return <Navigate to='/' />
+  }
   return (
     <>
       <div>
+        <div>
+          <button onClick={handleClick} style={{margin:"5px", background:"#cdef00"}}> Log out </button>
+        </div>
         <a href="https://vitejs.dev" target="_blank">
           <img src={viteLogo} className="logo" alt="Vite logo" />
         </a>
