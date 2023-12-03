@@ -32,15 +32,23 @@ func (h *userHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		response = h.handleUpdate(ctx, r)
 	case http.MethodDelete:
 		response = h.handleDelete(ctx, r)
+	case http.MethodOptions:
+		response = h.handleOptions()
 	default:
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "POST")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 	if err := response.Write(w); err != nil {
 		http.Error(w, "Failed to serialize response", http.StatusInternalServerError)
 	}
+}
+
+func (h *userHandler) handleOptions() apiResponse {
+	return models.NewOptionsUserAPIResponse()
 }
 
 func (h *userHandler) handleDelete(ctx context.Context, r *http.Request) apiResponse {

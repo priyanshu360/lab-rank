@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom';
 
 function Register() {
   const [email, setEmail] = useState('test@user.in');
@@ -10,58 +11,16 @@ function Register() {
   const [userName, setUserName] = useState('Priyanshu Rajput');
   const [dob, setDob] = useState('2000-01-01');
   const [apiResp, setApiResp] = useState(null);
+  const [error, setError] = useState(false);
+  const navigate = useNavigate();
+  useEffect(() => { if(apiResp)navigate('/auth/login') },[apiResp]);
 
-  useEffect(()=>{console.log(apiResp)},[apiResp]);
 
   const handleClick = async () => {
-    console.log("Register API Called")
     const newDate = dob + "T00:00:00Z";
-      const response = await fetch("http://127.0.0.1:8080/user", {
-        mode: "no-cors",
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          "college_id": collegeId,
-          "access_id": access,
-          "email": email,
-          "contact_no": contact,
-          "dob": newDate,
-          "university_id": universityId,
-          "name": userName,
-          "password": password
-        })
-      })
-      console.log(response)
-    // var urlencoded = new URLSearchParams();
-    // urlencoded.append("college_id", collegeId);
-    // urlencoded.append("access_id", access);
-    // urlencoded.append("email", email);
-    // urlencoded.append("contact_no", contact);
-    // urlencoded.append("dob", newDate);
-    // urlencoded.append("university_id", universityId);
-    // urlencoded.append("name", userName);
-    // urlencoded.append("password", password);
-    // fetch('https://fakestoreapi.com/products',{
-    //         method:"POST",
-    //         body:JSON.stringify(
-    //             {
-    //                 title: email,
-    //                 price: 13.5,
-    //                 description: 'lorem ipsum set',
-    //                 image: 'https://i.pravatar.cc',
-    //                 category: 'electronic'
-    //             }
-    //         )
-    //     })
-    //         .then(res=>res.json())
-    //         .then(json=>console.log(json))
     fetch('http://127.0.0.1:8080/user',{
       method: 'POST',
-      mode: 'no-cors',
       headers: {
-        // 'Accept': 'application/json',
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
@@ -75,12 +34,18 @@ function Register() {
         "password": password
       })
     })
-    .then(response => {console.log(response);return response.json()})
-    .then(json => setApiResp(json.body))
+    .then(response => {
+      console.log("Response raw", response.status == 200)
+      if(response.status != 200)setError(true)
+      return response.json()
+    })
+    .then(json => {
+      console.log("API Response", /*response,*/ json)
+      setApiResp(json)
+      setError(false)
+    })
     .catch(error => console.error(error));
   };
-  
-  console.log(apiResp);
 
   return (
     <>
@@ -96,7 +61,7 @@ function Register() {
             <EditTextWithLabel name="Contact Number" placeholder="Contact Number" type="text" value={contact} onChangeValue={(event)=>{setContact(event.target.value)}}/>
             <EditTextWithLabel name="Name" placeholder="Enter Name" type="text" value={userName} onChangeValue={(event)=>{setUserName(event.target.value)}}/>
             <EditTextWithLabel name="DOB" placeholder="Date of Birth" type="date" value={dob} onChangeValue={(event)=>{setDob(event.target.value)}}/>
-          
+            {error && <p style={{color:'red'}}>Something Went Wrong</p>}
           </div>
           <button onClick={handleClick} style={styles.button}> Register Now </button>
       </div>

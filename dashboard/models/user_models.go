@@ -190,3 +190,17 @@ func NewDeleteUserAPIResponse(userId string) *DeleteUserAPIResponse {
 		user_id: userId,
 	}
 }
+
+type OptionsUserAPIResponse struct {
+}
+
+// Implement the Options method for UserapiResponse
+func (cr *OptionsUserAPIResponse) Write(w http.ResponseWriter) error {
+	w.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type", "application/json")
+	return json.NewEncoder(w).Encode(cr)
+}
+
+func NewOptionsUserAPIResponse() *OptionsUserAPIResponse {
+	return &OptionsUserAPIResponse{}
+}
