@@ -5,3 +5,5 @@
 
 ## db schema
 ![lab-rank-db](https://github.com/priyanshu360/lab-rank/assets/20378236/7cd0f7e0-9181-4085-b688-462118947ff6)
+
+### kind create cluster

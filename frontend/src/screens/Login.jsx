@@ -1,16 +1,10 @@
-import { useState } from 'react'
-import { Navigate } from 'react-router-dom';
-import {setCookie, getCookie} from "./Utils";
+import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom';
+import { setCookie } from "../Utils";
 
 function Login() {
-  let loginDef = false
-  if (getCookie("loginKey") != ""){
-    loginDef = true
-  }
-  const [isLoggedIn, changeLoggedIn] = useState(loginDef)
-  // const [isLoggedIn, changeLoggedIn] = useState(getCookie("loginKey") == "")
   const [ev, changeErrorVisibility] = useState(false)
-  
+  const navigate = useNavigate();
   const [email, setEmail] = useState('test');
   const [password, setPassword] = useState('1234');
   const handleChange = (event) => {
@@ -21,15 +15,14 @@ function Login() {
   };
   const handleClick = () => {
     if(email === "test" && password === "1234"){
-      changeErrorVisibility(false)
-      changeLoggedIn(true)
       setCookie("loginKey", "ok")
+      navigate('/app')
     } else {
       changeErrorVisibility(true)
     }
   };
-  if (isLoggedIn) {
-    return <Navigate to='/app' />
+  const handleRegisterClick = () => {
+    navigate('/auth/register');
   }
   return (
     <>
@@ -38,9 +31,10 @@ function Login() {
           <div style={styles.centerLatest}>
             <input name="Username/Email" type="text" value={email} onChange={handleChange} style={styles.inputCss}/>
             <input name="Password" type="password" value={password} onChange={handlePassChange} style={styles.inputCss}/>
-            {ev && <h4 style={{ color: 'red', margin: '2px 0px', fontSize: '14px' }}>Invalid Data. Please retry.</h4>}
+            {ev && <p style={{ color: 'red', margin: '2px 0px', fontSize: '14px' }}>Invalid Data. Please retry.</p>}
           </div>
           <button onClick={handleClick} style={styles.button}> Login </button>
+          <p style={{ color: 'black', margin: '2px 0px', fontSize: '14px', padding: "5px"}} onClick={handleRegisterClick}>Register Now</p>
       </div>
     </>
   )
