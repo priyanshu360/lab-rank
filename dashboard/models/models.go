@@ -2,6 +2,7 @@ package models
 
 import (
 	"fmt"
+	"reflect"
 
 	"github.com/go-playground/validator"
 )
@@ -107,5 +108,14 @@ func (lang ProgrammingLanguageEnum) GetExtension() string {
 	default:
 		// Handle unknown language or return a default extension
 		return ".txt"
+	}
+}
+
+func setField(field interface{}, value, defaultValue interface{}) {
+	fieldValue := reflect.ValueOf(field).Elem()
+	if value != nil {
+		fieldValue.Set(reflect.ValueOf(value))
+	} else {
+		fieldValue.Set(reflect.ValueOf(defaultValue))
 	}
 }

@@ -55,4 +55,25 @@ func (psql *environmentPostgres) GetEnvironmentsListByLimit(ctx context.Context,
 	return environments, models.NoError
 }
 
+// UpdateEnvironment updates a Environment's information.
+func (psql *environmentPostgres) UpdateEnvironment(ctx context.Context, environmentID uuid.UUID, environment models.Environment) models.AppError {
+	// Check if the Environment with the provided ID exists before updating
+	var existingEnvironment models.Environment
+	result := psql.db.WithContext(ctx).First(&existingEnvironment, environmentID)
+	if result.Error != nil {
+		if result.Error == gorm.ErrRecordNotFound {
+			// Environment not found
+			return models.EnvironmentNotFoundError
+		}
+		return models.InternalError.Add(result.Error)
+	}
+
+	// Perform the update
+	result = psql.db.WithContext(ctx).Model(&environment).Where("id = ?", environmentID).Updates(environment)
+	if result.Error != nil {
+		return models.InternalError.Add(result.Error)
+	}
+	return models.NoError
+}
+
 // Add other repository methods for environments as needed.

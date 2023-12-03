@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/go-playground/validator"
 	"github.com/google/uuid"
 )
 
@@ -69,4 +70,35 @@ func NewListUniversitiesAPIResponse(universities []*University) *ListUniversitie
 	return &ListUniversitiesAPIResponse{
 		Message: universities,
 	}
+}
+
+type UpdateUniversityAPIRequest struct {
+	ID          uuid.UUID       `json:"id" validate:"required"`
+	Title       string          `json:"title"`
+	Description json.RawMessage `json:"description"`
+}
+
+func (r *UpdateUniversityAPIRequest) Parse(req *http.Request) error {
+	if err := json.NewDecoder(req.Body).Decode(r); err != nil {
+		return err
+	}
+	return r.validate()
+}
+
+func (r *UpdateUniversityAPIRequest) validate() error {
+	if err := validate.Struct(r); err != nil {
+		return err.(validator.ValidationErrors)
+	}
+
+	// Todo : add custom validations
+	return nil
+}
+
+func (r *UpdateUniversityAPIRequest) ToUniversity(university University) *University {
+	updatedUniversity := &University{}
+
+	setField(&updatedUniversity.Title, r.Title, university.Title)
+	setField(&updatedUniversity.Description, r.Description, university.Description)
+
+	return updatedUniversity
 }

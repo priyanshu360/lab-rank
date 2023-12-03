@@ -55,4 +55,25 @@ func (psql *collegePostgres) GetCollegesListByLimit(ctx context.Context, page in
 	return colleges, models.NoError
 }
 
+// UpdateCollege updates a College's information.
+func (psql *collegePostgres) UpdateCollege(ctx context.Context, collegeID uuid.UUID, college models.College) models.AppError {
+	// Check if the College with the provided ID exists before updating
+	var existingCollege models.College
+	result := psql.db.WithContext(ctx).First(&existingCollege, collegeID)
+	if result.Error != nil {
+		if result.Error == gorm.ErrRecordNotFound {
+			// College not found
+			return models.CollegeNotFoundError
+		}
+		return models.InternalError.Add(result.Error)
+	}
+
+	// Perform the update
+	result = psql.db.WithContext(ctx).Model(&college).Where("id = ?", collegeID).Updates(college)
+	if result.Error != nil {
+		return models.InternalError.Add(result.Error)
+	}
+	return models.NoError
+}
+
 // Add other repository methods for colleges as needed.

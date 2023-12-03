@@ -28,6 +28,8 @@ func (h *universityHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		response = h.handleCreate(ctx, r)
 	case http.MethodGet:
 		response = h.handleGet(ctx, r)
+	case http.MethodPut:
+		response = h.handleUpdate(ctx, r)
 	// Implement other HTTP methods as needed
 	default:
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -70,4 +72,16 @@ func (h *universityHandler) handleGet(ctx context.Context, r *http.Request) apiR
 	}
 }
 
+func (h *universityHandler) handleUpdate(ctx context.Context, r *http.Request) apiResponse {
+	var request models.UpdateUniversityAPIRequest
+	if err := request.Parse(r); err != nil {
+		log.Println(err)
+		return newAPIError(models.BadRequest.Add(err))
+	}
+	user, err := h.svc.Update(ctx, &request)
+	if err != models.NoError {
+		return newAPIError(models.BadRequest.Add(err))
+	}
+	return models.NewCreateUniversityAPIResponse(user) // Reusing the same Response for Update
+}
 // Implement other handler methods for university-related operations

@@ -12,6 +12,7 @@ import (
 type SyllabusService interface {
 	Create(context.Context, *models.Syllabus) (*models.Syllabus, models.AppError)
 	Fetch(context.Context, string, string) ([]*models.Syllabus, models.AppError)
+	Update(context.Context,*models.UpdateSyllabusAPIRequest) (*models.Syllabus, models.AppError)
 }
 
 type syllabusService struct {
@@ -60,4 +61,18 @@ func (s *syllabusService) Fetch(ctx context.Context, id, limit string) ([]*model
 
 		return s.repo.GetSyllabusListByLimit(ctx, 1, 10)
 	}
+}
+
+func (s *syllabusService) Update(ctx context.Context, request *models.UpdateSyllabusAPIRequest) (*models.Syllabus, models.AppError) {
+
+	defaultSyllabus, err := s.repo.GetSyllabusByID(ctx, request.ID)
+	if err != models.NoError {
+		return nil, err
+	}
+	updatedSyllabus := request.ToSyllabus(defaultSyllabus)
+	if err := s.repo.UpdateSyllabus(ctx, request.ID, *updatedSyllabus); err != models.NoError {
+		return nil, err
+	}
+
+	return updatedSyllabus, models.NoError
 }

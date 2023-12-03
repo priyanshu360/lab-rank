@@ -3,7 +3,6 @@ package models
 import (
 	"encoding/json"
 	"net/http"
-	"reflect"
 	"time"
 
 	"github.com/go-playground/validator"
@@ -84,16 +83,6 @@ func (r *UpdateUserAPIRequest) ToUser(user User) *User {
 
 	return newUser
 }
-
-func setField(field interface{}, value, defaultValue interface{}) {
-	fieldValue := reflect.ValueOf(field).Elem()
-	if value != nil {
-		fieldValue.Set(reflect.ValueOf(value))
-	} else {
-		fieldValue.Set(reflect.ValueOf(defaultValue))
-	}
-}
-
 func (r *CreateUserAPIRequest) validate() error {
 	if err := validate.Struct(r); err != nil {
 		return err.(validator.ValidationErrors)

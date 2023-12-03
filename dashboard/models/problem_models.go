@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/go-playground/validator"
 	"github.com/google/uuid"
 )
 
@@ -238,4 +239,48 @@ func (e *TestLinkType) Scan(value interface{}) error {
 // Value implements the driver.Valuer interface
 func (tl TestLinkType) Value() (driver.Value, error) {
 	return json.Marshal(tl)
+}
+
+type UpdateProblemAPIRequest struct {
+	ID          uuid.UUID       `json:"id" validate:"required"`
+	Title       string          `json:"title"`
+	Environment EnvironmentJSON `json:"environment"`
+	ProblemLink string          `json:"problem_link"`
+	Difficulty  DifficultyEnum  `json:"difficulty"`
+	SyllabusID  uuid.UUID       `json:"syllabus_id"`
+	TestLinks   TestLinkJSON    `json:"test_links"`
+	ProblemFile []byte          `json:"problem_file" gorm:"-"`
+	TestFiles   []TestFilesType `json:"test_files" gorm:"-"`
+}
+
+func (r *UpdateProblemAPIRequest) Parse(req *http.Request) error {
+	if err := json.NewDecoder(req.Body).Decode(r); err != nil {
+		return err
+	}
+	return r.validate()
+}
+
+func (r *UpdateProblemAPIRequest) validate() error {
+	if err := validate.Struct(r); err != nil {
+		return err.(validator.ValidationErrors)
+	}
+
+	// Todo : add custom validations
+	return nil
+}
+
+func (r *UpdateProblemAPIRequest) ToProblem(problem Problem) *Problem {
+	updatedProblem := &Problem{
+		ID:        problem.ID,
+		CreatedBy: problem.CreatedBy,
+		CreatedAt: problem.CreatedAt,
+	}
+	setField(&updatedProblem.Title, r.Title, problem.Title)
+	setField(&updatedProblem.Environment, r.Environment, problem.Environment)
+	setField(&updatedProblem.ProblemFile, r.ProblemFile, problem.ProblemFile)
+	setField(&updatedProblem.Difficulty, r.Difficulty, problem.Difficulty)
+	setField(&updatedProblem.SyllabusID, r.SyllabusID, problem.SyllabusID)
+	setField(&updatedProblem.TestFiles, r.TestFiles, problem.TestFiles)
+
+	return updatedProblem
 }

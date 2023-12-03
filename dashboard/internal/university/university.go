@@ -12,6 +12,7 @@ import (
 type UniversityService interface {
 	Create(context.Context, *models.University) (*models.University, models.AppError)
 	Fetch(context.Context, string, string) ([]*models.University, models.AppError)
+	Update(context.Context,*models.UpdateUniversityAPIRequest) (*models.University, models.AppError)
 }
 
 type universityService struct {
@@ -60,4 +61,18 @@ func (s *universityService) Fetch(ctx context.Context, id, limit string) ([]*mod
 
 		return s.repo.GetUniversitiesListByLimit(ctx, 1, 10)
 	}
+}
+
+func (s *universityService) Update(ctx context.Context, request *models.UpdateUniversityAPIRequest) (*models.University, models.AppError) {
+
+	defaultUniversity, err := s.repo.GetUniversityByID(ctx, request.ID)
+	if err != models.NoError {
+		return nil, err
+	}
+	updatedUniversity := request.ToUniversity(defaultUniversity)
+	if err := s.repo.UpdateUniversity(ctx, request.ID, *updatedUniversity); err != models.NoError {
+		return nil, err
+	}
+
+	return updatedUniversity, models.NoError
 }

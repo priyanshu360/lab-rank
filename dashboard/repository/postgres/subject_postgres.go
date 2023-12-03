@@ -55,4 +55,24 @@ func (psql *subjectPostgres) GetSubjectsListByLimit(ctx context.Context, page in
 	return subjects, models.NoError
 }
 
+// UpdateSubject updates a Subject's information.
+func (psql *subjectPostgres) UpdateSubject(ctx context.Context, subjectID uuid.UUID, subject models.Subject) models.AppError {
+	// Check if the Subject with the provided ID exists before updating
+	var existingSubject models.Subject
+	result := psql.db.WithContext(ctx).First(&existingSubject, subjectID)
+	if result.Error != nil {
+		if result.Error == gorm.ErrRecordNotFound {
+			// Subject not found
+			return models.SubjectNotFoundError
+		}
+		return models.InternalError.Add(result.Error)
+	}
+
+	// Perform the update
+	result = psql.db.WithContext(ctx).Model(&subject).Where("id = ?", subjectID).Updates(subject)
+	if result.Error != nil {
+		return models.InternalError.Add(result.Error)
+	}
+	return models.NoError
+}
 // Add other repository methods for subjects as needed.

@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/go-playground/validator"
 	"github.com/google/uuid"
 )
 
@@ -82,4 +83,43 @@ func NewListEnvironmentsAPIResponse(environments []*Environment) *ListEnvironmen
 	return &ListEnvironmentsAPIResponse{
 		Message: environments,
 	}
+}
+
+type UpdateEnvironmentAPIRequest struct {
+	ID             uuid.UUID       `json:"id" validate:"required"`
+	Title          string          `json:"title"`
+	UpdateEvents   json.RawMessage `json:"update_events"`
+	LiveDockerCIDs json.RawMessage `json:"live_dockerc_ids"`
+	File           []byte          `json:"file"`
+}
+
+func (r *UpdateEnvironmentAPIRequest) Parse(req *http.Request) error {
+	if err := json.NewDecoder(req.Body).Decode(r); err != nil {
+		return err
+	}
+	return r.validate()
+}
+
+func (r *UpdateEnvironmentAPIRequest) validate() error {
+	if err := validate.Struct(r); err != nil {
+		return err.(validator.ValidationErrors)
+	}
+
+	// Todo : add custom validations
+	return nil
+}
+
+func (r *UpdateEnvironmentAPIRequest) ToEnvironment(environment Environment) *Environment {
+	updatedEnvironment := &Environment{
+		ID:        environment.ID,
+		CreatedBy: environment.CreatedBy,
+		CreatedAt: environment.CreatedAt,
+	}
+
+	setField(&updatedEnvironment.Title, r.Title, environment.Title)
+	setField(&updatedEnvironment.UpdateEvents, r.UpdateEvents, environment.UpdateEvents)
+	setField(&updatedEnvironment.LiveDockerCIDs, r.LiveDockerCIDs, environment.LiveDockerCIDs)
+	setField(&updatedEnvironment.File, r.File, environment.File)
+
+	return updatedEnvironment
 }

@@ -55,4 +55,25 @@ func (psql *problemPostgres) GetProblemsListByLimit(ctx context.Context, page in
 	return problems, models.NoError
 }
 
+// UpdateProblem updates a Problem's information.
+func (psql *problemPostgres) UpdateProblem(ctx context.Context, problemID uuid.UUID, problem models.Problem) models.AppError {
+	// Check if the Problem with the provided ID exists before updating
+	var existingProblem models.Problem
+	result := psql.db.WithContext(ctx).First(&existingProblem, problemID)
+	if result.Error != nil {
+		if result.Error == gorm.ErrRecordNotFound {
+			// Problem not found
+			return models.ProblemNotFoundError
+		}
+		return models.InternalError.Add(result.Error)
+	}
+
+	// Perform the update
+	result = psql.db.WithContext(ctx).Model(&problem).Where("id = ?", problemID).Updates(problem)
+	if result.Error != nil {
+		return models.InternalError.Add(result.Error)
+	}
+	return models.NoError
+}
+
 // Add other repository methods for problems as needed.

@@ -6,21 +6,21 @@ import (
 	"net/http"
 
 	"github.com/google/uuid"
-	problems_svc "github.com/priyanshu360/lab-rank/dashboard/internal/problem"
+	Problems_svc "github.com/priyanshu360/lab-rank/dashboard/internal/problem"
 	"github.com/priyanshu360/lab-rank/dashboard/models"
 )
 
-type problemsHandler struct {
-	svc problems_svc.ProblemService
+type ProblemsHandler struct {
+	svc Problems_svc.ProblemService
 }
 
-func NewProblemsHandler(svc problems_svc.ProblemService) Handler {
-	return &problemsHandler{
+func NewProblemsHandler(svc Problems_svc.ProblemService) Handler {
+	return &ProblemsHandler{
 		svc: svc,
 	}
 }
 
-func (h *problemsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *ProblemsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	var response apiResponse
 	var ctx = r.Context()
 
@@ -29,6 +29,8 @@ func (h *problemsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		response = h.handleCreate(ctx, r)
 	case http.MethodGet:
 		response = h.handleGet(ctx, r)
+	case http.MethodPut:
+		response = h.handleUpdate(ctx, r)
 	// Implement other HTTP methods as needed
 	default:
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -43,23 +45,23 @@ func (h *problemsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *problemsHandler) handleCreate(ctx context.Context, r *http.Request) apiResponse {
+func (h *ProblemsHandler) handleCreate(ctx context.Context, r *http.Request) apiResponse {
 	var request models.CreateProblemAPIRequest
 	if err := request.Parse(r); err != nil {
 		log.Println(err)
 		return newAPIError(models.BadRequest.Add(err))
 	}
 
-	problem := request.ToProblem()
-	problem, err := h.svc.Create(ctx, problem)
+	Problem := request.ToProblem()
+	Problem, err := h.svc.Create(ctx, Problem)
 	if err != models.NoError {
 		return newAPIError(models.InternalError.Add(err))
 	}
 
-	return models.NewCreateProblemAPIResponse(problem)
+	return models.NewCreateProblemAPIResponse(Problem)
 }
 
-func (h *problemsHandler) handleGet(ctx context.Context, r *http.Request) apiResponse {
+func (h *ProblemsHandler) handleGet(ctx context.Context, r *http.Request) apiResponse {
 	// Todo : cleanup
 	lang := r.URL.Query().Get("lang")
 	id := r.URL.Query().Get("id")
@@ -72,16 +74,28 @@ func (h *problemsHandler) handleGet(ctx context.Context, r *http.Request) apiRes
 	}
 
 	limit := r.URL.Query().Get("limit")
-	problems, err := h.svc.Fetch(ctx, id, limit)
+	Problems, err := h.svc.Fetch(ctx, id, limit)
 	if err != models.NoError {
 		return newAPIError(models.InternalError.Add(err))
 	}
-	if len(problems) == 1 {
-		return models.NewCreateProblemAPIResponse(problems[0]) // Reusing the same Response from Create in Get
+	if len(Problems) == 1 {
+		return models.NewCreateProblemAPIResponse(Problems[0]) // Reusing the same Response from Create in Get
 	} else {
-		response := models.NewListProblemsAPIResponse(problems)
+		response := models.NewListProblemsAPIResponse(Problems)
 		return response
 	}
 }
 
-// Implement other handler methods for problems-related operations
+func (h *ProblemsHandler) handleUpdate(ctx context.Context, r *http.Request) apiResponse {
+	var request models.UpdateProblemAPIRequest
+	if err := request.Parse(r); err != nil {
+		log.Println(err)
+		return newAPIError(models.BadRequest.Add(err))
+	}
+	user, err := h.svc.Update(ctx, &request)
+	if err != models.NoError {
+		return newAPIError(models.BadRequest.Add(err))
+	}
+	return models.NewCreateProblemAPIResponse(user) // Reusing the same Response for Update
+}
+// Implement other handler methods for Problems-related operations

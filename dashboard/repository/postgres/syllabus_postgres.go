@@ -55,4 +55,25 @@ func (psql *syllabusPostgres) GetSyllabusListByLimit(ctx context.Context, page i
 	return syllabuss, models.NoError
 }
 
-// Add other repository methods for syllabi as needed.
+// UpdateSyllabus updates a Syllabus's information.
+func (psql *syllabusPostgres) UpdateSyllabus(ctx context.Context, syllabusID uuid.UUID, syllabus models.Syllabus) models.AppError {
+	// Check if the Syllabus with the provided ID exists before updating
+	var existingSyllabus models.Syllabus
+	result := psql.db.WithContext(ctx).First(&existingSyllabus, syllabusID)
+	if result.Error != nil {
+		if result.Error == gorm.ErrRecordNotFound {
+			// Syllabus not found
+			return models.SyllabusNotFoundError
+		}
+		return models.InternalError.Add(result.Error)
+	}
+
+	// Perform the update
+	result = psql.db.WithContext(ctx).Model(&syllabus).Where("id = ?", syllabusID).Updates(syllabus)
+	if result.Error != nil {
+		return models.InternalError.Add(result.Error)
+	}
+	return models.NoError
+}
+
+// Add other repository methods for syllabus as needed.

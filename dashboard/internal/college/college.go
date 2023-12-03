@@ -12,6 +12,8 @@ import (
 type CollegeService interface {
 	Create(context.Context, *models.College) (*models.College, models.AppError)
 	Fetch(context.Context, string, string) ([]*models.College, models.AppError)
+	Update(context.Context,*models.UpdateCollegeAPIRequest) (*models.College, models.AppError) 
+	
 }
 
 type collegeService struct {
@@ -60,4 +62,18 @@ func (s *collegeService) Fetch(ctx context.Context, id, limit string) ([]*models
 
 		return s.repo.GetCollegesListByLimit(ctx, 1, 10)
 	}
+}
+
+func (s *collegeService) Update(ctx context.Context, request *models.UpdateCollegeAPIRequest) (*models.College, models.AppError) {
+
+	defaultCollege, err := s.repo.GetCollegeByID(ctx, request.ID)
+	if err != models.NoError {
+		return nil, err
+	}
+	updatedCollege := request.ToCollege(defaultCollege)
+	if err := s.repo.UpdateCollege(ctx, request.ID, *updatedCollege); err != models.NoError {
+		return nil, err
+	}
+
+	return updatedCollege, models.NoError
 }

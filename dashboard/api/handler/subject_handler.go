@@ -28,6 +28,8 @@ func (h *subjectHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		response = h.handleCreate(ctx, r)
 	case http.MethodGet:
 		response = h.handleGet(ctx, r)
+	case http.MethodPut:
+		response = h.handleUpdate(ctx, r)
 	default:
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
@@ -67,4 +69,17 @@ func (h *subjectHandler) handleGet(ctx context.Context, r *http.Request) apiResp
 		response := models.NewListSubjectsAPIResponse(subjects)
 		return response
 	}
+}
+
+func (h *subjectHandler) handleUpdate(ctx context.Context, r *http.Request) apiResponse {
+	var request models.UpdateSubjectAPIRequest
+	if err := request.Parse(r); err != nil {
+		log.Println(err)
+		return newAPIError(models.BadRequest.Add(err))
+	}
+	user, err := h.svc.Update(ctx, &request)
+	if err != models.NoError {
+		return newAPIError(models.BadRequest.Add(err))
+	}
+	return models.NewCreateSubjectAPIResponse(user) // Reusing the same Response for Update
 }

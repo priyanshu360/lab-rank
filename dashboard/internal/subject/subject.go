@@ -12,6 +12,7 @@ import (
 type SubjectService interface {
 	Create(context.Context, *models.Subject) (*models.Subject, models.AppError)
 	Fetch(context.Context, string, string) ([]*models.Subject, models.AppError)
+	Update(context.Context,*models.UpdateSubjectAPIRequest) (*models.Subject, models.AppError)
 }
 
 type subjectService struct {
@@ -60,4 +61,18 @@ func (s *subjectService) Fetch(ctx context.Context, id, limit string) ([]*models
 
 		return s.repo.GetSubjectsListByLimit(ctx, 1, 10)
 	}
+}
+
+func (s *subjectService) Update(ctx context.Context, request *models.UpdateSubjectAPIRequest) (*models.Subject, models.AppError) {
+
+	defaultSubject, err := s.repo.GetSubjectByID(ctx, request.ID)
+	if err != models.NoError {
+		return nil, err
+	}
+	updatedSubject := request.ToSubject(defaultSubject)
+	if err := s.repo.UpdateSubject(ctx, request.ID, *updatedSubject); err != models.NoError {
+		return nil, err
+	}
+
+	return updatedSubject, models.NoError
 }

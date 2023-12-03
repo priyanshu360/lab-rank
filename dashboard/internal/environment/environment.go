@@ -12,6 +12,7 @@ import (
 type EnvironmentService interface {
 	Create(context.Context, *models.Environment) (*models.Environment, models.AppError)
 	Fetch(context.Context, string, string) ([]*models.Environment, models.AppError)
+	Update(context.Context,*models.UpdateEnvironmentAPIRequest) (*models.Environment, models.AppError)
 }
 
 type environmentService struct {
@@ -67,4 +68,18 @@ func (s *environmentService) Fetch(ctx context.Context, id, limit string) ([]*mo
 
 		return s.repo.GetEnvironmentsListByLimit(ctx, 1, 10)
 	}
+}
+
+func (s *environmentService) Update(ctx context.Context, request *models.UpdateEnvironmentAPIRequest) (*models.Environment, models.AppError) {
+
+	defaultEnvironment, err := s.repo.GetEnvironmentByID(ctx, request.ID)
+	if err != models.NoError {
+		return nil, err
+	}
+	updatedEnvironment := request.ToEnvironment(defaultEnvironment)
+	if err := s.repo.UpdateEnvironment(ctx, request.ID, *updatedEnvironment); err != models.NoError {
+		return nil, err
+	}
+
+	return updatedEnvironment, models.NoError
 }
