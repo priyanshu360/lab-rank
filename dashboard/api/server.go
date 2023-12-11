@@ -1,9 +1,14 @@
 package api
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"github.com/gorilla/mux" // Import Gorilla Mux
 	"github.com/priyanshu360/lab-rank/dashboard/api/handler"
@@ -32,72 +37,73 @@ var clientset *kubernetes.Clientset
 
 // APIServer is your API server instance.
 type APIServer struct {
-	Config   config.ServerConfig
-	Router   *mux.Router // Replace ServeMux with Gorilla Mux
-	Handlers map[string]handler.Handler
+	httpServer  *http.Server
+	middlewares []mux.MiddlewareFunc
+	router      *mux.Router
 }
 
 func NewServer(cfg config.ServerConfig) *APIServer {
 	return &APIServer{
-		Config:   cfg,
-		Router:   mux.NewRouter(), // Initialize Gorilla Mux router
-		Handlers: make(map[string]handler.Handler),
+		httpServer: &http.Server{
+			Addr:         fmt.Sprintf("%s:%s", cfg.GetAddress(), cfg.GetPort()),
+			WriteTimeout: time.Duration(cfg.GetWriteTimeout()) * time.Second,
+			ReadTimeout:  time.Duration(cfg.GetReadTimeout()) * time.Second,
+		},
+		middlewares: []mux.MiddlewareFunc{},
 	}
 }
 
-// TODO: change this not looking good (maybe option or decorator pattern)
-func (s *APIServer) initRoutes() {
+func (s *APIServer) initRoutesAndMiddleware() {
 	fileStorage := filesys.NewK8sCMStore(clientset, "storage")
-	// Todo : make queue name env / handle error
-	publisher, _ := queue.InitRabbitMQPublisher("lab-rank")
-	// Initialize routes and handlers for different entities
-	userHandler := handler.NewUserHandler(user.NewUserService(psql.NewUserPostgresRepo(db)))
-	s.Handlers["/user"] = handler.NewReqIDMiddleware().Decorate(userHandler)
+	publisher, err := queue.InitRabbitMQPublisher("lab-rank")
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	subjectHandler := handler.NewSubjectHandler(subject.NewSubjectService(psql.NewSubjectPostgresRepo(db)))
-	s.Handlers["/subject"] = handler.NewReqIDMiddleware().Decorate(subjectHandler)
+	s.router.Handle("/user", handler.NewUserHandler(user.NewUserService(psql.NewUserPostgresRepo(db))))
+	s.router.Handle("/subject", handler.NewSubjectHandler(subject.NewSubjectService(psql.NewSubjectPostgresRepo(db))))
+	s.router.Handle("/college", handler.NewCollegeHandler(college.NewCollegeService(psql.NewCollegePostgresRepo(db))))
+	s.router.Handle("/university", handler.NewUniversityHandler(university.NewUniversityService(psql.NewUniversityPostgresRepo(db))))
+	s.router.Handle("/submission", handler.NewSubmissionsHandler(submission.NewSubmissionService(psql.NewSubmissionPostgresRepo(db), fileStorage, publisher)))
+	s.router.Handle("/environment", handler.NewEnvironmentHandler(environment.NewEnvironmentService(psql.NewEnvironmentPostgresRepo(db), fileStorage)))
+	s.router.Handle("/problem", handler.NewProblemsHandler(problem.NewProblemService(psql.NewProblemPostgresRepo(db), fileStorage)))
+	s.router.Handle("/syllabus", handler.NewSyllabusHandler(syllabus.NewSyllabusService(psql.NewSyllabusPostgresRepo(db))))
 
-	collegeHandler := handler.NewCollegeHandler(college.NewCollegeService(psql.NewCollegePostgresRepo(db)))
-	s.Handlers["/college"] = handler.NewReqIDMiddleware().Decorate(collegeHandler)
-
-	universityHandler := handler.NewUniversityHandler(university.NewUniversityService(psql.NewUniversityPostgresRepo(db)))
-	s.Handlers["/university"] = handler.NewReqIDMiddleware().Decorate(universityHandler)
-
-	submissionsHandler := handler.NewSubmissionsHandler(submission.NewSubmissionService(psql.NewSubmissionPostgresRepo(db), fileStorage, publisher))
-	s.Handlers["/submission"] = handler.NewReqIDMiddleware().Decorate(submissionsHandler)
-
-	environmentHandler := handler.NewEnvironmentHandler(environment.NewEnvironmentService(psql.NewEnvironmentPostgresRepo(db), fileStorage))
-	s.Handlers["/environment"] = handler.NewReqIDMiddleware().Decorate(environmentHandler)
-
-	problemsHandler := handler.NewProblemsHandler(problem.NewProblemService(psql.NewProblemPostgresRepo(db), fileStorage))
-	s.Handlers["/problem"] = handler.NewReqIDMiddleware().Decorate(problemsHandler)
-
-	syllabusHandler := handler.NewSyllabusHandler(syllabus.NewSyllabusService(psql.NewSyllabusPostgresRepo(db)))
-	s.Handlers["/syllabus"] = handler.NewReqIDMiddleware().Decorate(syllabusHandler)
+	s.middlewares = []mux.MiddlewareFunc{
+		mux.CORSMethodMiddleware(s.router),
+		handler.NewReqIDMiddleware().Decorate,
+	}
+	s.router.Use(s.middlewares...)
+	s.httpServer.Handler = s.router
 }
 
 func (s *APIServer) run() {
-	address := s.Config.GetAddress()
-	port := s.Config.GetPort()
-	addr := fmt.Sprintf("%s:%s", address, port)
+	go func() {
+		if err := s.httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			fmt.Println("Error starting server:", err)
+			os.Exit(1)
+		}
+	}()
 
-	fmt.Printf("APIServer is running on http://%s\n", addr)
+	// Handle graceful shutdown
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
 
-	for route, handler := range s.Handlers {
-		s.Router.Handle(route, handler)
+	sig := <-sigChan
+	fmt.Println("Received signal:", sig)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	if err := s.httpServer.Shutdown(ctx); err != nil {
+		fmt.Println("Error during server shutdown:", err)
 	}
-
-	http.Handle("/", s.Router) // Set the Gorilla Mux router as the default handler
-
-	err := http.ListenAndServe(addr, nil)
-	if err != nil {
-		fmt.Println("Error:", err)
-	}
+	fmt.Println("Server gracefully stopped")
 }
 
 func StartHttpServer(cfg config.ServerConfig) {
 	server := NewServer(cfg)
-	server.initRoutes()
+	server.initRoutesAndMiddleware()
 	server.run()
 }
 

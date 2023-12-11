@@ -6,42 +6,36 @@ import (
 	"net/http"
 
 	"github.com/google/uuid"
+	"github.com/gorilla/mux"
 	"github.com/priyanshu360/lab-rank/dashboard/internal/submission"
 	"github.com/priyanshu360/lab-rank/dashboard/models"
 )
 
 type submissionsHandler struct {
-	svc submission.SubmissionService
+	svc     submission.SubmissionService
+	sRouter *mux.Router
 }
 
-func NewSubmissionsHandler(svc submission.SubmissionService) Handler {
-	return &submissionsHandler{
-		svc: svc,
+func NewSubmissionsHandler(svc submission.SubmissionService) *submissionsHandler {
+	h := &submissionsHandler{
+		svc:     svc,
+		sRouter: mux.NewRouter(),
 	}
+
+	return h.InitRoutes()
+}
+
+func (h *submissionsHandler) InitRoutes() *submissionsHandler {
+	h.sRouter.HandleFunc("/submissions", ServeHTTPWrapper(h.handleGet)).Methods("GET")
+	h.sRouter.HandleFunc("/submissions", ServeHTTPWrapper(h.handleCreate)).Methods("POST")
+	h.sRouter.HandleFunc("/submissions", ServeHTTPWrapper(h.handleUpdate)).Methods("PUT")
+	// Add other routes as needed
+
+	return h
 }
 
 func (h *submissionsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	var response apiResponse
-	var ctx = r.Context()
-
-	switch r.Method {
-	case http.MethodPost:
-		response = h.handleCreate(ctx, r)
-	case http.MethodGet:
-		response = h.handleGet(ctx, r)
-	case http.MethodPut:
-		response = h.handleUpdate(ctx, r)
-	default:
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-
-	if err := response.Write(w); err != nil {
-		http.Error(w, "Failed to serialize response", http.StatusInternalServerError)
-	}
+	h.sRouter.ServeHTTP(w, r)
 }
 
 func (h *submissionsHandler) handleCreate(ctx context.Context, r *http.Request) apiResponse {

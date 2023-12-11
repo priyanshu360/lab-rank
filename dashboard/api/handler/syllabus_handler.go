@@ -5,38 +5,37 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/gorilla/mux"
 	syllabus_svc "github.com/priyanshu360/lab-rank/dashboard/internal/syllabus"
 	"github.com/priyanshu360/lab-rank/dashboard/models"
 )
 
 type syllabusHandler struct {
-	svc syllabus_svc.SyllabusService
+	svc     syllabus_svc.SyllabusService
+	sRouter *mux.Router
 }
 
-func NewSyllabusHandler(svc syllabus_svc.SyllabusService) Handler {
-	return &syllabusHandler{
-		svc: svc,
+func NewSyllabusHandler(svc syllabus_svc.SyllabusService) *syllabusHandler {
+	h := &syllabusHandler{
+		svc:     svc,
+		sRouter: mux.NewRouter(),
 	}
+
+	return h.InitRoutes()
+}
+
+func (h *syllabusHandler) InitRoutes() *syllabusHandler {
+	h.sRouter.HandleFunc("/syllabus", ServeHTTPWrapper(h.handleGet)).Methods("GET")
+	h.sRouter.HandleFunc("/syllabus", ServeHTTPWrapper(h.handleCreate)).Methods("POST")
+	// h.sRouter.HandleFunc("/syllabus", ServeHTTPWrapper(h.handleUpdate)).Methods("PUT")
+	// h.sRouter.HandleFunc("/syllabus", ServeHTTPWrapper(h.handleDelete)).Methods("DELETE")
+	// Add other routes as needed
+
+	return h
 }
 
 func (h *syllabusHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	var response apiResponse
-	var ctx = r.Context()
-
-	switch r.Method {
-	case http.MethodPost:
-		response = h.handleCreate(ctx, r)
-	case http.MethodGet:
-		response = h.handleGet(ctx, r)
-	// Implement other HTTP methods as needed
-	default:
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
-	if err := response.Write(w); err != nil {
-		http.Error(w, "Failed to serialize response", http.StatusInternalServerError)
-	}
+	h.sRouter.ServeHTTP(w, r)
 }
 
 func (h *syllabusHandler) handleCreate(ctx context.Context, r *http.Request) apiResponse {

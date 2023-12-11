@@ -5,41 +5,36 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/gorilla/mux"
 	user_svc "github.com/priyanshu360/lab-rank/dashboard/internal/user"
 	"github.com/priyanshu360/lab-rank/dashboard/models"
 )
 
 type userHandler struct {
-	svc user_svc.UserService
+	svc     user_svc.UserService
+	uRouter mux.Router
 }
 
 func NewUserHandler(svc user_svc.UserService) *userHandler {
-	return &userHandler{
-		svc: svc,
+	h := &userHandler{
+		svc:     svc,
+		uRouter: *mux.NewRouter(),
 	}
+
+	return h.InitRoutes()
+}
+
+func (h *userHandler) InitRoutes() *userHandler {
+	h.uRouter.HandleFunc("/user", ServeHTTPWrapper(h.handleGet)).Methods("GET")
+	h.uRouter.HandleFunc("/user", ServeHTTPWrapper(h.handleCreate)).Methods("POST")
+	h.uRouter.HandleFunc("/user", ServeHTTPWrapper(h.handleUpdate)).Methods("PUT")
+	h.uRouter.HandleFunc("/user", ServeHTTPWrapper(h.handleDelete)).Methods("DELETE")
+
+	return h
 }
 
 func (h *userHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	var response apiResponse
-	var ctx = r.Context()
-
-	switch r.Method {
-	case http.MethodPost:
-		response = h.handleCreate(ctx, r)
-	case http.MethodGet:
-		response = h.handleGet(ctx, r)
-	case http.MethodPut:
-		response = h.handleUpdate(ctx, r)
-	case http.MethodDelete:
-		response = h.handleDelete(ctx, r)
-	default:
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
-	if err := response.Write(w); err != nil {
-		http.Error(w, "Failed to serialize response", http.StatusInternalServerError)
-	}
+	h.uRouter.ServeHTTP(w, r)
 }
 
 func (h *userHandler) handleDelete(ctx context.Context, r *http.Request) apiResponse {

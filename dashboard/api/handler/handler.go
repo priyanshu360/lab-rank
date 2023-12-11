@@ -19,18 +19,18 @@ type Handler interface {
 
 // Decorator is the interface for decorators.
 
-type apiRequest interface {
-	Parse(*http.Request) error
-}
+// type apiRequest interface {
+// 	Parse(*http.Request) error
+// }
 
 type apiResponse interface {
 	Write(http.ResponseWriter) error
 }
 
-type httpErrorResponse interface {
-	apiResponse
-	Error() string
-}
+// type httpErrorResponse interface {
+// 	apiResponse
+// 	Error() string
+// }
 
 type ReqIDMiddleware struct {
 	id uuid.UUID
@@ -89,4 +89,15 @@ func newAPIError(e models.AppError) *apiError {
 	err.status = statusMapping[e.Type]
 
 	return &err
+}
+
+func ServeHTTPWrapper(f func(context.Context, *http.Request) apiResponse) http.HandlerFunc {
+
+	return func(w http.ResponseWriter, r *http.Request) {
+		var ctx = r.Context()
+		response := f(ctx, r)
+		if err := response.Write(w); err != nil {
+			http.Error(w, "Failed to serialize response", http.StatusInternalServerError)
+		}
+	}
 }
