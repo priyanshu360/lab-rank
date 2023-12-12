@@ -21,14 +21,14 @@ func NewUserHandler(svc user_svc.UserService) *userHandler {
 		uRouter: *mux.NewRouter(),
 	}
 
-	return h.InitRoutes()
+	return h.initRoutes()
 }
 
-func (h *userHandler) InitRoutes() *userHandler {
-	h.uRouter.HandleFunc("/user", ServeHTTPWrapper(h.handleGet)).Methods("GET")
-	h.uRouter.HandleFunc("/user", ServeHTTPWrapper(h.handleCreate)).Methods("POST")
-	h.uRouter.HandleFunc("/user", ServeHTTPWrapper(h.handleUpdate)).Methods("PUT")
-	h.uRouter.HandleFunc("/user", ServeHTTPWrapper(h.handleDelete)).Methods("DELETE")
+func (h *userHandler) initRoutes() *userHandler {
+	h.uRouter.HandleFunc("/user", serveHTTPWrapper(h.handleGet)).Methods("GET")
+	h.uRouter.HandleFunc("/user", serveHTTPWrapper(h.handleCreate)).Methods("POST")
+	h.uRouter.HandleFunc("/user", serveHTTPWrapper(h.handleUpdate)).Methods("PUT")
+	h.uRouter.HandleFunc("/user", serveHTTPWrapper(h.handleDelete)).Methods("DELETE")
 
 	return h
 }

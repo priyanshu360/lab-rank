@@ -21,12 +21,12 @@ func NewEnvironmentHandler(svc environment_svc.EnvironmentService) *environmentH
 		eRouter: mux.NewRouter(),
 	}
 
-	return h.InitRoutes()
+	return h.initRoutes()
 }
 
-func (h *environmentHandler) InitRoutes() *environmentHandler {
-	h.eRouter.HandleFunc("/environment", ServeHTTPWrapper(h.handleGet)).Methods("GET")
-	h.eRouter.HandleFunc("/environment", ServeHTTPWrapper(h.handleCreate)).Methods("POST")
+func (h *environmentHandler) initRoutes() *environmentHandler {
+	h.eRouter.HandleFunc("/environment", serveHTTPWrapper(h.handleGet)).Methods("GET")
+	h.eRouter.HandleFunc("/environment", serveHTTPWrapper(h.handleCreate)).Methods("POST")
 	// Add other routes as needed
 
 	return h

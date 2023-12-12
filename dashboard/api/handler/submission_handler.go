@@ -22,13 +22,13 @@ func NewSubmissionsHandler(svc submission.SubmissionService) *submissionsHandler
 		sRouter: mux.NewRouter(),
 	}
 
-	return h.InitRoutes()
+	return h.initRoutes()
 }
 
-func (h *submissionsHandler) InitRoutes() *submissionsHandler {
-	h.sRouter.HandleFunc("/submission", ServeHTTPWrapper(h.handleGet)).Methods("GET")
-	h.sRouter.HandleFunc("/submission", ServeHTTPWrapper(h.handleCreate)).Methods("POST")
-	h.sRouter.HandleFunc("/submission", ServeHTTPWrapper(h.handleUpdate)).Methods("PUT")
+func (h *submissionsHandler) initRoutes() *submissionsHandler {
+	h.sRouter.HandleFunc("/submission", serveHTTPWrapper(h.handleGet)).Methods("GET")
+	h.sRouter.HandleFunc("/submission", serveHTTPWrapper(h.handleCreate)).Methods("POST")
+	h.sRouter.HandleFunc("/submission", serveHTTPWrapper(h.handleUpdate)).Methods("PUT")
 	// Add other routes as needed
 
 	return h

@@ -21,12 +21,12 @@ func NewCollegeHandler(svc college_svc.CollegeService) *collegeHandler {
 		cRouter: mux.NewRouter(),
 	}
 
-	return h.InitRoutes()
+	return h.initRoutes()
 }
 
-func (h *collegeHandler) InitRoutes() *collegeHandler {
-	h.cRouter.HandleFunc("/colleges", ServeHTTPWrapper(h.handleGet)).Methods("GET")
-	h.cRouter.HandleFunc("/colleges", ServeHTTPWrapper(h.handleCreate)).Methods("POST")
+func (h *collegeHandler) initRoutes() *collegeHandler {
+	h.cRouter.HandleFunc("/colleges", serveHTTPWrapper(h.handleGet)).Methods("GET")
+	h.cRouter.HandleFunc("/colleges", serveHTTPWrapper(h.handleCreate)).Methods("POST")
 	// Add other routes as needed
 
 	return h

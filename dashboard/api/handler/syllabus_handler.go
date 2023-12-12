@@ -21,14 +21,14 @@ func NewSyllabusHandler(svc syllabus_svc.SyllabusService) *syllabusHandler {
 		sRouter: mux.NewRouter(),
 	}
 
-	return h.InitRoutes()
+	return h.initRoutes()
 }
 
-func (h *syllabusHandler) InitRoutes() *syllabusHandler {
-	h.sRouter.HandleFunc("/syllabus", ServeHTTPWrapper(h.handleGet)).Methods("GET")
-	h.sRouter.HandleFunc("/syllabus", ServeHTTPWrapper(h.handleCreate)).Methods("POST")
-	// h.sRouter.HandleFunc("/syllabus", ServeHTTPWrapper(h.handleUpdate)).Methods("PUT")
-	// h.sRouter.HandleFunc("/syllabus", ServeHTTPWrapper(h.handleDelete)).Methods("DELETE")
+func (h *syllabusHandler) initRoutes() *syllabusHandler {
+	h.sRouter.HandleFunc("/syllabus", serveHTTPWrapper(h.handleGet)).Methods("GET")
+	h.sRouter.HandleFunc("/syllabus", serveHTTPWrapper(h.handleCreate)).Methods("POST")
+	// h.sRouter.HandleFunc("/syllabus", serveHTTPWrapper(h.handleUpdate)).Methods("PUT")
+	// h.sRouter.HandleFunc("/syllabus", serveHTTPWrapper(h.handleDelete)).Methods("DELETE")
 	// Add other routes as needed
 
 	return h

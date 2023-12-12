@@ -91,7 +91,7 @@ func newAPIError(e models.AppError) *apiError {
 	return &err
 }
 
-func ServeHTTPWrapper(f func(context.Context, *http.Request) apiResponse) http.HandlerFunc {
+func serveHTTPWrapper(f func(context.Context, *http.Request) apiResponse) http.HandlerFunc {
 
 	return func(w http.ResponseWriter, r *http.Request) {
 		var ctx = r.Context()

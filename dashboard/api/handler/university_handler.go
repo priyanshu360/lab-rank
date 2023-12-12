@@ -21,14 +21,14 @@ func NewUniversityHandler(svc university_svc.UniversityService) *universityHandl
 		uRouter: mux.NewRouter(),
 	}
 
-	return h.InitRoutes()
+	return h.initRoutes()
 }
 
-func (h *universityHandler) InitRoutes() *universityHandler {
-	h.uRouter.HandleFunc("/university", ServeHTTPWrapper(h.handleGet)).Methods("GET")
-	h.uRouter.HandleFunc("/university", ServeHTTPWrapper(h.handleCreate)).Methods("POST")
-	// h.uRouter.HandleFunc("/university", ServeHTTPWrapper(h.handleUpdate)).Methods("PUT")
-	// h.uRouter.HandleFunc("/university", ServeHTTPWrapper(h.handleDelete)).Methods("DELETE")
+func (h *universityHandler) initRoutes() *universityHandler {
+	h.uRouter.HandleFunc("/university", serveHTTPWrapper(h.handleGet)).Methods("GET")
+	h.uRouter.HandleFunc("/university", serveHTTPWrapper(h.handleCreate)).Methods("POST")
+	// h.uRouter.HandleFunc("/university", serveHTTPWrapper(h.handleUpdate)).Methods("PUT")
+	// h.uRouter.HandleFunc("/university", serveHTTPWrapper(h.handleDelete)).Methods("DELETE")
 	// Add other routes as needed
 
 	return h

@@ -22,12 +22,12 @@ func NewProblemsHandler(svc problems_svc.ProblemService) *problemsHandler {
 		pRouter: mux.NewRouter(),
 	}
 
-	return h.InitRoutes()
+	return h.initRoutes()
 }
 
-func (h *problemsHandler) InitRoutes() *problemsHandler {
-	h.pRouter.HandleFunc("/problem", ServeHTTPWrapper(h.handleGet)).Methods("GET")
-	h.pRouter.HandleFunc("/problem", ServeHTTPWrapper(h.handleCreate)).Methods("POST")
+func (h *problemsHandler) initRoutes() *problemsHandler {
+	h.pRouter.HandleFunc("/problem", serveHTTPWrapper(h.handleGet)).Methods("GET")
+	h.pRouter.HandleFunc("/problem", serveHTTPWrapper(h.handleCreate)).Methods("POST")
 	// Add other routes as needed
 
 	return h

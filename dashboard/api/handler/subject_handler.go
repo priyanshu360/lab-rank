@@ -21,13 +21,13 @@ func NewSubjectHandler(svc subject_svc.SubjectService) *subjectHandler {
 		sRouter: mux.NewRouter(),
 	}
 
-	return h.InitRoutes()
+	return h.initRoutes()
 }
 
-func (h *subjectHandler) InitRoutes() *subjectHandler {
-	h.sRouter.HandleFunc("/subject", ServeHTTPWrapper(h.handleGet)).Methods("GET")
-	h.sRouter.HandleFunc("/subject", ServeHTTPWrapper(h.handleCreate)).Methods("POST")
-	// h.sRouter.HandleFunc("/subjects", ServeHTTPWrapper(h.handleUpdate)).Methods("PUT")
+func (h *subjectHandler) initRoutes() *subjectHandler {
+	h.sRouter.HandleFunc("/subject", serveHTTPWrapper(h.handleGet)).Methods("GET")
+	h.sRouter.HandleFunc("/subject", serveHTTPWrapper(h.handleCreate)).Methods("POST")
+	// h.sRouter.HandleFunc("/subjects", serveHTTPWrapper(h.handleUpdate)).Methods("PUT")
 	// Add other routes as needed
 
 	return h
