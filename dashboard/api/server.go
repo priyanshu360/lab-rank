@@ -50,6 +50,7 @@ func NewServer(cfg config.ServerConfig) *APIServer {
 			ReadTimeout:  time.Duration(cfg.GetReadTimeout()) * time.Second,
 		},
 		middlewares: []mux.MiddlewareFunc{},
+		router:      mux.NewRouter(),
 	}
 }
 
@@ -84,6 +85,8 @@ func (s *APIServer) run() {
 			os.Exit(1)
 		}
 	}()
+
+	log.Println("[*] Server running .... ")
 
 	// Handle graceful shutdown
 	sigChan := make(chan os.Signal, 1)

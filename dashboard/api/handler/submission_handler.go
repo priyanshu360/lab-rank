@@ -26,9 +26,9 @@ func NewSubmissionsHandler(svc submission.SubmissionService) *submissionsHandler
 }
 
 func (h *submissionsHandler) InitRoutes() *submissionsHandler {
-	h.sRouter.HandleFunc("/submissions", ServeHTTPWrapper(h.handleGet)).Methods("GET")
-	h.sRouter.HandleFunc("/submissions", ServeHTTPWrapper(h.handleCreate)).Methods("POST")
-	h.sRouter.HandleFunc("/submissions", ServeHTTPWrapper(h.handleUpdate)).Methods("PUT")
+	h.sRouter.HandleFunc("/submission", ServeHTTPWrapper(h.handleGet)).Methods("GET")
+	h.sRouter.HandleFunc("/submission", ServeHTTPWrapper(h.handleCreate)).Methods("POST")
+	h.sRouter.HandleFunc("/submission", ServeHTTPWrapper(h.handleUpdate)).Methods("PUT")
 	// Add other routes as needed
 
 	return h

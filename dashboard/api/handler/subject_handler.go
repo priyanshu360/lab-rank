@@ -25,8 +25,8 @@ func NewSubjectHandler(svc subject_svc.SubjectService) *subjectHandler {
 }
 
 func (h *subjectHandler) InitRoutes() *subjectHandler {
-	h.sRouter.HandleFunc("/subjects", ServeHTTPWrapper(h.handleGet)).Methods("GET")
-	h.sRouter.HandleFunc("/subjects", ServeHTTPWrapper(h.handleCreate)).Methods("POST")
+	h.sRouter.HandleFunc("/subject", ServeHTTPWrapper(h.handleGet)).Methods("GET")
+	h.sRouter.HandleFunc("/subject", ServeHTTPWrapper(h.handleCreate)).Methods("POST")
 	// h.sRouter.HandleFunc("/subjects", ServeHTTPWrapper(h.handleUpdate)).Methods("PUT")
 	// Add other routes as needed
 

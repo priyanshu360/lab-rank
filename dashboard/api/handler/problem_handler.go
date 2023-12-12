@@ -26,8 +26,8 @@ func NewProblemsHandler(svc problems_svc.ProblemService) *problemsHandler {
 }
 
 func (h *problemsHandler) InitRoutes() *problemsHandler {
-	h.pRouter.HandleFunc("/problems", ServeHTTPWrapper(h.handleGet)).Methods("GET")
-	h.pRouter.HandleFunc("/problems", ServeHTTPWrapper(h.handleCreate)).Methods("POST")
+	h.pRouter.HandleFunc("/problem", ServeHTTPWrapper(h.handleGet)).Methods("GET")
+	h.pRouter.HandleFunc("/problem", ServeHTTPWrapper(h.handleCreate)).Methods("POST")
 	// Add other routes as needed
 
 	return h
