@@ -45,7 +45,7 @@ func main() {
 }
 
 func InitDB() {
-	dbURL := "postgres://new_admin_user:your_password@localhost:5432/postgres"
+	dbURL := "postgres://vipulgupta:password@localhost:5432/lab"
 	var err error
 	if db, err = gorm.Open(postgres.Open(dbURL), &gorm.Config{}); err != nil {
 		log.Fatal(err)

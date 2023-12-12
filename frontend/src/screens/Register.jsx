@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom';
+import logo from '../assets/success.gif'
 
 function Register() {
   const [email, setEmail] = useState('test@user.in');
@@ -11,9 +12,14 @@ function Register() {
   const [userName, setUserName] = useState('Priyanshu Rajput');
   const [dob, setDob] = useState('2000-01-01');
   const [apiResp, setApiResp] = useState(null);
-  const [error, setError] = useState(false);
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
-  useEffect(() => { if(apiResp)navigate('/auth/login') },[apiResp]);
+  useEffect(() =>
+    { if(apiResp){
+        setTimeout(()=>navigate('/auth/login'), 1000);
+      }
+    },[apiResp]
+  );
 
 
   const handleClick = async () => {
@@ -46,8 +52,15 @@ function Register() {
     })
     .catch(error => console.error(error));
   };
-
-  return (
+  if(error == false)
+    return (
+    <>
+      <div style={styles.center}>
+      <img src={logo} alt="loading..." />
+      </div>
+    </>
+  )
+  else return (
     <>
       <div style={styles.center}>
           <h3 text-align="center">Register User</h3>
