@@ -81,6 +81,7 @@ const (
 	Rust       ProgrammingLanguageEnum = "Rust"
 	Text       ProgrammingLanguageEnum = "Text"
 	YAML       ProgrammingLanguageEnum = "YAML"
+	MYSQL      ProgrammingLanguageEnum = "MYSQL"
 	// Add more programming languages as needed
 )
 

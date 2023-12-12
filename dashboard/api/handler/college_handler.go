@@ -5,38 +5,35 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/gorilla/mux"
 	college_svc "github.com/priyanshu360/lab-rank/dashboard/internal/college"
 	"github.com/priyanshu360/lab-rank/dashboard/models"
 )
 
 type collegeHandler struct {
-	svc college_svc.CollegeService
+	svc     college_svc.CollegeService
+	cRouter *mux.Router
 }
 
-func NewCollegeHandler(svc college_svc.CollegeService) Handler {
-	return &collegeHandler{
-		svc: svc,
+func NewCollegeHandler(svc college_svc.CollegeService) *collegeHandler {
+	h := &collegeHandler{
+		svc:     svc,
+		cRouter: mux.NewRouter(),
 	}
+
+	return h.initRoutes()
+}
+
+func (h *collegeHandler) initRoutes() *collegeHandler {
+	h.cRouter.HandleFunc("/colleges", serveHTTPWrapper(h.handleGet)).Methods("GET")
+	h.cRouter.HandleFunc("/colleges", serveHTTPWrapper(h.handleCreate)).Methods("POST")
+	// Add other routes as needed
+
+	return h
 }
 
 func (h *collegeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	var response apiResponse
-	var ctx = r.Context()
-
-	switch r.Method {
-	case http.MethodPost:
-		response = h.handleCreate(ctx, r)
-	case http.MethodGet:
-		response = h.handleGet(ctx, r)
-	// Implement other HTTP methods as needed
-	default:
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
-	if err := response.Write(w); err != nil {
-		http.Error(w, "Failed to serialize response", http.StatusInternalServerError)
-	}
+	h.cRouter.ServeHTTP(w, r)
 }
 
 func (h *collegeHandler) handleCreate(ctx context.Context, r *http.Request) apiResponse {

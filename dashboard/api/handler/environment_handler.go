@@ -5,39 +5,36 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/gorilla/mux"
 	environment_svc "github.com/priyanshu360/lab-rank/dashboard/internal/environment"
 	"github.com/priyanshu360/lab-rank/dashboard/models"
 )
 
 type environmentHandler struct {
-	svc environment_svc.EnvironmentService
+	svc     environment_svc.EnvironmentService
+	eRouter *mux.Router
 }
 
-func NewEnvironmentHandler(svc environment_svc.EnvironmentService) Handler {
-	return &environmentHandler{
-		svc: svc,
+func NewEnvironmentHandler(svc environment_svc.EnvironmentService) *environmentHandler {
+	h := &environmentHandler{
+		svc:     svc,
+		eRouter: mux.NewRouter(),
 	}
+
+	return h.initRoutes()
+}
+
+func (h *environmentHandler) initRoutes() *environmentHandler {
+	h.eRouter.HandleFunc("/environment", serveHTTPWrapper(h.handleGet)).Methods("GET")
+	h.eRouter.HandleFunc("/environment", serveHTTPWrapper(h.handleCreate)).Methods("POST")
+	// Add other routes as needed
+
+	return h
 }
 
 func (h *environmentHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	var response apiResponse
-	var ctx = r.Context()
-
-	switch r.Method {
-	case http.MethodPost:
-		response = h.handleCreate(ctx, r)
-	case http.MethodGet:
-		response = h.handleGet(ctx, r)
-	default:
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
-	if err := response.Write(w); err != nil {
-		http.Error(w, "Failed to serialize response", http.StatusInternalServerError)
-	}
+	h.eRouter.ServeHTTP(w, r)
 }
-
 func (h *environmentHandler) handleCreate(ctx context.Context, r *http.Request) apiResponse {
 	var request models.CreateEnvironmentAPIRequest
 	if err := request.Parse(r); err != nil {
