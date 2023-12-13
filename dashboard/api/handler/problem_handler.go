@@ -12,11 +12,11 @@ import (
 )
 
 type problemsHandler struct {
-	svc     problems_svc.ProblemService
+	svc     problems_svc.Service
 	pRouter *mux.Router
 }
 
-func NewProblemsHandler(svc problems_svc.ProblemService) *problemsHandler {
+func NewProblemsHandler(svc problems_svc.Service) *problemsHandler {
 	h := &problemsHandler{
 		svc:     svc,
 		pRouter: mux.NewRouter(),

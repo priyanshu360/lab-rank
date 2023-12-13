@@ -9,22 +9,22 @@ import (
 	"github.com/priyanshu360/lab-rank/dashboard/repository"
 )
 
-type SyllabusService interface {
+type Service interface {
 	Create(context.Context, *models.Syllabus) (*models.Syllabus, models.AppError)
 	Fetch(context.Context, string, string) ([]*models.Syllabus, models.AppError)
 }
 
-type syllabusService struct {
+type service struct {
 	repo repository.SyllabusRepository
 }
 
-func NewSyllabusService(repo repository.SyllabusRepository) *syllabusService {
-	return &syllabusService{
+func New(repo repository.SyllabusRepository) *service {
+	return &service{
 		repo: repo,
 	}
 }
 
-func (s *syllabusService) Create(ctx context.Context, syllabus *models.Syllabus) (*models.Syllabus, models.AppError) {
+func (s *service) Create(ctx context.Context, syllabus *models.Syllabus) (*models.Syllabus, models.AppError) {
 	syllabus.ID = uuid.New()
 
 	if err := s.repo.CreateSyllabus(ctx, *syllabus); err != models.NoError {
@@ -34,7 +34,7 @@ func (s *syllabusService) Create(ctx context.Context, syllabus *models.Syllabus)
 	return syllabus, models.NoError
 }
 
-func (s *syllabusService) Fetch(ctx context.Context, id, limit string) ([]*models.Syllabus, models.AppError) {
+func (s *service) Fetch(ctx context.Context, id, limit string) ([]*models.Syllabus, models.AppError) {
 	var syllabuss []*models.Syllabus
 	switch {
 	case id != "":

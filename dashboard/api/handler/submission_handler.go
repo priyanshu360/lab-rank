@@ -12,11 +12,11 @@ import (
 )
 
 type submissionsHandler struct {
-	svc     submission.SubmissionService
+	svc     submission.Service
 	sRouter *mux.Router
 }
 
-func NewSubmissionsHandler(svc submission.SubmissionService) *submissionsHandler {
+func NewSubmissionsHandler(svc submission.Service) *submissionsHandler {
 	h := &submissionsHandler{
 		svc:     svc,
 		sRouter: mux.NewRouter(),

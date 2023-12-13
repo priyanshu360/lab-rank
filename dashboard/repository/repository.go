@@ -74,3 +74,8 @@ type FileSystem interface {
 	GetFile(context.Context, string) ([]byte, models.AppError)
 	// MakeFileName(...string) string
 }
+
+type AuthRepository interface {
+	SignUp(context.Context, models.User, models.Auth) models.AppError
+	GetUserByEmail(context.Context, string) (*models.User, *models.Auth, models.AppError)
+}
