@@ -9,11 +9,21 @@ import (
 type Auth struct {
 	UserID       uuid.UUID `json:"user_id"`
 	AccessIDs    string    `json:"access_ids"`
-	Salt         string    `json:"salt"`
+	Salt         []byte    `json:"salt"`
 	PasswordHash string    `json:"password_hash"`
 }
 
 type SignUpAPIRequest struct {
+	CollegeID    uuid.UUID `json:"college_id" validate:"required"`
+	AccessID     uuid.UUID `json:"access_id" validate:"required"` // To do: Implement AccessID functionality
+	Email        string    `json:"email" validate:"required,email"`
+	ContactNo    string    `json:"contact_no" validate:"required"`
+	DOB          time.Time `json:"dob" validate:"required"`
+	UniversityID string    `json:"university_id"`
+	Password     string    `json:"password"`
+}
+
+type SignUpAPIResponse struct {
 	CollegeID    uuid.UUID `json:"college_id" validate:"required"`
 	AccessID     uuid.UUID `json:"access_id" validate:"required"` // To do: Implement AccessID functionality
 	Email        string    `json:"email" validate:"required,email"`

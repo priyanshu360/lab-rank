@@ -38,7 +38,7 @@ func (s *service) Login(ctx context.Context, email, password string) (string, mo
 	}
 
 	// Validate password
-	if !verifyPassword(password, auth.PasswordHash, auth.Salt) {
+	if !verifyPassword(password, auth.PasswordHash, string(auth.Salt)) {
 		return "", models.InternalError.Add(errors.New("Login failed"))
 	}
 
@@ -68,14 +68,14 @@ func (s *service) SignUp(ctx context.Context, user *models.User, password string
 	}
 
 	// Hash the password
-	passwordHash, err := hashPassword(password, salt)
+	passwordHash, err := hashPassword(password, string(salt))
 	if err != nil {
 		return models.InternalError.Add(err)
 	}
 
 	auth := models.Auth{
-		UserID:       user.ID.String(),
-		AccessIDs:    "",
+		UserID:       user.ID,
+		AccessIDs:    "{}",
 		Salt:         salt,
 		PasswordHash: passwordHash,
 	}
@@ -85,14 +85,14 @@ func (s *service) SignUp(ctx context.Context, user *models.User, password string
 }
 
 // generateSalt generates a random salt using the bcrypt library.
-func generateSalt() (string, error) {
+func generateSalt() ([]byte, error) {
 	saltBytes := make([]byte, 32) // Adjust the size of the salt as needed
 	_, err := rand.Read(saltBytes)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	return string(saltBytes), nil
+	return saltBytes, nil
 }
 
 // hashPassword hashes the given password using the bcrypt library and the provided salt.

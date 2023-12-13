@@ -3,6 +3,7 @@ package handler
 import (
 	"context"
 	"encoding/json"
+	"log"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -15,7 +16,7 @@ type authHandler struct {
 	aRouter *mux.Router
 }
 
-func NewauthHandler(svc auth.Service) *authHandler {
+func NewAuthHandler(svc auth.Service) *authHandler {
 	h := &authHandler{
 		svc:     svc,
 		aRouter: mux.NewRouter(),
@@ -25,6 +26,7 @@ func NewauthHandler(svc auth.Service) *authHandler {
 }
 
 func (h *authHandler) initRoutes() *authHandler {
+	log.Print("auth handler")
 	h.aRouter.HandleFunc("/auth/login", serveHTTPWrapper(h.handleLogin)).Methods("POST")
 	h.aRouter.HandleFunc("/auth/signup", serveHTTPWrapper(h.handleSignUp)).Methods("POST")
 	// h.aRouter.HandleFunc("/auth/logout", serveHTTPWrapper(h.handleLogout)).Methods("POST")
@@ -35,6 +37,7 @@ func (h *authHandler) initRoutes() *authHandler {
 }
 
 func (h *authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	log.Print("auth handler called")
 	h.aRouter.ServeHTTP(w, r)
 }
 
@@ -68,5 +71,5 @@ func (h *authHandler) handleSignUp(ctx context.Context, r *http.Request) apiResp
 	if err != models.NoError {
 		return newAPIError(err)
 	}
-	return nil
+	return newAPIError(models.NoError)
 }

@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 	"errors"
+	"log"
 
 	"github.com/priyanshu360/lab-rank/dashboard/models"
 	"gorm.io/gorm"
@@ -17,10 +18,11 @@ func NewAuthPostgresRepo(db *gorm.DB) *authPostgres {
 	return &authPostgres{db}
 }
 
+// Todo : change psql column type to store byte array (bytea)
 func (r *authPostgres) SignUp(ctx context.Context, user models.User, auth models.Auth) models.AppError {
 	// Check if the email is already registered
 	var existingUser models.User
-	result := r.db.Where("email = ?", user.Email).First(&existingUser)
+	result := r.db.Where("email = ?", user.Email).Table("lab_rank.user").First(&existingUser)
 	if result.Error == nil {
 		return models.InternalError.Add(errors.New("user already exist"))
 	}
@@ -31,22 +33,26 @@ func (r *authPostgres) SignUp(ctx context.Context, user models.User, auth models
 	}
 
 	// Insert user data into the "user" table
-	if err := tx.Create(&user).Error; err != nil {
+	if err := tx.Table("lab_rank.user").Create(&user).Error; err != nil {
 		tx.Rollback()
 		return models.InternalError.Add(err)
 	}
 
 	// Insert authentication data into the "auth" table
-	if err := tx.Create(&auth).Error; err != nil {
+	if err := tx.Table("lab_rank.auth").Create(&auth).Error; err != nil {
+		log.Println("err 41")
 		tx.Rollback()
-		return models.InternalError.Add(tx.Error)
+		return models.InternalError.Add(err)
 	}
 
 	// Commit the transaction
+	log.Println("err 48")
 	if err := tx.Commit().Error; err != nil {
+		log.Println("err 50")
 		models.InternalError.Add(err)
 	}
 
+	log.Println("err 53")
 	return models.NoError
 }
 
