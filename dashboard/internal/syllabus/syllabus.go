@@ -2,6 +2,7 @@ package syllabus
 
 import (
 	"context"
+	"log"
 	"strconv"
 
 	"github.com/google/uuid"
@@ -12,6 +13,8 @@ import (
 type Service interface {
 	Create(context.Context, *models.Syllabus) (*models.Syllabus, models.AppError)
 	Fetch(context.Context, string, string) ([]*models.Syllabus, models.AppError)
+	AutoGenerateFromCollege(context.Context, *models.College) models.AppError
+	AutoGenerateFromSubject(context.Context, *models.Subject) models.AppError
 }
 
 type service struct {
@@ -32,6 +35,42 @@ func (s *service) Create(ctx context.Context, syllabus *models.Syllabus) (*model
 	}
 
 	return syllabus, models.NoError
+}
+
+func (s *service) AutoGenerateFromCollege(ctx context.Context, college *models.College) models.AppError {
+	subjects, err := s.repo.GetSubjectsByUniversityID(ctx, college.UniversityID)
+	if err != models.NoError {
+		return err
+	}
+
+	for _, subject := range subjects {
+		syllabus := subject.ToSyllabus(college.ID, models.SyllabusLevelCollege)
+		if _, err := s.Create(ctx, syllabus); err != models.NoError {
+			log.Println("AutoGenerateFromSubject ", err)
+		}
+	}
+	return models.NoError
+}
+
+func (s *service) AutoGenerateFromSubject(ctx context.Context, subject *models.Subject) models.AppError {
+	collegeIDs, err := s.repo.GetCollegeIDsForUniversityID(ctx, subject.UniversityID)
+	if err != models.NoError {
+		return err
+	}
+
+	for _, cID := range collegeIDs {
+		syllabus := []*models.Syllabus{
+			subject.ToSyllabus(cID, models.SyllabusLevelCollege),
+			subject.ToSyllabus(subject.UniversityID, models.SyllabusLevelUniversity),
+		}
+		if _, err := s.Create(ctx, syllabus[0]); err != models.NoError {
+			log.Println("AutoGenerateFromSubject ", err)
+		}
+		if _, err := s.Create(ctx, syllabus[1]); err != models.NoError {
+			log.Println("AutoGenerateFromSubject ", err)
+		}
+	}
+	return models.NoError
 }
 
 func (s *service) Fetch(ctx context.Context, id, limit string) ([]*models.Syllabus, models.AppError) {

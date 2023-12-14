@@ -56,3 +56,31 @@ func (psql *syllabusPostgres) GetSyllabusListByLimit(ctx context.Context, page i
 }
 
 // Add other repository methods for syllabi as needed.
+
+func (psql *syllabusPostgres) GetCollegeIDsForUniversityID(ctx context.Context, universityID uuid.UUID) ([]uuid.UUID, models.AppError) {
+	var collegeIDs []uuid.UUID // Assuming college_id is of type string, adjust accordingly
+
+	result := psql.db.WithContext(ctx).Table("lab_rank.college").Where("university_id = ?", universityID).
+		Pluck("id", &collegeIDs)
+	if result.Error != nil {
+		if result.Error == gorm.ErrRecordNotFound {
+			// College not found
+			return collegeIDs, models.CollegeNotFoundError
+		}
+		return collegeIDs, models.InternalError.Add(result.Error)
+	}
+	return collegeIDs, models.NoError
+}
+
+func (psql *syllabusPostgres) GetSubjectsByUniversityID(ctx context.Context, universityID uuid.UUID) ([]models.Subject, models.AppError) {
+	var subjects []models.Subject
+	result := psql.db.WithContext(ctx).Table("lab_rank.subject").Where("university_id = ?", universityID).Find(&subjects)
+	if result.Error != nil {
+		if result.Error == gorm.ErrRecordNotFound {
+			// Subject not found
+			return subjects, models.SubjectNotFoundError
+		}
+		return subjects, models.InternalError.Add(result.Error)
+	}
+	return subjects, models.NoError
+}

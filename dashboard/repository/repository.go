@@ -29,6 +29,8 @@ type SyllabusRepository interface {
 	CreateSyllabus(context.Context, models.Syllabus) models.AppError
 	GetSyllabusByID(context.Context, uuid.UUID) (models.Syllabus, models.AppError)
 	GetSyllabusListByLimit(context.Context, int, int) ([]*models.Syllabus, models.AppError)
+	GetCollegeIDsForUniversityID(context.Context, uuid.UUID) ([]uuid.UUID, models.AppError)
+	GetSubjectsByUniversityID(context.Context, uuid.UUID) ([]models.Subject, models.AppError)
 	// Add other repository methods specific to Syllabus
 }
 
