@@ -44,13 +44,8 @@ func (s *service) AutoGenerateFromCollege(ctx context.Context, college *models.C
 	}
 
 	for _, subject := range subjects {
-		syllabus := models.Syllabus{
-			ID:            uuid.New(),
-			SubjectID:     subject.ID,
-			SyllabusLevel: models.SyllabusLevelCollege,
-			UniCollegeID:  college.ID,
-		}
-		if _, err := s.Create(ctx, &syllabus); err != models.NoError {
+		syllabus := subject.ToSyllabus(college.ID, models.SyllabusLevelCollege)
+		if _, err := s.Create(ctx, syllabus); err != models.NoError {
 			log.Println("AutoGenerateFromSubject ", err)
 		}
 	}
@@ -64,24 +59,14 @@ func (s *service) AutoGenerateFromSubject(ctx context.Context, subject *models.S
 	}
 
 	for _, cID := range collegeIDs {
-		syllabus := []models.Syllabus{
-			{
-				ID:            uuid.New(),
-				SubjectID:     subject.ID,
-				SyllabusLevel: models.SyllabusLevelCollege,
-				UniCollegeID:  cID,
-			},
-			{
-				ID:            uuid.New(),
-				SubjectID:     subject.ID,
-				SyllabusLevel: models.SyllabusLevelUniversity,
-				UniCollegeID:  subject.UniversityID,
-			},
+		syllabus := []*models.Syllabus{
+			subject.ToSyllabus(cID, models.SyllabusLevelCollege),
+			subject.ToSyllabus(subject.UniversityID, models.SyllabusLevelUniversity),
 		}
-		if _, err := s.Create(ctx, &syllabus[0]); err != models.NoError {
+		if _, err := s.Create(ctx, syllabus[0]); err != models.NoError {
 			log.Println("AutoGenerateFromSubject ", err)
 		}
-		if _, err := s.Create(ctx, &syllabus[1]); err != models.NoError {
+		if _, err := s.Create(ctx, syllabus[1]); err != models.NoError {
 			log.Println("AutoGenerateFromSubject ", err)
 		}
 	}

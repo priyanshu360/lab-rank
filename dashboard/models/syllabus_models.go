@@ -81,3 +81,12 @@ func NewListSyllabusAPIResponse(syllabus []*Syllabus) *ListSyllabusAPIResponse {
 		Message: syllabus,
 	}
 }
+
+func (r Subject) ToSyllabus(id uuid.UUID, level SyllabusLevelEnum) *Syllabus {
+	return &Syllabus{
+		ID:            uuid.New(),
+		SubjectID:     r.ID,
+		UniCollegeID:  id,
+		SyllabusLevel: level,
+	}
+}
