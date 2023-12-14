@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/google/uuid"
+	"github.com/priyanshu360/lab-rank/dashboard/internal/syllabus"
 	"github.com/priyanshu360/lab-rank/dashboard/models"
 	"github.com/priyanshu360/lab-rank/dashboard/repository"
 )
@@ -15,12 +16,14 @@ type Service interface {
 }
 
 type service struct {
-	repo repository.SubjectRepository
+	syllabus syllabus.Service
+	repo     repository.SubjectRepository
 }
 
-func New(repo repository.SubjectRepository) *service {
+func New(repo repository.SubjectRepository, syllabus syllabus.Service) *service {
 	return &service{
-		repo: repo,
+		syllabus: syllabus,
+		repo:     repo,
 	}
 }
 
@@ -30,6 +33,8 @@ func (s *service) Create(ctx context.Context, subject *models.Subject) (*models.
 	if err := s.repo.CreateSubject(ctx, *subject); err != models.NoError {
 		return nil, err
 	}
+
+	go s.syllabus.AutoGenerateFromSubject(context.Background(), subject)
 
 	return subject, models.NoError
 }

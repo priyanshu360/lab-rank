@@ -68,7 +68,7 @@ func (s *APIServer) initRoutesAndMiddleware() {
 
 	s.add("/auth", handler.NewAuthHandler(auth.New(psql.NewAuthPostgresRepo(db))))
 	s.add("/user", handler.NewUserHandler(user.New(psql.NewUserPostgresRepo(db))))
-	s.add("/subject", handler.NewSubjectHandler(subject.New(psql.NewSubjectPostgresRepo(db))))
+	s.add("/subject", handler.NewSubjectHandler(subject.New(psql.NewSubjectPostgresRepo(db), syllabus.New(psql.NewSyllabusPostgresRepo(db)))))
 	s.add("/college", handler.NewCollegeHandler(college.New(psql.NewCollegePostgresRepo(db))))
 	s.add("/university", handler.NewUniversityHandler(university.New(psql.NewUniversityPostgresRepo(db))))
 	s.add("/submission", handler.NewSubmissionsHandler(submission.New(psql.NewSubmissionPostgresRepo(db), fileStorage, publisher)))

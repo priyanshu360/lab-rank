@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/google/uuid"
+	"github.com/priyanshu360/lab-rank/dashboard/internal/syllabus"
 	"github.com/priyanshu360/lab-rank/dashboard/models"
 	"github.com/priyanshu360/lab-rank/dashboard/repository"
 )
@@ -15,12 +16,14 @@ type Service interface {
 }
 
 type service struct {
-	repo repository.CollegeRepository
+	syllabus syllabus.Service
+	repo     repository.CollegeRepository
 }
 
-func New(repo repository.CollegeRepository) *service {
+func New(repo repository.CollegeRepository, syllabus syllabus.Service) *service {
 	return &service{
-		repo: repo,
+		syllabus: syllabus,
+		repo:     repo,
 	}
 }
 
@@ -30,6 +33,8 @@ func (s *service) Create(ctx context.Context, college *models.College) (*models.
 	if err := s.repo.CreateCollege(ctx, *college); err != models.NoError { // Todo: Check if university id exists
 		return nil, err
 	}
+
+	go s.syllabus.AutoGenerateFromCollege(context.Background(), college)
 
 	return college, models.NoError
 }
