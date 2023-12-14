@@ -11,11 +11,11 @@ import (
 )
 
 type subjectHandler struct {
-	svc     subject_svc.SubjectService
+	svc     subject_svc.Service
 	sRouter *mux.Router
 }
 
-func NewSubjectHandler(svc subject_svc.SubjectService) *subjectHandler {
+func NewSubjectHandler(svc subject_svc.Service) *subjectHandler {
 	h := &subjectHandler{
 		svc:     svc,
 		sRouter: mux.NewRouter(),

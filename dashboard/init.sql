@@ -94,6 +94,8 @@ CREATE TABLE lab_rank.access_level (
 
 -- Define the "user" table with all fields NOT NULL
 CREATE TABLE lab_rank.user (
+    name VARCHAR(32) NOT NULL,
+    user_name VARCHAR(15) UNIQUE NOT NULL,
     id UUID PRIMARY KEY NOT NULL,
     college_id UUID REFERENCES lab_rank.college(id) NOT NULL,
     status lab_rank.user_status_enum NOT NULL,
@@ -108,8 +110,8 @@ CREATE TABLE lab_rank.user (
 CREATE TABLE lab_rank.auth (
     user_id UUID PRIMARY KEY REFERENCES lab_rank."user"(id) NOT NULL,
     access_ids JSONB NOT NULL,
-    salt CHAR(32) NOT NULL,
-    password_hash CHAR(64) NOT NULL
+    salt bytea NOT NULL,
+    password_hash CHAR(100) NOT NULL
 );
 
 -- Define the Environment table with all fields NOT NULL

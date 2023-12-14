@@ -13,28 +13,28 @@ import (
 	queue_models "github.com/priyanshu360/lab-rank/queue/models"
 )
 
-type SubmissionService interface {
+type Service interface {
 	Create(context.Context, *models.Submission) (*models.Submission, models.AppError)
 	Fetch(context.Context, string, string) ([]*models.Submission, models.AppError)
 	Update(context.Context, uuid.UUID, *models.Submission) (*models.Submission, models.AppError)
 }
 
-type submissionService struct {
+type service struct {
 	repo repository.SubmissionRepository
 	fs   repository.FileSystem
 	// Todo : use interface of msgq
 	msgq *queue_models.RabbitMQ
 }
 
-func NewSubmissionService(repo repository.SubmissionRepository, fs repository.FileSystem, msgq *queue_models.RabbitMQ) *submissionService {
-	return &submissionService{
+func New(repo repository.SubmissionRepository, fs repository.FileSystem, msgq *queue_models.RabbitMQ) *service {
+	return &service{
 		repo: repo,
 		fs:   fs,
 		msgq: msgq,
 	}
 }
 
-func (s *submissionService) Create(ctx context.Context, submission *models.Submission) (*models.Submission, models.AppError) {
+func (s *service) Create(ctx context.Context, submission *models.Submission) (*models.Submission, models.AppError) {
 	submission.ID = uuid.New()
 
 	var err models.AppError
@@ -51,7 +51,7 @@ func (s *submissionService) Create(ctx context.Context, submission *models.Submi
 	return submission, models.NoError
 }
 
-func (s *submissionService) Update(ctx context.Context, id uuid.UUID, updatedSubmission *models.Submission) (*models.Submission, models.AppError) {
+func (s *service) Update(ctx context.Context, id uuid.UUID, updatedSubmission *models.Submission) (*models.Submission, models.AppError) {
 	submission, err := s.repo.GetSubmissionByID(ctx, id)
 	if err != models.NoError {
 		return nil, err
@@ -63,7 +63,7 @@ func (s *submissionService) Update(ctx context.Context, id uuid.UUID, updatedSub
 	return &submission, err
 }
 
-func (s *submissionService) addToQueue(ctx context.Context, submission *models.Submission) {
+func (s *service) addToQueue(ctx context.Context, submission *models.Submission) {
 	// Todo : how to handle failures
 	queueObj, err := s.repo.GetQueueData(ctx, *submission)
 	if err != models.NoError {
@@ -76,7 +76,7 @@ func (s *submissionService) addToQueue(ctx context.Context, submission *models.S
 	s.msgq.Publish(message)
 }
 
-func (s *submissionService) Fetch(ctx context.Context, id, limit string) ([]*models.Submission, models.AppError) {
+func (s *service) Fetch(ctx context.Context, id, limit string) ([]*models.Submission, models.AppError) {
 	var submissions []*models.Submission
 	switch {
 	case id != "":

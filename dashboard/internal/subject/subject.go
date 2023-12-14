@@ -9,22 +9,22 @@ import (
 	"github.com/priyanshu360/lab-rank/dashboard/repository"
 )
 
-type SubjectService interface {
+type Service interface {
 	Create(context.Context, *models.Subject) (*models.Subject, models.AppError)
 	Fetch(context.Context, string, string) ([]*models.Subject, models.AppError)
 }
 
-type subjectService struct {
+type service struct {
 	repo repository.SubjectRepository
 }
 
-func NewSubjectService(repo repository.SubjectRepository) *subjectService {
-	return &subjectService{
+func New(repo repository.SubjectRepository) *service {
+	return &service{
 		repo: repo,
 	}
 }
 
-func (s *subjectService) Create(ctx context.Context, subject *models.Subject) (*models.Subject, models.AppError) {
+func (s *service) Create(ctx context.Context, subject *models.Subject) (*models.Subject, models.AppError) {
 	subject.ID = uuid.New()
 
 	if err := s.repo.CreateSubject(ctx, *subject); err != models.NoError {
@@ -34,7 +34,7 @@ func (s *subjectService) Create(ctx context.Context, subject *models.Subject) (*
 	return subject, models.NoError
 }
 
-func (s *subjectService) Fetch(ctx context.Context, id, limit string) ([]*models.Subject, models.AppError) {
+func (s *service) Fetch(ctx context.Context, id, limit string) ([]*models.Subject, models.AppError) {
 	var subjects []*models.Subject
 	switch {
 	case id != "":

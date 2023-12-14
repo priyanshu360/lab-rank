@@ -11,11 +11,11 @@ import (
 )
 
 type collegeHandler struct {
-	svc     college_svc.CollegeService
+	svc     college_svc.Service
 	cRouter *mux.Router
 }
 
-func NewCollegeHandler(svc college_svc.CollegeService) *collegeHandler {
+func NewCollegeHandler(svc college_svc.Service) *collegeHandler {
 	h := &collegeHandler{
 		svc:     svc,
 		cRouter: mux.NewRouter(),
@@ -25,8 +25,8 @@ func NewCollegeHandler(svc college_svc.CollegeService) *collegeHandler {
 }
 
 func (h *collegeHandler) initRoutes() *collegeHandler {
-	h.cRouter.HandleFunc("/colleges", serveHTTPWrapper(h.handleGet)).Methods("GET")
-	h.cRouter.HandleFunc("/colleges", serveHTTPWrapper(h.handleCreate)).Methods("POST")
+	h.cRouter.HandleFunc("/college", serveHTTPWrapper(h.handleGet)).Methods("GET")
+	h.cRouter.HandleFunc("/college", serveHTTPWrapper(h.handleCreate)).Methods("POST")
 	// Add other routes as needed
 
 	return h

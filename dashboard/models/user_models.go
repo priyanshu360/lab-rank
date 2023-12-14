@@ -28,7 +28,8 @@ type User struct {
 	ContactNo    string     `json:"contact_no" validate:"required,len=10"`
 	UniversityID string     `json:"university_id"`
 	DOB          time.Time  `json:"dob" validate:"required"`
-	// Name         string
+	Name         string     `json:"name" validate:"required"`
+	UserName     string     `json:"user_name" validate:"required"`
 }
 
 type CreateUserAPIRequest struct {
@@ -38,7 +39,8 @@ type CreateUserAPIRequest struct {
 	ContactNo    string    `json:"contact_no" validate:"required"`
 	DOB          time.Time `json:"dob" validate:"required"`
 	UniversityID string    `json:"university_id"`
-	// Name         string    `json:"name"`
+	Name         string    `json:"name"`
+	UserName     string    `json:"user_name" validate:"required"`
 }
 
 type GetUserAPIRequest struct {
@@ -52,6 +54,7 @@ type UpdateUserAPIRequest struct {
 	Status    UserStatus `json:"status" validate:"oneof=ACTIVE INACTIVE DELETED SPAM"`
 	Email     string     `json:"email" validate:"email"`
 	ContactNo string     `json:"contact_no"`
+	Name      string     `json:"name"`
 }
 
 func (r *UpdateUserAPIRequest) Parse(req *http.Request) error {
@@ -71,20 +74,17 @@ func (r *UpdateUserAPIRequest) validate() error {
 }
 
 func (r *UpdateUserAPIRequest) ToUser(user User) *User {
-	newUser := &User{
-		ID:           user.ID,
-		CollegeID:    user.CollegeID,
-		UniversityID: user.UniversityID,
-		DOB:          user.DOB,
-	}
+	newUser := user
 
-	setField(&newUser.Email, r.Email, user.Email)
-	setField(&newUser.ContactNo, r.ContactNo, user.ContactNo)
-	setField(&newUser.Status, r.Status, user.Status)
+	setField(newUser.Email, r.Email, user.Email)
+	setField(newUser.ContactNo, r.ContactNo, user.ContactNo)
+	setField(newUser.Status, r.Status, user.Status)
+	setField(newUser.Name, r.Name, user.Name)
 
-	return newUser
+	return &newUser
 }
 
+// Todo : seems risky may give runtime error
 func setField(field interface{}, value, defaultValue interface{}) {
 	fieldValue := reflect.ValueOf(field).Elem()
 	if value != nil {
@@ -128,7 +128,8 @@ func (r *CreateUserAPIRequest) ToUser() *User {
 		ContactNo:    r.ContactNo,
 		UniversityID: r.UniversityID,
 		DOB:          r.DOB,
-		// Name:         r.Name,
+		Name:         r.Name,
+		UserName:     r.UserName,
 	}
 }
 

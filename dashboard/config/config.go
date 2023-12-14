@@ -12,6 +12,10 @@ import (
 
 var BasePathFS = getEnvWithDefault("BASE_PATH_FS", "./uploads/")
 
+func GetJWTKey() string {
+	return getEnvWithDefault("JWT_KEY", "randomkey")
+}
+
 // TODO : Follow singelton for configs
 type ServerConfig struct {
 	address      string

@@ -10,25 +10,25 @@ import (
 	"github.com/priyanshu360/lab-rank/dashboard/repository"
 )
 
-type UserService interface {
+type Service interface {
 	Create(context.Context, *models.User) (*models.User, models.AppError)
 	Update(context.Context, *models.UpdateUserAPIRequest) (*models.User, models.AppError)
 	Fetch(context.Context, *models.GetUserAPIRequest) ([]*models.User, models.AppError)
 	Delete(context.Context, string) models.AppError
 }
 
-type userService struct {
+type service struct {
 	// You can add any dependencies or data storage components here
 	repo repository.UserRepository
 }
 
-func NewUserService(repo repository.UserRepository) *userService {
-	return &userService{
+func New(repo repository.UserRepository) *service {
+	return &service{
 		repo: repo,
 	}
 }
 
-func (s *userService) Create(ctx context.Context, user *models.User) (*models.User, models.AppError) {
+func (s *service) Create(ctx context.Context, user *models.User) (*models.User, models.AppError) {
 
 	user.ID = uuid.New()
 	user.Status = models.UserStatusInactive
@@ -45,7 +45,7 @@ func (s *userService) Create(ctx context.Context, user *models.User) (*models.Us
 	return user, models.NoError
 }
 
-func (s *userService) Fetch(ctx context.Context, req *models.GetUserAPIRequest) ([]*models.User, models.AppError) {
+func (s *service) Fetch(ctx context.Context, req *models.GetUserAPIRequest) ([]*models.User, models.AppError) {
 	var users []*models.User
 	switch {
 	case req.EmailID != "":
@@ -81,7 +81,7 @@ func (s *userService) Fetch(ctx context.Context, req *models.GetUserAPIRequest) 
 	}
 }
 
-func (s *userService) Update(ctx context.Context, request *models.UpdateUserAPIRequest) (*models.User, models.AppError) {
+func (s *service) Update(ctx context.Context, request *models.UpdateUserAPIRequest) (*models.User, models.AppError) {
 
 	defaultUser, err := s.repo.GetUserByID(ctx, request.ID)
 	if err != models.NoError {
@@ -95,7 +95,7 @@ func (s *userService) Update(ctx context.Context, request *models.UpdateUserAPIR
 	return updatedUser, models.NoError
 }
 
-func (s *userService) Delete(ctx context.Context, id string) models.AppError {
+func (s *service) Delete(ctx context.Context, id string) models.AppError {
 	if userID, err := uuid.Parse(id); err != nil {
 		return models.InternalError.Add(err)
 	} else {

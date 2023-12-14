@@ -11,11 +11,11 @@ import (
 )
 
 type userHandler struct {
-	svc     user_svc.UserService
+	svc     user_svc.Service
 	uRouter mux.Router
 }
 
-func NewUserHandler(svc user_svc.UserService) *userHandler {
+func NewUserHandler(svc user_svc.Service) *userHandler {
 	h := &userHandler{
 		svc:     svc,
 		uRouter: *mux.NewRouter(),

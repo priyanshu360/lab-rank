@@ -11,11 +11,11 @@ import (
 )
 
 type environmentHandler struct {
-	svc     environment_svc.EnvironmentService
+	svc     environment_svc.Service
 	eRouter *mux.Router
 }
 
-func NewEnvironmentHandler(svc environment_svc.EnvironmentService) *environmentHandler {
+func NewEnvironmentHandler(svc environment_svc.Service) *environmentHandler {
 	h := &environmentHandler{
 		svc:     svc,
 		eRouter: mux.NewRouter(),

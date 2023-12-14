@@ -11,11 +11,11 @@ import (
 )
 
 type syllabusHandler struct {
-	svc     syllabus_svc.SyllabusService
+	svc     syllabus_svc.Service
 	sRouter *mux.Router
 }
 
-func NewSyllabusHandler(svc syllabus_svc.SyllabusService) *syllabusHandler {
+func NewSyllabusHandler(svc syllabus_svc.Service) *syllabusHandler {
 	h := &syllabusHandler{
 		svc:     svc,
 		sRouter: mux.NewRouter(),

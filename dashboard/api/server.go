@@ -13,6 +13,7 @@ import (
 	"github.com/gorilla/mux" // Import Gorilla Mux
 	"github.com/priyanshu360/lab-rank/dashboard/api/handler"
 	"github.com/priyanshu360/lab-rank/dashboard/config"
+	"github.com/priyanshu360/lab-rank/dashboard/internal/auth"
 	"github.com/priyanshu360/lab-rank/dashboard/internal/college"
 	"github.com/priyanshu360/lab-rank/dashboard/internal/environment"
 	"github.com/priyanshu360/lab-rank/dashboard/internal/problem"
@@ -54,6 +55,10 @@ func NewServer(cfg config.ServerConfig) *APIServer {
 	}
 }
 
+func (s *APIServer) add(path string, handler http.Handler) {
+	s.router.PathPrefix(path).Handler(handler)
+}
+
 func (s *APIServer) initRoutesAndMiddleware() {
 	fileStorage := filesys.NewK8sCMStore(clientset, "storage")
 	publisher, err := queue.InitRabbitMQPublisher("lab-rank")
@@ -61,14 +66,15 @@ func (s *APIServer) initRoutesAndMiddleware() {
 		log.Fatal(err)
 	}
 
-	s.router.Handle("/user", handler.NewUserHandler(user.NewUserService(psql.NewUserPostgresRepo(db))))
-	s.router.Handle("/subject", handler.NewSubjectHandler(subject.NewSubjectService(psql.NewSubjectPostgresRepo(db))))
-	s.router.Handle("/college", handler.NewCollegeHandler(college.NewCollegeService(psql.NewCollegePostgresRepo(db))))
-	s.router.Handle("/university", handler.NewUniversityHandler(university.NewUniversityService(psql.NewUniversityPostgresRepo(db))))
-	s.router.Handle("/submission", handler.NewSubmissionsHandler(submission.NewSubmissionService(psql.NewSubmissionPostgresRepo(db), fileStorage, publisher)))
-	s.router.Handle("/environment", handler.NewEnvironmentHandler(environment.NewEnvironmentService(psql.NewEnvironmentPostgresRepo(db), fileStorage)))
-	s.router.Handle("/problem", handler.NewProblemsHandler(problem.NewProblemService(psql.NewProblemPostgresRepo(db), fileStorage)))
-	s.router.Handle("/syllabus", handler.NewSyllabusHandler(syllabus.NewSyllabusService(psql.NewSyllabusPostgresRepo(db))))
+	s.add("/auth", handler.NewAuthHandler(auth.New(psql.NewAuthPostgresRepo(db))))
+	s.add("/user", handler.NewUserHandler(user.New(psql.NewUserPostgresRepo(db))))
+	s.add("/subject", handler.NewSubjectHandler(subject.New(psql.NewSubjectPostgresRepo(db))))
+	s.add("/college", handler.NewCollegeHandler(college.New(psql.NewCollegePostgresRepo(db))))
+	s.add("/university", handler.NewUniversityHandler(university.New(psql.NewUniversityPostgresRepo(db))))
+	s.add("/submission", handler.NewSubmissionsHandler(submission.New(psql.NewSubmissionPostgresRepo(db), fileStorage, publisher)))
+	s.add("/environment", handler.NewEnvironmentHandler(environment.New(psql.NewEnvironmentPostgresRepo(db), fileStorage)))
+	s.add("/problem", handler.NewProblemsHandler(problem.New(psql.NewProblemPostgresRepo(db), fileStorage)))
+	s.add("/syllabus", handler.NewSyllabusHandler(syllabus.New(psql.NewSyllabusPostgresRepo(db))))
 
 	s.middlewares = []mux.MiddlewareFunc{
 		mux.CORSMethodMiddleware(s.router),
