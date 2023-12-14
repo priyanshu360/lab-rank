@@ -56,9 +56,6 @@ func NewServer(cfg config.ServerConfig) *APIServer {
 }
 
 func (s *APIServer) add(path string, handler http.Handler) {
-	// s.router.Handle(path, handler)
-	// s.router.Handle(fmt.Sprintf("%s/{*}", path), handler)
-	// s.router.Handle(fmt.Sprintf("%s/{*}/{*}", path), handler)
 	s.router.PathPrefix(path).Handler(handler)
 }
 

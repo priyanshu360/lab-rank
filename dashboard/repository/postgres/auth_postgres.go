@@ -3,7 +3,6 @@ package postgres
 import (
 	"context"
 	"errors"
-	"log"
 
 	"github.com/priyanshu360/lab-rank/dashboard/models"
 	"gorm.io/gorm"
@@ -18,7 +17,6 @@ func NewAuthPostgresRepo(db *gorm.DB) *authPostgres {
 	return &authPostgres{db}
 }
 
-// Todo : change psql column type to store byte array (bytea)
 func (r *authPostgres) SignUp(ctx context.Context, user models.User, auth models.Auth) models.AppError {
 	// Check if the email is already registered
 	var existingUser models.User
@@ -40,23 +38,19 @@ func (r *authPostgres) SignUp(ctx context.Context, user models.User, auth models
 
 	// Insert authentication data into the "auth" table
 	if err := tx.Table("lab_rank.auth").Create(&auth).Error; err != nil {
-		log.Println("err 41")
 		tx.Rollback()
 		return models.InternalError.Add(err)
 	}
 
 	// Commit the transaction
-	log.Println("err 48")
 	if err := tx.Commit().Error; err != nil {
-		log.Println("err 50")
 		models.InternalError.Add(err)
 	}
 
-	log.Println("err 53")
 	return models.NoError
 }
 
-func (psql *authPostgres) GetUserByEmail(ctx context.Context, email string) (*models.User, *models.Auth, models.AppError) {
+func (psql *authPostgres) GetUserAuthByEmail(ctx context.Context, email string) (*models.User, *models.Auth, models.AppError) {
 	var user models.User
 	var auth models.Auth
 	result := psql.db.WithContext(ctx).Where("email = ?", email).Table("lab_rank.user").First(&user)
@@ -68,11 +62,11 @@ func (psql *authPostgres) GetUserByEmail(ctx context.Context, email string) (*mo
 		return &user, &auth, models.InternalError.Add(result.Error)
 	}
 
-	result = psql.db.WithContext(ctx).Where("user_id = ?", user.Email).Table("lab_rank.auth").First(&auth)
+	result = psql.db.WithContext(ctx).Where("user_id = ?", user.ID).Table("lab_rank.auth").First(&auth)
 	if result.Error != nil {
 		if result.Error == gorm.ErrRecordNotFound {
 			// User not found
-			return &user, &auth, models.UserNotFoundError
+			return &user, &auth, models.UserNotFoundError.Add(result.Error)
 		}
 		return &user, &auth, models.InternalError.Add(result.Error)
 	}

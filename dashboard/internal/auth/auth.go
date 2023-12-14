@@ -14,7 +14,7 @@ import (
 )
 
 type Service interface {
-	Login(context.Context, string, string) (string, models.AppError)
+	Login(context.Context, string, string) (*models.LoginAPIResponse, models.AppError)
 	// Logout(context.Context, string) error
 	SignUp(context.Context, *models.User, string) models.AppError
 }
@@ -30,25 +30,25 @@ func New(repo repository.AuthRepository) *service {
 	}
 }
 
-func (s *service) Login(ctx context.Context, email, password string) (string, models.AppError) {
+func (s *service) Login(ctx context.Context, email, password string) (*models.LoginAPIResponse, models.AppError) {
 	// Authenticate user (validate email and password)
-	user, auth, err := s.repo.GetUserByEmail(ctx, email)
+	user, auth, err := s.repo.GetUserAuthByEmail(ctx, email)
 	if err != models.NoError {
-		return "", models.InternalError.Add(errors.New("Login failed"))
+		return nil, models.InternalError.Add(errors.New("Login failed"))
 	}
 
 	// Validate password
 	if !verifyPassword(password, auth.PasswordHash, string(auth.Salt)) {
-		return "", models.InternalError.Add(errors.New("Login failed"))
+		return nil, models.InternalError.Add(errors.New("Login failed"))
 	}
 
 	// Create JWT token
 	token, jwtErr := generateJWTToken(user)
 	if jwtErr != nil {
-		return "", models.InternalError.Add(jwtErr)
+		return nil, models.InternalError.Add(jwtErr)
 	}
 
-	return token, models.NoError
+	return models.NewLoginAPIResponse(token), models.NoError
 }
 
 func (s *service) SignUp(ctx context.Context, user *models.User, password string) models.AppError {

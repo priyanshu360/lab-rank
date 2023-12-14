@@ -48,11 +48,11 @@ func (h *authHandler) handleLogin(ctx context.Context, r *http.Request) apiRespo
 	}
 
 	email, password := req.Email, req.Password
-	_, err := h.svc.Login(ctx, email, password)
+	response, err := h.svc.Login(ctx, email, password)
 	if err != models.NoError {
 		return newAPIError(err)
 	}
-	return nil
+	return response
 }
 
 func (h *authHandler) handleLogout(ctx context.Context, r *http.Request) apiResponse {

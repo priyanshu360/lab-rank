@@ -1,7 +1,8 @@
 package models
 
 import (
-	"time"
+	"encoding/json"
+	"net/http"
 
 	"github.com/google/uuid"
 )
@@ -14,23 +15,25 @@ type Auth struct {
 }
 
 type SignUpAPIRequest struct {
-	CollegeID    uuid.UUID `json:"college_id" validate:"required"`
-	AccessID     uuid.UUID `json:"access_id" validate:"required"` // To do: Implement AccessID functionality
-	Email        string    `json:"email" validate:"required,email"`
-	ContactNo    string    `json:"contact_no" validate:"required"`
-	DOB          time.Time `json:"dob" validate:"required"`
-	UniversityID string    `json:"university_id"`
-	Password     string    `json:"password"`
+	CreateUserAPIRequest
+	Password string `json:"password"`
 }
 
-type SignUpAPIResponse struct {
-	CollegeID    uuid.UUID `json:"college_id" validate:"required"`
-	AccessID     uuid.UUID `json:"access_id" validate:"required"` // To do: Implement AccessID functionality
-	Email        string    `json:"email" validate:"required,email"`
-	ContactNo    string    `json:"contact_no" validate:"required"`
-	DOB          time.Time `json:"dob" validate:"required"`
-	UniversityID string    `json:"university_id"`
-	Password     string    `json:"password"`
+type SignUpAPIResponse CreateUserAPIResponse
+
+type LoginAPIResponse struct {
+	Message string
+}
+
+func NewLoginAPIResponse(jwt string) *LoginAPIResponse {
+	return &LoginAPIResponse{
+		Message: jwt,
+	}
+}
+
+func (res *LoginAPIResponse) Write(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	return json.NewEncoder(w).Encode(res)
 }
 
 type LoginAPIRequest struct {
@@ -47,6 +50,7 @@ func (r SignUpAPIRequest) ToUser() *User {
 		ContactNo:    r.ContactNo,
 		UniversityID: r.UniversityID,
 		DOB:          r.DOB,
-		// Name:         r.Name,
+		Name:         r.Name,
+		UserName:     r.UserName,
 	}
 }

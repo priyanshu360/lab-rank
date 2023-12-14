@@ -77,5 +77,5 @@ type FileSystem interface {
 
 type AuthRepository interface {
 	SignUp(context.Context, models.User, models.Auth) models.AppError
-	GetUserByEmail(context.Context, string) (*models.User, *models.Auth, models.AppError)
+	GetUserAuthByEmail(context.Context, string) (*models.User, *models.Auth, models.AppError)
 }
