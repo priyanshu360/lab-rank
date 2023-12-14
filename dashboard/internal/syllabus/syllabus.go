@@ -38,7 +38,7 @@ func (s *service) Create(ctx context.Context, syllabus *models.Syllabus) (*model
 }
 
 func (s *service) AutoGenerateFromCollege(ctx context.Context, college *models.College) models.AppError {
-	subjects, err := s.repo.GetSubjectsByUniversityID(ctx, college.ID)
+	subjects, err := s.repo.GetSubjectsByUniversityID(ctx, college.UniversityID)
 	if err != models.NoError {
 		return err
 	}

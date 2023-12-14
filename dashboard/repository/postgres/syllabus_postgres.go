@@ -74,7 +74,7 @@ func (psql *syllabusPostgres) GetCollegeIDsForUniversityID(ctx context.Context, 
 
 func (psql *syllabusPostgres) GetSubjectsByUniversityID(ctx context.Context, universityID uuid.UUID) ([]models.Subject, models.AppError) {
 	var subjects []models.Subject
-	result := psql.db.WithContext(ctx).Table("lab_rank.subject").Where("university_id = ?", universityID).Find(subjects)
+	result := psql.db.WithContext(ctx).Table("lab_rank.subject").Where("university_id = ?", universityID).Find(&subjects)
 	if result.Error != nil {
 		if result.Error == gorm.ErrRecordNotFound {
 			// Subject not found
