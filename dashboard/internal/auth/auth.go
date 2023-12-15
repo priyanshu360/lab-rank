@@ -8,6 +8,7 @@ import (
 
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/google/uuid"
+	"github.com/priyanshu360/lab-rank/dashboard/internal/syllabus"
 	"github.com/priyanshu360/lab-rank/dashboard/models"
 	"github.com/priyanshu360/lab-rank/dashboard/repository"
 	"golang.org/x/crypto/bcrypt"
@@ -21,12 +22,14 @@ type Service interface {
 
 type service struct {
 	// You can add any dependencies or data storage components here
-	repo repository.AuthRepository
+	syllabus syllabus.Service
+	repo     repository.AuthRepository
 }
 
-func New(repo repository.AuthRepository) *service {
+func New(repo repository.AuthRepository, syllabus syllabus.Service) *service {
 	return &service{
-		repo: repo,
+		repo:     repo,
+		syllabus: syllabus,
 	}
 }
 
@@ -75,13 +78,18 @@ func (s *service) SignUp(ctx context.Context, user *models.User, password string
 
 	auth := models.Auth{
 		UserID:       user.ID,
-		AccessIDs:    "{}",
+		AccessIDs:    []uuid.UUID{},
 		Salt:         salt,
 		PasswordHash: passwordHash,
 	}
 
+	if err := s.repo.SignUp(ctx, *user, auth); err != models.NoError {
+		return err
+	}
+
+	s.syllabus.UpdateAccessIDsForUser(context.Background(), user)
 	// Call the repository to store the user and authentication entry
-	return s.repo.SignUp(ctx, *user, auth)
+	return models.NoError
 }
 
 // generateSalt generates a random salt using the bcrypt library.
