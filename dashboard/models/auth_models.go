@@ -1,15 +1,21 @@
 package models
 
 import (
+	"database/sql/driver"
 	"encoding/json"
+	"errors"
 	"net/http"
 
 	"github.com/google/uuid"
 )
 
+type AccessIDs []uuid.UUID
+
+// AccessLevel represents the lab_rank.access_level table in the database.
+
 type Auth struct {
 	UserID       uuid.UUID `json:"user_id"`
-	AccessIDs    string    `json:"access_ids"`
+	AccessIDs    AccessIDs `json:"access_ids"`
 	Salt         []byte    `json:"salt"`
 	PasswordHash string    `json:"password_hash"`
 }
@@ -52,5 +58,30 @@ func (r SignUpAPIRequest) ToUser() *User {
 		DOB:          r.DOB,
 		Name:         r.Name,
 		UserName:     r.UserName,
+	}
+}
+
+// Value implements the driver.Valuer interface
+func (e AccessIDs) Value() (driver.Value, error) {
+	return json.Marshal(e)
+}
+
+// Scan implements the sql.Scanner interface
+func (e *AccessIDs) Scan(value interface{}) error {
+	if value == nil {
+		*e = nil
+		return nil
+	}
+
+	switch v := value.(type) {
+	case []byte:
+		var ids []uuid.UUID
+		if err := json.Unmarshal(v, &ids); err != nil {
+			return err
+		}
+		*e = AccessIDs(ids)
+		return nil
+	default:
+		return errors.New("unsupported type for AccessIDs")
 	}
 }
