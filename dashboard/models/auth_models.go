@@ -12,12 +12,19 @@ import (
 type AccessIDs []uuid.UUID
 
 // AccessLevel represents the lab_rank.access_level table in the database.
+type AccessLevelModeEnum string
+
+const (
+	AccessLevelAdmin   AccessLevelModeEnum = "ADMIN"
+	AccessLevelTeacher AccessLevelModeEnum = "TEACHER"
+	AccessLevelStudent AccessLevelModeEnum = "STUDENT"
+)
 
 type Auth struct {
-	UserID       uuid.UUID `json:"user_id"`
-	AccessIDs    AccessIDs `json:"access_ids"`
-	Salt         []byte    `json:"salt"`
-	PasswordHash string    `json:"password_hash"`
+	UserID       uuid.UUID           `json:"user_id"`
+	Salt         []byte              `json:"salt"`
+	PasswordHash string              `json:"password_hash"`
+	Mode         AccessLevelModeEnum `json:"mode"`
 }
 
 type SignUpAPIRequest struct {

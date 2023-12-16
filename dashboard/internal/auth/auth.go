@@ -47,7 +47,7 @@ func (s *service) Login(ctx context.Context, email, password string) (*models.Lo
 	}
 
 	// Create JWT token
-	token, jwtErr := generateJWTToken(user, auth)
+	token, jwtErr := generateJWTToken(user, &auth.Mode)
 	if jwtErr != nil {
 		return nil, models.InternalError.Add(jwtErr)
 	}
@@ -79,16 +79,16 @@ func (s *service) SignUp(ctx context.Context, user *models.User, password string
 
 	auth := models.Auth{
 		UserID:       user.ID,
-		AccessIDs:    []uuid.UUID{},
 		Salt:         salt,
 		PasswordHash: passwordHash,
+		Mode:         models.AccessLevelStudent,
 	}
 
 	if err := s.repo.SignUp(ctx, *user, auth); err != models.NoError {
 		return err
 	}
 
-	s.syllabus.UpdateAccessIDsForUser(context.Background(), user)
+	// s.syllabus.UpdateAccessIDsForUser(context.Background(), user)
 	// Call the repository to store the user and authentication entry
 	return models.NoError
 }
@@ -122,13 +122,13 @@ func verifyPassword(password, hashedPassword, salt string) bool {
 	return err == nil
 }
 
-func generateJWTToken(user *models.User, auth *models.Auth) (string, error) {
+func generateJWTToken(user *models.User, mode *models.AccessLevelModeEnum) (string, error) {
 	// Replace the following with your own secret key and token expiration time
 	secretKey := []byte("your_secret_key")
 	expirationTime := time.Now().Add(24 * time.Hour)
 
 	// Create the JWT claims
-	accesses, err := json.Marshal(auth.AccessIDs)
+	accesses, err := json.Marshal(mode)
 	if err != nil {
 		return "", err
 	}

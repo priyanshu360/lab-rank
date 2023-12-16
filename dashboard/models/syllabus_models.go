@@ -17,21 +17,7 @@ const (
 	SyllabusLevelGlobal     SyllabusLevelEnum = "GLOBAL"
 )
 
-type AccessLevel struct {
-	ID         uuid.UUID           `gorm:"type:uuid;primaryKey" json:"id"`
-	Mode       AccessLevelModeEnum `gorm:"type:access_level_mode_enum;not null" json:"mode"`
-	SyllabusID uuid.UUID           `gorm:"type:uuid;not null;index" json:"syllabus_id"`
-}
-
 // AccessLevelModeEnum represents the lab_rank.access_level_mode_enum enum type.
-type AccessLevelModeEnum string
-
-const (
-	AccessLevelAdmin   AccessLevelModeEnum = "ADMIN"
-	AccessLevelTeacher AccessLevelModeEnum = "TEACHER"
-	AccessLevelStudent AccessLevelModeEnum = "STUDENT"
-)
-
 // Syllabus struct
 type Syllabus struct {
 	ID            uuid.UUID         `json:"id" validate:"required"`
@@ -103,13 +89,5 @@ func (r Subject) ToSyllabus(id uuid.UUID, level SyllabusLevelEnum) *Syllabus {
 		SubjectID:     r.ID,
 		UniCollegeID:  id,
 		SyllabusLevel: level,
-	}
-}
-
-func (r Syllabus) ToAccessLevel(mode AccessLevelModeEnum) *AccessLevel {
-	return &AccessLevel{
-		ID:         uuid.New(),
-		Mode:       mode,
-		SyllabusID: r.ID,
 	}
 }
