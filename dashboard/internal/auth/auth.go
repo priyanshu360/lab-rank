@@ -3,6 +3,7 @@ package auth
 import (
 	"context"
 	"crypto/rand"
+	"encoding/json"
 	"errors"
 	"time"
 
@@ -46,7 +47,7 @@ func (s *service) Login(ctx context.Context, email, password string) (*models.Lo
 	}
 
 	// Create JWT token
-	token, jwtErr := generateJWTToken(user)
+	token, jwtErr := generateJWTToken(user, auth)
 	if jwtErr != nil {
 		return nil, models.InternalError.Add(jwtErr)
 	}
@@ -121,15 +122,22 @@ func verifyPassword(password, hashedPassword, salt string) bool {
 	return err == nil
 }
 
-func generateJWTToken(user *models.User) (string, error) {
+func generateJWTToken(user *models.User, auth *models.Auth) (string, error) {
 	// Replace the following with your own secret key and token expiration time
 	secretKey := []byte("your_secret_key")
 	expirationTime := time.Now().Add(24 * time.Hour)
 
 	// Create the JWT claims
-	claims := &jwt.StandardClaims{
-		Subject:   user.ID.String(),
-		ExpiresAt: expirationTime.Unix(),
+	accesses, err := json.Marshal(auth.AccessIDs)
+	if err != nil {
+		return "", err
+	}
+
+	claims := &jwt.RegisteredClaims{
+		ID:        user.ID.String(),
+		ExpiresAt: jwt.NewNumericDate(expirationTime),
+		IssuedAt:  jwt.NewNumericDate(time.Now()),
+		Subject:   string(accesses),
 	}
 
 	// Create the JWT token

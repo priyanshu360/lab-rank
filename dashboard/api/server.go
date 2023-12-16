@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -10,6 +11,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/golang-jwt/jwt"
 	"github.com/gorilla/mux" // Import Gorilla Mux
 	"github.com/priyanshu360/lab-rank/dashboard/api/handler"
 	"github.com/priyanshu360/lab-rank/dashboard/config"
@@ -82,6 +84,50 @@ func (s *APIServer) initRoutesAndMiddleware() {
 	}
 	s.router.Use(s.middlewares...)
 	s.httpServer.Handler = s.router
+}
+
+func SimpleAuthMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		authHeader := req.Header.Get("Authorization")
+		if authHeader == "" {
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+
+		if _, err := validateToken(authHeader); err != nil {
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		}
+
+		next.ServeHTTP(w, req)
+	})
+}
+
+func validateToken(tokenString string) (*jwt.StandardClaims, error) {
+	// Replace the following with your own secret key
+	secretKey := []byte("your_secret_key")
+
+	// Parse the JWT token
+	token, err := jwt.Parse(tokenString, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
+		// Validate the signing method
+		return secretKey, nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	// Check if the token is valid
+	if !token.Valid {
+		return nil, errors.New("Invalid token")
+	}
+
+	// Extract and return the claims
+	claims, ok := token.Claims.(*jwt.StandardClaims)
+	if !ok {
+		return nil, errors.New("Failed to extract claims")
+	}
+
+	return claims, nil
 }
 
 func (s *APIServer) run() {

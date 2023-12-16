@@ -106,16 +106,26 @@ func (psql *syllabusPostgres) UpdateUserAccessIDs(ctx context.Context, user mode
 	// Step 2: Get all syllabus IDs for the university
 	var syllabusIDs []string
 	if err := psql.db.WithContext(ctx).Table("lab_rank.syllabus").
-		Where("uni_college_id = ? AND syllabus_level = ?", universityID, "UNIVERSITY").
+		Where("uni_college_id = ? AND syllabus_level = ?", universityID, models.SyllabusLevelCollege).
 		Pluck("id", &syllabusIDs).
 		Error; err != nil {
 		return models.InternalError.Add(err)
 	}
 
+	var collegeSyllabusIDs []string
+	if err := psql.db.WithContext(ctx).Table("lab_rank.syllabus").
+		Where("uni_college_id = ? AND syllabus_level = ?", user.CollegeID, models.SyllabusLevelCollege).
+		Pluck("id", &collegeSyllabusIDs).
+		Error; err != nil {
+		return models.InternalError.Add(err)
+	}
+
+	syllabusIDs = append(syllabusIDs, collegeSyllabusIDs...)
+
 	// Step 3: Get all access IDs for the syllabuses
 	var accessIDs []uuid.UUID
 	if err := psql.db.WithContext(ctx).Table("lab_rank.access_level").
-		Where("syllabus_id IN (?)", syllabusIDs).
+		Where("syllabus_id IN (?) AND mode = STUDENT", syllabusIDs).
 		Pluck("id", &accessIDs).
 		Error; err != nil {
 		return models.InternalError.Add(err)
