@@ -85,61 +85,62 @@ func (psql *syllabusPostgres) GetSubjectsByUniversityID(ctx context.Context, uni
 	return subjects, models.NoError
 }
 
-func (psql *syllabusPostgres) CreateAccessLevel(ctx context.Context, aLevel models.AccessLevel) models.AppError {
-	result := psql.db.WithContext(ctx).Table("lab_rank.access_level").Create(aLevel)
-	if result.Error != nil {
-		return models.InternalError.Add(result.Error)
-	}
-	return models.NoError
-}
+// func (psql *syllabusPostgres) UpdateUserAccessIDs(ctx context.Context, user models.User) models.AppError {
+// 	// Step 1: Get user's university ID using college ID
+// 	var universityID string
+// 	if err := psql.db.WithContext(ctx).Table("lab_rank.college").
+// 		Where("id = ?", user.CollegeID).
+// 		Pluck("university_id", &universityID).
+// 		Error; err != nil {
+// 		return models.InternalError.Add(err)
+// 	}
 
-func (psql *syllabusPostgres) UpdateUserAccessIDs(ctx context.Context, user models.User) models.AppError {
-	// Step 1: Get user's university ID using college ID
-	var universityID string
-	if err := psql.db.WithContext(ctx).Table("lab_rank.college").
-		Where("id = ?", user.CollegeID).
-		Pluck("university_id", &universityID).
-		Error; err != nil {
-		return models.InternalError.Add(err)
-	}
+// 	// Step 2: Get all syllabus IDs for the university
+// 	var syllabusIDs []string
+// 	if err := psql.db.WithContext(ctx).Table("lab_rank.syllabus").
+// 		Where("uni_college_id = ? AND syllabus_level = ?", universityID, models.SyllabusLevelCollege).
+// 		Pluck("id", &syllabusIDs).
+// 		Error; err != nil {
+// 		return models.InternalError.Add(err)
+// 	}
 
-	// Step 2: Get all syllabus IDs for the university
-	var syllabusIDs []string
-	if err := psql.db.WithContext(ctx).Table("lab_rank.syllabus").
-		Where("uni_college_id = ? AND syllabus_level = ?", universityID, "UNIVERSITY").
-		Pluck("id", &syllabusIDs).
-		Error; err != nil {
-		return models.InternalError.Add(err)
-	}
+// 	var collegeSyllabusIDs []string
+// 	if err := psql.db.WithContext(ctx).Table("lab_rank.syllabus").
+// 		Where("uni_college_id = ? AND syllabus_level = ?", user.CollegeID, models.SyllabusLevelCollege).
+// 		Pluck("id", &collegeSyllabusIDs).
+// 		Error; err != nil {
+// 		return models.InternalError.Add(err)
+// 	}
 
-	// Step 3: Get all access IDs for the syllabuses
-	var accessIDs []uuid.UUID
-	if err := psql.db.WithContext(ctx).Table("lab_rank.access_level").
-		Where("syllabus_id IN (?)", syllabusIDs).
-		Pluck("id", &accessIDs).
-		Error; err != nil {
-		return models.InternalError.Add(err)
-	}
+// 	syllabusIDs = append(syllabusIDs, collegeSyllabusIDs...)
 
-	// Step 4: Update auth table entry for the user with new access IDs
-	var auth models.Auth
-	if err := psql.db.WithContext(ctx).Table("lab_rank.auth").
-		Where("user_id = ?", user.ID).
-		First(&auth).
-		Error; err != nil {
-		return models.InternalError.Add(err)
-	}
+// 	// Step 3: Get all access IDs for the syllabuses
+// 	var accessIDs []uuid.UUID
+// 	if err := psql.db.WithContext(ctx).Table("lab_rank.access_level").
+// 		Where("syllabus_id IN (?) AND mode = STUDENT", syllabusIDs).
+// 		Pluck("id", &accessIDs).
+// 		Error; err != nil {
+// 		return models.InternalError.Add(err)
+// 	}
 
-	// Add new access IDs to the existing ones
-	auth.AccessIDs = append(auth.AccessIDs, accessIDs...)
+// 	// Step 4: Update auth table entry for the user with new access IDs
+// 	var auth models.Auth
+// 	if err := psql.db.WithContext(ctx).Table("lab_rank.auth").
+// 		Where("user_id = ?", user.ID).
+// 		First(&auth).
+// 		Error; err != nil {
+// 		return models.InternalError.Add(err)
+// 	}
 
-	// Save the updated entry
-	if err := psql.db.WithContext(ctx).Table("lab_rank.auth").
-		Where("user_id = ?", user.ID).
-		Save(&auth).
-		Error; err != nil {
-		return models.InternalError.Add(err)
-	}
+// 	// Add new access IDs to the existing ones
 
-	return models.NoError
-}
+// 	// Save the updated entry
+// 	if err := psql.db.WithContext(ctx).Table("lab_rank.auth").
+// 		Where("user_id = ?", user.ID).
+// 		Save(&auth).
+// 		Error; err != nil {
+// 		return models.InternalError.Add(err)
+// 	}
+
+// 	return models.NoError
+// }

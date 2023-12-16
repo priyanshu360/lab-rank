@@ -15,8 +15,7 @@ type Service interface {
 	Fetch(context.Context, string, string) ([]*models.Syllabus, models.AppError)
 	AutoGenerateFromCollege(context.Context, *models.College) models.AppError
 	AutoGenerateFromSubject(context.Context, *models.Subject) models.AppError
-	CreateAccessLevel(context.Context, *models.AccessLevel) models.AppError
-	UpdateAccessIDsForUser(context.Context, *models.User) models.AppError
+	// UpdateAccessIDsForUser(context.Context, *models.User) models.AppError
 }
 
 type service struct {
@@ -34,18 +33,6 @@ func (s *service) Create(ctx context.Context, syllabus *models.Syllabus) (*model
 
 	if err := s.repo.CreateSyllabus(ctx, *syllabus); err != models.NoError {
 		return nil, err
-	}
-
-	aLevels := []*models.AccessLevel{
-		syllabus.ToAccessLevel(models.AccessLevelAdmin),
-		syllabus.ToAccessLevel(models.AccessLevelStudent),
-		syllabus.ToAccessLevel(models.AccessLevelTeacher),
-	}
-
-	for _, aLevel := range aLevels {
-		if err := s.CreateAccessLevel(ctx, aLevel); err != models.NoError {
-			log.Println("create access level ", err)
-		}
 	}
 
 	return syllabus, models.NoError
@@ -115,11 +102,6 @@ func (s *service) Fetch(ctx context.Context, id, limit string) ([]*models.Syllab
 	}
 }
 
-func (s service) CreateAccessLevel(ctx context.Context, aLevel *models.AccessLevel) models.AppError {
-	err := s.repo.CreateAccessLevel(ctx, *aLevel)
-	return err
-}
-
-func (s service) UpdateAccessIDsForUser(ctx context.Context, user *models.User) models.AppError {
-	return s.repo.UpdateUserAccessIDs(ctx, *user)
-}
+// func (s service) UpdateAccessIDsForUser(ctx context.Context, user *models.User) models.AppError {
+// 	return s.repo.UpdateUserAccessIDs(ctx, *user)
+// }

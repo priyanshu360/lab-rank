@@ -100,3 +100,7 @@ func InitLoggerConfig() LoggerConfig {
 }
 
 var K8sConfig = getEnvWithDefault("KUBE_CONFIG", filepath.Join(homedir.HomeDir(), ".kube", "config"))
+
+func AuthEnabled() bool {
+	return getEnvWithDefault("AUTH_ENABLED", "false") != "false"
+}

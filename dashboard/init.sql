@@ -85,13 +85,6 @@ CREATE TABLE lab_rank.syllabus (
     syllabus_level lab_rank.syllabus_level_enum NOT NULL
 );
 
--- Create the "access_level" table with all fields NOT NULL
-CREATE TABLE lab_rank.access_level (
-    id UUID PRIMARY KEY NOT NULL,
-    mode lab_rank.access_level_mode_enum NOT NULL,
-    syllabus_id UUID REFERENCES lab_rank.syllabus(id) NOT NULL
-);
-
 -- Define the "user" table with all fields NOT NULL
 CREATE TABLE lab_rank.user (
     name VARCHAR(32) NOT NULL,
@@ -109,9 +102,9 @@ CREATE TABLE lab_rank.user (
 -- Define the "auth" table to store authentication information
 CREATE TABLE lab_rank.auth (
     user_id UUID PRIMARY KEY REFERENCES lab_rank."user"(id) NOT NULL,
-    access_ids JSONB NOT NULL,
     salt bytea NOT NULL,
-    password_hash CHAR(100) NOT NULL
+    password_hash CHAR(100) NOT NULL,
+    mode lab_rank.access_level_mode_enum NOT NULL,  
 );
 
 -- Define the Environment table with all fields NOT NULL
