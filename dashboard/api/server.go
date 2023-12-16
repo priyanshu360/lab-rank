@@ -68,6 +68,9 @@ func (s *APIServer) add(path string, role models.AccessLevelModeEnum, handler ht
 func (s *APIServer) RbacMiddleware(next http.Handler) http.Handler {
 	requiredRole := s.rbac[next]
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		if !config.AuthEnabled() {
+			next.ServeHTTP(w, req)
+		}
 		authHeader := req.Header.Get("Authorization")
 		if authHeader == "" {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
