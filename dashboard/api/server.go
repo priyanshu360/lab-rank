@@ -1,13 +1,21 @@
 package api
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
+	"github.com/golang-jwt/jwt"
 	"github.com/gorilla/mux" // Import Gorilla Mux
 	"github.com/priyanshu360/lab-rank/dashboard/api/handler"
 	"github.com/priyanshu360/lab-rank/dashboard/config"
+	"github.com/priyanshu360/lab-rank/dashboard/internal/auth"
 	"github.com/priyanshu360/lab-rank/dashboard/internal/college"
 	"github.com/priyanshu360/lab-rank/dashboard/internal/environment"
 	"github.com/priyanshu360/lab-rank/dashboard/internal/problem"
@@ -16,6 +24,7 @@ import (
 	"github.com/priyanshu360/lab-rank/dashboard/internal/syllabus"
 	"github.com/priyanshu360/lab-rank/dashboard/internal/university"
 	"github.com/priyanshu360/lab-rank/dashboard/internal/user"
+	"github.com/priyanshu360/lab-rank/dashboard/models"
 	filesys "github.com/priyanshu360/lab-rank/dashboard/repository/fs"
 	psql "github.com/priyanshu360/lab-rank/dashboard/repository/postgres"
 	"github.com/priyanshu360/lab-rank/queue/queue"
@@ -32,72 +41,136 @@ var clientset *kubernetes.Clientset
 
 // APIServer is your API server instance.
 type APIServer struct {
-	Config   config.ServerConfig
-	Router   *mux.Router // Replace ServeMux with Gorilla Mux
-	Handlers map[string]handler.Handler
+	httpServer  *http.Server
+	middlewares []mux.MiddlewareFunc
+	router      *mux.Router
+	rbac        map[http.Handler]models.AccessLevelModeEnum
 }
 
 func NewServer(cfg config.ServerConfig) *APIServer {
 	return &APIServer{
-		Config:   cfg,
-		Router:   mux.NewRouter(), // Initialize Gorilla Mux router
-		Handlers: make(map[string]handler.Handler),
+		httpServer: &http.Server{
+			Addr:         fmt.Sprintf("%s:%s", cfg.GetAddress(), cfg.GetPort()),
+			WriteTimeout: time.Duration(cfg.GetWriteTimeout()) * time.Second,
+			ReadTimeout:  time.Duration(cfg.GetReadTimeout()) * time.Second,
+		},
+		middlewares: []mux.MiddlewareFunc{},
+		router:      mux.NewRouter(),
+		rbac:        make(map[http.Handler]models.AccessLevelModeEnum),
 	}
 }
 
-// TODO: change this not looking good (maybe option or decorator pattern)
-func (s *APIServer) initRoutes() {
+func (s *APIServer) add(path string, role models.AccessLevelModeEnum, handler http.Handler) {
+	s.router.PathPrefix(path).Handler(handler)
+	s.rbac[handler] = role
+}
+
+func (s *APIServer) RbacMiddleware(next http.Handler) http.Handler {
+	requiredRole := s.rbac[next]
+	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		if !config.AuthEnabled() {
+			next.ServeHTTP(w, req)
+		}
+		authHeader := req.Header.Get("Authorization")
+		if authHeader == "" {
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+
+		if _, err := validateTokenWithRole(authHeader, requiredRole); err != nil {
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		}
+
+		next.ServeHTTP(w, req)
+	})
+}
+
+func (s *APIServer) initRoutesAndMiddleware() {
 	fileStorage := filesys.NewK8sCMStore(clientset, "storage")
-	// Todo : make queue name env / handle error
-	publisher, _ := queue.InitRabbitMQPublisher("lab-rank")
-	// Initialize routes and handlers for different entities
-	userHandler := handler.NewUserHandler(user.NewUserService(psql.NewUserPostgresRepo(db)))
-	s.Handlers["/user"] = handler.NewReqIDMiddleware().Decorate(userHandler)
+	publisher, err := queue.InitRabbitMQPublisher("lab-rank")
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	subjectHandler := handler.NewSubjectHandler(subject.NewSubjectService(psql.NewSubjectPostgresRepo(db)))
-	s.Handlers["/subject"] = handler.NewReqIDMiddleware().Decorate(subjectHandler)
+	s.add("/auth", models.AccessLevelAdmin, handler.NewAuthHandler(auth.New(psql.NewAuthPostgresRepo(db), syllabus.New(psql.NewSyllabusPostgresRepo(db)))))
+	s.add("/user", models.AccessLevelAdmin, handler.NewUserHandler(user.New(psql.NewUserPostgresRepo(db))))
+	s.add("/subject", models.AccessLevelAdmin, handler.NewSubjectHandler(subject.New(psql.NewSubjectPostgresRepo(db), syllabus.New(psql.NewSyllabusPostgresRepo(db)))))
+	s.add("/college", models.AccessLevelAdmin, handler.NewCollegeHandler(college.New(psql.NewCollegePostgresRepo(db), syllabus.New(psql.NewSyllabusPostgresRepo(db)))))
+	s.add("/university", models.AccessLevelAdmin, handler.NewUniversityHandler(university.New(psql.NewUniversityPostgresRepo(db))))
+	s.add("/submission", models.AccessLevelStudent, handler.NewSubmissionsHandler(submission.New(psql.NewSubmissionPostgresRepo(db), fileStorage, publisher)))
+	s.add("/environment", models.AccessLevelAdmin, handler.NewEnvironmentHandler(environment.New(psql.NewEnvironmentPostgresRepo(db), fileStorage)))
+	s.add("/problem", models.AccessLevelAdmin, handler.NewProblemsHandler(problem.New(psql.NewProblemPostgresRepo(db), fileStorage)))
+	s.add("/syllabus", models.AccessLevelAdmin, handler.NewSyllabusHandler(syllabus.New(psql.NewSyllabusPostgresRepo(db))))
 
-	collegeHandler := handler.NewCollegeHandler(college.NewCollegeService(psql.NewCollegePostgresRepo(db)))
-	s.Handlers["/college"] = handler.NewReqIDMiddleware().Decorate(collegeHandler)
+	s.middlewares = []mux.MiddlewareFunc{
+		mux.CORSMethodMiddleware(s.router),
+		handler.NewReqIDMiddleware().Decorate,
+		s.RbacMiddleware,
+	}
+	s.router.Use(s.middlewares...)
+	s.httpServer.Handler = s.router
+}
 
-	universityHandler := handler.NewUniversityHandler(university.NewUniversityService(psql.NewUniversityPostgresRepo(db)))
-	s.Handlers["/university"] = handler.NewReqIDMiddleware().Decorate(universityHandler)
+func validateTokenWithRole(tokenString string, requiredRole models.AccessLevelModeEnum) (*jwt.StandardClaims, error) {
+	// Replace the following with your own secret key
+	secretKey := []byte("your_secret_key")
 
-	submissionsHandler := handler.NewSubmissionsHandler(submission.NewSubmissionService(psql.NewSubmissionPostgresRepo(db), fileStorage, publisher))
-	s.Handlers["/submission"] = handler.NewReqIDMiddleware().Decorate(submissionsHandler)
+	// Parse the JWT token
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		// Validate the signing method
+		return secretKey, nil
+	})
 
-	environmentHandler := handler.NewEnvironmentHandler(environment.NewEnvironmentService(psql.NewEnvironmentPostgresRepo(db), fileStorage))
-	s.Handlers["/environment"] = handler.NewReqIDMiddleware().Decorate(environmentHandler)
+	if err != nil {
+		return nil, err
+	}
 
-	problemsHandler := handler.NewProblemsHandler(problem.NewProblemService(psql.NewProblemPostgresRepo(db), fileStorage))
-	s.Handlers["/problem"] = handler.NewReqIDMiddleware().Decorate(problemsHandler)
+	// Check if the token is valid
+	if !token.Valid {
+		return nil, errors.New("Invalid token")
+	}
 
-	syllabusHandler := handler.NewSyllabusHandler(syllabus.NewSyllabusService(psql.NewSyllabusPostgresRepo(db)))
-	s.Handlers["/syllabus"] = handler.NewReqIDMiddleware().Decorate(syllabusHandler)
+	// Extract and return the claims
+	claims, ok := token.Claims.(*jwt.StandardClaims)
+	if !ok {
+		return nil, errors.New("Failed to extract claims")
+	}
+
+	if claims.Subject != string(requiredRole) {
+		return nil, errors.New("Unauthorised")
+	}
+	return claims, nil
 }
 
 func (s *APIServer) run() {
-	address := s.Config.GetAddress()
-	port := s.Config.GetPort()
-	addr := fmt.Sprintf("%s:%s", address, port)
+	go func() {
+		if err := s.httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			fmt.Println("Error starting server:", err)
+			os.Exit(1)
+		}
+	}()
 
-	fmt.Printf("APIServer is running on http://%s\n", addr)
+	log.Println("[*] Server running .... ")
 
-	for route, handler := range s.Handlers {
-		s.Router.Handle(route, handler)
+	// Handle graceful shutdown
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
+
+	sig := <-sigChan
+	fmt.Println("Received signal:", sig)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	if err := s.httpServer.Shutdown(ctx); err != nil {
+		fmt.Println("Error during server shutdown:", err)
 	}
-
-	http.Handle("/", s.Router) // Set the Gorilla Mux router as the default handler
-
-	err := http.ListenAndServe(addr, nil)
-	if err != nil {
-		fmt.Println("Error:", err)
-	}
+	fmt.Println("Server gracefully stopped")
 }
 
 func StartHttpServer(cfg config.ServerConfig) {
 	server := NewServer(cfg)
-	server.initRoutes()
+	server.initRoutesAndMiddleware()
 	server.run()
 }
 

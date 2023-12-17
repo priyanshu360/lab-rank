@@ -9,22 +9,22 @@ import (
 	"github.com/priyanshu360/lab-rank/dashboard/repository"
 )
 
-type UniversityService interface {
+type Service interface {
 	Create(context.Context, *models.University) (*models.University, models.AppError)
 	Fetch(context.Context, string, string) ([]*models.University, models.AppError)
 }
 
-type universityService struct {
+type service struct {
 	repo repository.UniversityRepository
 }
 
-func NewUniversityService(repo repository.UniversityRepository) *universityService {
-	return &universityService{
+func New(repo repository.UniversityRepository) *service {
+	return &service{
 		repo: repo,
 	}
 }
 
-func (s *universityService) Create(ctx context.Context, university *models.University) (*models.University, models.AppError) {
+func (s *service) Create(ctx context.Context, university *models.University) (*models.University, models.AppError) {
 	university.ID = uuid.New()
 
 	if err := s.repo.CreateUniversity(ctx, *university); err != models.NoError {
@@ -34,7 +34,7 @@ func (s *universityService) Create(ctx context.Context, university *models.Unive
 	return university, models.NoError
 }
 
-func (s *universityService) Fetch(ctx context.Context, id, limit string) ([]*models.University, models.AppError) {
+func (s *service) Fetch(ctx context.Context, id, limit string) ([]*models.University, models.AppError) {
 	var universities []*models.University
 	switch {
 	case id != "":

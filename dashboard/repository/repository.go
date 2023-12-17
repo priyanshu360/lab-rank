@@ -29,6 +29,9 @@ type SyllabusRepository interface {
 	CreateSyllabus(context.Context, models.Syllabus) models.AppError
 	GetSyllabusByID(context.Context, uuid.UUID) (models.Syllabus, models.AppError)
 	GetSyllabusListByLimit(context.Context, int, int) ([]*models.Syllabus, models.AppError)
+	GetCollegeIDsForUniversityID(context.Context, uuid.UUID) ([]uuid.UUID, models.AppError)
+	GetSubjectsByUniversityID(context.Context, uuid.UUID) ([]models.Subject, models.AppError)
+	// UpdateUserAccessIDs(ctx context.Context, user models.User) models.AppError
 	// Add other repository methods specific to Syllabus
 }
 
@@ -73,4 +76,9 @@ type FileSystem interface {
 	StoreFile(context.Context, []byte, uuid.UUID, models.FileType, string) (string, models.AppError)
 	GetFile(context.Context, string) ([]byte, models.AppError)
 	// MakeFileName(...string) string
+}
+
+type AuthRepository interface {
+	SignUp(context.Context, models.User, models.Auth) models.AppError
+	GetUserAuthByEmail(context.Context, string) (*models.User, *models.Auth, models.AppError)
 }

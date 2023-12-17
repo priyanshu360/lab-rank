@@ -17,6 +17,7 @@ const (
 	SyllabusLevelGlobal     SyllabusLevelEnum = "GLOBAL"
 )
 
+// AccessLevelModeEnum represents the lab_rank.access_level_mode_enum enum type.
 // Syllabus struct
 type Syllabus struct {
 	ID            uuid.UUID         `json:"id" validate:"required"`
@@ -79,5 +80,14 @@ func (pr *ListSyllabusAPIResponse) Write(w http.ResponseWriter) error {
 func NewListSyllabusAPIResponse(syllabus []*Syllabus) *ListSyllabusAPIResponse {
 	return &ListSyllabusAPIResponse{
 		Message: syllabus,
+	}
+}
+
+func (r Subject) ToSyllabus(id uuid.UUID, level SyllabusLevelEnum) *Syllabus {
+	return &Syllabus{
+		ID:            uuid.New(),
+		SubjectID:     r.ID,
+		UniCollegeID:  id,
+		SyllabusLevel: level,
 	}
 }

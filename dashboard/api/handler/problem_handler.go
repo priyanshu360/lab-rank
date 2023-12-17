@@ -6,41 +6,35 @@ import (
 	"net/http"
 
 	"github.com/google/uuid"
+	"github.com/gorilla/mux"
 	problems_svc "github.com/priyanshu360/lab-rank/dashboard/internal/problem"
 	"github.com/priyanshu360/lab-rank/dashboard/models"
 )
 
 type problemsHandler struct {
-	svc problems_svc.ProblemService
+	svc     problems_svc.Service
+	pRouter *mux.Router
 }
 
-func NewProblemsHandler(svc problems_svc.ProblemService) Handler {
-	return &problemsHandler{
-		svc: svc,
+func NewProblemsHandler(svc problems_svc.Service) *problemsHandler {
+	h := &problemsHandler{
+		svc:     svc,
+		pRouter: mux.NewRouter(),
 	}
+
+	return h.initRoutes()
+}
+
+func (h *problemsHandler) initRoutes() *problemsHandler {
+	h.pRouter.HandleFunc("/problem", serveHTTPWrapper(h.handleGet)).Methods("GET")
+	h.pRouter.HandleFunc("/problem", serveHTTPWrapper(h.handleCreate)).Methods("POST")
+	// Add other routes as needed
+
+	return h
 }
 
 func (h *problemsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	var response apiResponse
-	var ctx = r.Context()
-
-	switch r.Method {
-	case http.MethodPost:
-		response = h.handleCreate(ctx, r)
-	case http.MethodGet:
-		response = h.handleGet(ctx, r)
-	// Implement other HTTP methods as needed
-	default:
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-
-	if err := response.Write(w); err != nil {
-		http.Error(w, "Failed to serialize response", http.StatusInternalServerError)
-	}
+	h.pRouter.ServeHTTP(w, r)
 }
 
 func (h *problemsHandler) handleCreate(ctx context.Context, r *http.Request) apiResponse {

@@ -9,25 +9,25 @@ import (
 	"github.com/priyanshu360/lab-rank/dashboard/repository"
 )
 
-type ProblemService interface {
+type Service interface {
 	Create(context.Context, *models.Problem) (*models.Problem, models.AppError)
 	Fetch(context.Context, string, string) ([]*models.Problem, models.AppError)
 	GetInitCode(context.Context, uuid.UUID, string) (*models.InitProblemCode, models.AppError)
 }
 
-type problemService struct {
+type service struct {
 	repo repository.ProblemRepository
 	fs   repository.FileSystem
 }
 
-func NewProblemService(repo repository.ProblemRepository, fs repository.FileSystem) *problemService {
-	return &problemService{
+func New(repo repository.ProblemRepository, fs repository.FileSystem) *service {
+	return &service{
 		repo: repo,
 		fs:   fs,
 	}
 }
 
-func (s *problemService) Create(ctx context.Context, problem *models.Problem) (*models.Problem, models.AppError) {
+func (s *service) Create(ctx context.Context, problem *models.Problem) (*models.Problem, models.AppError) {
 	problem.ID = uuid.New()
 
 	var err models.AppError
@@ -51,7 +51,7 @@ func (s *problemService) Create(ctx context.Context, problem *models.Problem) (*
 	return problem, models.NoError
 }
 
-func (s *problemService) Fetch(ctx context.Context, id, limit string) ([]*models.Problem, models.AppError) {
+func (s *service) Fetch(ctx context.Context, id, limit string) ([]*models.Problem, models.AppError) {
 	var problems []*models.Problem
 	switch {
 	case id != "":
@@ -80,7 +80,7 @@ func (s *problemService) Fetch(ctx context.Context, id, limit string) ([]*models
 	}
 }
 
-func (s *problemService) GetInitCode(ctx context.Context, id uuid.UUID, lang string) (*models.InitProblemCode, models.AppError) {
+func (s *service) GetInitCode(ctx context.Context, id uuid.UUID, lang string) (*models.InitProblemCode, models.AppError) {
 	problem, err := s.repo.GetProblemByID(ctx, id)
 	if err != models.NoError {
 		return nil, err

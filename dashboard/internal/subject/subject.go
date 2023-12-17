@@ -5,36 +5,41 @@ import (
 	"strconv"
 
 	"github.com/google/uuid"
+	"github.com/priyanshu360/lab-rank/dashboard/internal/syllabus"
 	"github.com/priyanshu360/lab-rank/dashboard/models"
 	"github.com/priyanshu360/lab-rank/dashboard/repository"
 )
 
-type SubjectService interface {
+type Service interface {
 	Create(context.Context, *models.Subject) (*models.Subject, models.AppError)
 	Fetch(context.Context, string, string) ([]*models.Subject, models.AppError)
 }
 
-type subjectService struct {
-	repo repository.SubjectRepository
+type service struct {
+	syllabus syllabus.Service
+	repo     repository.SubjectRepository
 }
 
-func NewSubjectService(repo repository.SubjectRepository) *subjectService {
-	return &subjectService{
-		repo: repo,
+func New(repo repository.SubjectRepository, syllabus syllabus.Service) *service {
+	return &service{
+		syllabus: syllabus,
+		repo:     repo,
 	}
 }
 
-func (s *subjectService) Create(ctx context.Context, subject *models.Subject) (*models.Subject, models.AppError) {
+func (s *service) Create(ctx context.Context, subject *models.Subject) (*models.Subject, models.AppError) {
 	subject.ID = uuid.New()
 
 	if err := s.repo.CreateSubject(ctx, *subject); err != models.NoError {
 		return nil, err
 	}
 
+	go s.syllabus.AutoGenerateFromSubject(context.Background(), subject)
+
 	return subject, models.NoError
 }
 
-func (s *subjectService) Fetch(ctx context.Context, id, limit string) ([]*models.Subject, models.AppError) {
+func (s *service) Fetch(ctx context.Context, id, limit string) ([]*models.Subject, models.AppError) {
 	var subjects []*models.Subject
 	switch {
 	case id != "":
