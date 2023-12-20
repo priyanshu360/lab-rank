@@ -56,3 +56,23 @@ func (psql *collegePostgres) GetCollegesListByLimit(ctx context.Context, page in
 }
 
 // Add other repository methods for colleges as needed.
+func (psql *collegePostgres) GetCollegesByUniversityID(ctx context.Context, universityID uuid.UUID) ([]*models.CollegeIdName, models.AppError) {
+	var colleges []*models.CollegeIdName
+
+	// Fetch college names and IDs based on the university ID
+	result := psql.db.WithContext(ctx).
+		Table("lab_rank.college").
+		Select("id, title").
+		Where("university_id = ?", universityID).
+		Scan(&colleges)
+
+	if result.Error != nil {
+		if result.Error == gorm.ErrRecordNotFound {
+			// No colleges found for the given university ID
+			return nil, models.CollegeNotFoundError
+		}
+		return nil, models.InternalError.Add(result.Error)
+	}
+
+	return colleges, models.NoError
+}

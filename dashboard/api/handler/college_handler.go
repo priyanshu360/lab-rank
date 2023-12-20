@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	college_svc "github.com/priyanshu360/lab-rank/dashboard/internal/college"
 	"github.com/priyanshu360/lab-rank/dashboard/models"
@@ -25,6 +26,7 @@ func NewCollegeHandler(svc college_svc.Service) *collegeHandler {
 }
 
 func (h *collegeHandler) initRoutes() *collegeHandler {
+	h.cRouter.HandleFunc("/college/names/{university_id}", serveHTTPWrapper(h.handleGetName)).Methods("GET")
 	h.cRouter.HandleFunc("/college", serveHTTPWrapper(h.handleGet)).Methods("GET")
 	h.cRouter.HandleFunc("/college", serveHTTPWrapper(h.handleCreate)).Methods("POST")
 
@@ -49,6 +51,19 @@ func (h *collegeHandler) handleCreate(ctx context.Context, r *http.Request) apiR
 	}
 
 	return models.NewCreateCollegeAPIResponse(college)
+}
+
+func (h *collegeHandler) handleGetName(ctx context.Context, r *http.Request) apiResponse {
+	vars := mux.Vars(r)
+	universityId, err := uuid.Parse(vars["university_id"])
+	if err != nil {
+		return newAPIError(models.BadRequest.Add(err))
+	}
+	response, svcErr := h.svc.GetCollegeIDsForUniversityID(ctx, universityId)
+	if svcErr != models.NoError {
+		return newAPIError(svcErr)
+	}
+	return models.NewListCollegesIdNamesAPIResponse(response)
 }
 
 func (h *collegeHandler) handleGet(ctx context.Context, r *http.Request) apiResponse {

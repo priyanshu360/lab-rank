@@ -55,14 +55,41 @@ func NewCreateUniversityAPIResponse(university *University) *UniversityAPIRespon
 	}
 }
 
+type UniversityIdName struct {
+	ID    uuid.UUID
+	Title string
+}
+
+func NewUniversityIdName(id uuid.UUID, name string) *UniversityIdName {
+	return &UniversityIdName{
+		ID:    id,
+		Title: name,
+	}
+}
+
+type ListUniversitiesIdNamesAPIResponse struct {
+	Message []*UniversityIdName
+}
+
 type ListUniversitiesAPIResponse struct {
 	Message []*University
+}
+
+// Implement the Write method for ListUniversitiesAPIResponse
+func (pr *ListUniversitiesIdNamesAPIResponse) Write(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	return json.NewEncoder(w).Encode(pr)
 }
 
 // Implement the Write method for ListUniversitiesAPIResponse
 func (pr *ListUniversitiesAPIResponse) Write(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	return json.NewEncoder(w).Encode(pr)
+}
+func NewListUniversitiesIdNamesAPIResponse(universities []*UniversityIdName) *ListUniversitiesIdNamesAPIResponse {
+	return &ListUniversitiesIdNamesAPIResponse{
+		Message: universities,
+	}
 }
 
 func NewListUniversitiesAPIResponse(universities []*University) *ListUniversitiesAPIResponse {
