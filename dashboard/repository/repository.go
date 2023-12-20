@@ -22,6 +22,7 @@ type UniversityRepository interface {
 	CreateUniversity(context.Context, models.University) models.AppError
 	GetUniversityByID(context.Context, uuid.UUID) (models.University, models.AppError)
 	GetUniversitiesListByLimit(context.Context, int, int) ([]*models.University, models.AppError)
+	GetAllUniversityNames(context.Context) ([]*models.UniversityIdName, models.AppError)
 	// Add other repository methods specific to University
 }
 
@@ -69,6 +70,7 @@ type CollegeRepository interface {
 	CreateCollege(context.Context, models.College) models.AppError
 	GetCollegeByID(context.Context, uuid.UUID) (models.College, models.AppError)
 	GetCollegesListByLimit(context.Context, int, int) ([]*models.College, models.AppError)
+	GetCollegesByUniversityID(context.Context, uuid.UUID) ([]*models.CollegeIdName, models.AppError)
 	// Add other repository methods specific to College
 }
 

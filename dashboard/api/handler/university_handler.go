@@ -25,6 +25,7 @@ func NewUniversityHandler(svc university_svc.Service) *universityHandler {
 }
 
 func (h *universityHandler) initRoutes() *universityHandler {
+	h.uRouter.HandleFunc("/university/names", serveHTTPWrapper(h.handleGetName)).Methods("GET")
 	h.uRouter.HandleFunc("/university", serveHTTPWrapper(h.handleGet)).Methods("GET")
 	h.uRouter.HandleFunc("/university", serveHTTPWrapper(h.handleCreate)).Methods("POST")
 	// h.uRouter.HandleFunc("/university", serveHTTPWrapper(h.handleUpdate)).Methods("PUT")
@@ -36,6 +37,14 @@ func (h *universityHandler) initRoutes() *universityHandler {
 
 func (h *universityHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	h.uRouter.ServeHTTP(w, r)
+}
+
+func (h *universityHandler) handleGetName(ctx context.Context, r *http.Request) apiResponse {
+	universities, err := h.svc.GetAllUniversityNames(ctx)
+	if err != models.NoError {
+		return newAPIError(err)
+	}
+	return models.NewListUniversitiesIdNamesAPIResponse(universities)
 }
 
 func (h *universityHandler) handleCreate(ctx context.Context, r *http.Request) apiResponse {

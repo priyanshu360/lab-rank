@@ -58,6 +58,34 @@ func NewCreateCollegeAPIResponse(college *College) *CollegeAPIResponse {
 	}
 }
 
+type CollegeIdName struct {
+	ID    uuid.UUID
+	Title string
+}
+
+func NewCollegeIdName(id uuid.UUID, name string) *CollegeIdName {
+	return &CollegeIdName{
+		ID:    id,
+		Title: name,
+	}
+}
+
+type ListCollegesIdNamesAPIResponse struct {
+	Message []*CollegeIdName
+}
+
+// Implement the Write method for ListCollegesAPIResponse
+func (pr *ListCollegesIdNamesAPIResponse) Write(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	return json.NewEncoder(w).Encode(pr)
+}
+
+func NewListCollegesIdNamesAPIResponse(colleges []*CollegeIdName) *ListCollegesIdNamesAPIResponse {
+	return &ListCollegesIdNamesAPIResponse{
+		Message: colleges,
+	}
+}
+
 type ListCollegesAPIResponse struct {
 	Message []*College
 }

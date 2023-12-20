@@ -12,6 +12,7 @@ import (
 type Service interface {
 	Create(context.Context, *models.University) (*models.University, models.AppError)
 	Fetch(context.Context, string, string) ([]*models.University, models.AppError)
+	GetAllUniversityNames(context.Context) ([]*models.UniversityIdName, models.AppError)
 }
 
 type service struct {
@@ -60,4 +61,10 @@ func (s *service) Fetch(ctx context.Context, id, limit string) ([]*models.Univer
 
 		return s.repo.GetUniversitiesListByLimit(ctx, 1, 10)
 	}
+}
+
+func (s *service) GetAllUniversityNames(ctx context.Context) ([]*models.UniversityIdName, models.AppError) {
+
+	universities, err := s.repo.GetAllUniversityNames(ctx)
+	return universities, err
 }

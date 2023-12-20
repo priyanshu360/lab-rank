@@ -56,3 +56,16 @@ func (psql *universityPostgres) GetUniversitiesListByLimit(ctx context.Context, 
 }
 
 // Add other repository methods for universities as needed.
+func (psql *universityPostgres) GetAllUniversityNames(ctx context.Context) ([]*models.UniversityIdName, models.AppError) {
+	var universities []*models.UniversityIdName
+
+	// Fetch all university names with their IDs
+	result := psql.db.Table("lab_rank.university").
+		Select("id, title").
+		Scan(&universities)
+	if result.Error != nil {
+		return nil, models.InternalError.Add(result.Error)
+	}
+
+	return universities, models.NoError
+}
