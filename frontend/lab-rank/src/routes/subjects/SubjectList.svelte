@@ -13,11 +13,10 @@
     <p>No subjects available.</p>
   {:else}
     <div class="grid gap-4">
-      {#each subjects as { id, title, description, university_id }}
+      {#each subjects as { id, title, description }}
         <div class="bg-white p-4 rounded shadow-md">
           <h2 class="text-xl font-bold mb-2">{title}</h2>
           <p class="text-gray-600">{description}</p>
-          <p class="text-gray-500 mt-2">University ID: {university_id}</p>
         </div>
       {/each}
     </div>

@@ -67,9 +67,9 @@ func (h *authHandler) handleSignUp(ctx context.Context, r *http.Request) apiResp
 
 	user := req.ToUser()
 	password := req.Password
-	err := h.svc.SignUp(ctx, user, password)
-	if err != models.NoError {
-		return newAPIError(err)
+	apperr := h.svc.SignUp(ctx, user, password)
+	if apperr != models.NoError {
+		return newAPIError(apperr)
 	}
-	return newAPIError(models.NoError)
+	return models.NewCreateUserAPIResponse(user)
 }

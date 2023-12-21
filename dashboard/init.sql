@@ -104,7 +104,7 @@ CREATE TABLE lab_rank.auth (
     user_id UUID PRIMARY KEY REFERENCES lab_rank."user"(id) NOT NULL,
     salt bytea NOT NULL,
     password_hash CHAR(100) NOT NULL,
-    mode lab_rank.access_level_mode_enum NOT NULL,  
+    mode lab_rank.access_level_mode_enum NOT NULL  
 );
 
 -- Define the Environment table with all fields NOT NULL
