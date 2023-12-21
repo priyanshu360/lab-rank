@@ -96,6 +96,8 @@ func serveHTTPWrapper(f func(context.Context, *http.Request) apiResponse) http.H
 	return func(w http.ResponseWriter, r *http.Request) {
 		var ctx = r.Context()
 		response := f(ctx, r)
+
+		// w.Header().Set("Access-Control-Allow-Origin", "*")
 		if err := response.Write(w); err != nil {
 			http.Error(w, "Failed to serialize response", http.StatusInternalServerError)
 		}

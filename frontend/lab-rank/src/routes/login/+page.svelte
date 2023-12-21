@@ -11,6 +11,7 @@
     try {
       const response = await fetch("http://localhost:8080/auth/login", {
         method: "POST",
+        // mode: "no-cors",
         headers: {
           "Content-Type": "application/json",
         },
@@ -23,7 +24,8 @@
       const data = await response.json();
 
       // Handle the login response as needed
-      console.log(data);
+      console.log(data.Message);
+      localStorage.setItem("jwtToken", data.Message);
     } catch (error) {
       console.error("Error during login:", error);
     }
@@ -56,7 +58,7 @@
 <style>
   main {
     text-align: center;
-    max-width: 240px;
+    max-width: 500px;
     margin: 0 auto;
     font-family: "Khand", sans-serif;
     padding: 2rem;

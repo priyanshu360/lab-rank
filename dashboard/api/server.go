@@ -105,12 +105,27 @@ func (s *APIServer) initRoutesAndMiddleware() {
 	s.middlewares = []mux.MiddlewareFunc{
 		mux.CORSMethodMiddleware(s.router),
 		handler.NewReqIDMiddleware().Decorate,
-		s.RbacMiddleware,
+		OptionMiddleware,
+		// s.RbacMiddleware,
 	}
 	s.router.Use(s.middlewares...)
 	s.httpServer.Handler = s.router
 }
 
+func OptionMiddleware(next http.Handler) http.Handler {
+
+	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:5174")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+		if req.Method == "OPTIONS" {
+			w.WriteHeader(http.StatusAccepted)
+			return
+		}
+
+		next.ServeHTTP(w, req)
+	})
+}
 func validateTokenWithRole(tokenString string, requiredRole models.AccessLevelModeEnum) (*jwt.StandardClaims, error) {
 	// Replace the following with your own secret key
 	secretKey := []byte("your_secret_key")
