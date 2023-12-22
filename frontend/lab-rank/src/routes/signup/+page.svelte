@@ -4,7 +4,7 @@
   import Footer from "../../lib/Footer.svelte";
   import Description from "../../lib/Description.svelte";
   import { format } from "date-fns";
-
+  export let data;
   let college_id = "";
   let email = "";
   let contact_no = "";
@@ -16,7 +16,6 @@
   let fdob = "";
 
   let colleges = [];
-  let universities = [];
 
   let emailValid = true;
   let contactNoValid = true;
@@ -37,17 +36,6 @@
     // For simplicity, let's assume it should be a numeric value with at least 8 digits
     const contactNoRegex = /^\d{8,}$/;
     contactNoValid = contactNoRegex.test(contact_no);
-  };
-
-  const fetchUniversities = async () => {
-    try {
-      const response = await fetch("http://localhost:8080/university/names");
-      const data = await response.json();
-      universities = data.Message;
-      console.log(universities);
-    } catch (error) {
-      console.error("Error fetching universities:", error);
-    }
   };
 
   const fetchColleges = async () => {
@@ -94,11 +82,6 @@
       console.error("Error during signup:", error);
     }
   };
-
-  onMount(() => {
-    // Fetch universities when the component mounts
-    fetchUniversities();
-  });
 </script>
 
 <!-- Remaining HTML and styling unchanged -->
@@ -110,9 +93,9 @@
   <form on:submit|preventDefault={handleSubmit} class="grid gap-4">
     <label>
       University:
-      <select bind:value={university_id} on:change={fetchColleges}>
+      <select bind:value={university_id}>
         <option value="" disabled selected>Select your option</option>
-        {#each universities as university}
+        {#each data.universities as university}
           <option value={university.ID}>{university.Title}</option>
         {/each}
       </select>

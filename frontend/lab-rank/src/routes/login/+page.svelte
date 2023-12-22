@@ -4,47 +4,23 @@
   import Header from "../../lib/Header.svelte";
   import Footer from "../../lib/Footer.svelte";
   import Description from "../../lib/Description.svelte";
-  let email = "";
-  let password = "";
 
-  const handleSubmit = async () => {
-    try {
-      const response = await fetch("http://localhost:8080/auth/login", {
-        method: "POST",
-        // mode: "no-cors",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email,
-          password,
-        }),
-      });
-
-      const data = await response.json();
-
-      // Handle the login response as needed
-      console.log(data.Message);
-      localStorage.setItem("jwtToken", data.Message);
-    } catch (error) {
-      console.error("Error during login:", error);
-    }
-  };
+  export let data;
 </script>
 
-<Header />
+<Header {data} />
 <Description />
 <main class="text-center max-w-2xl mx-auto p-8">
   <h1 class="text-2xl font-bold mb-4">Login</h1>
-  <form on:submit|preventDefault={handleSubmit} class="grid gap-4">
+  <form action="?/create" method="POST" class="grid gap-4">
     <label>
       Email:
-      <input bind:value={email} type="email" />
+      <input type="email" name="email" />
     </label>
 
     <label>
       Password:
-      <input bind:value={password} type="password" />
+      <input type="password" name="password" />
     </label>
 
     <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded"
