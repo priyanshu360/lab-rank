@@ -6,6 +6,7 @@
     console.log("click");
     goto("/login");
   };
+  export let data;
 </script>
 
 <header class="bg-white">
@@ -29,12 +30,21 @@
       </ul>
     </div>
     <div class="flex items-center gap-6">
-      <button
-        on:click={handleSignInClick}
-        href
-        class="bg-[#a6c1ee] text-white px-5 py-2 rounded-full hover:bg-[#87acec]"
-        >Sign in</button
-      >
+      {#if data.user_not_signin}
+        <button
+          on:click={handleSignInClick}
+          href
+          class="bg-[#a6c1ee] text-white px-5 py-2 rounded-full hover:bg-[#87acec]"
+          >Sign in</button
+        >
+      {:else}
+        <button
+          on:click={handleSignInClick}
+          href
+          class="bg-[#a6c1ee] text-white px-5 py-2 rounded-full hover:bg-[#87acec]"
+          >Sign Out</button
+        >
+      {/if}
       <ion-icon
         onclick="onToggleMenu(this)"
         name="menu"
@@ -51,11 +61,6 @@
     text-align: left;
     width: 100%;
     font-family: "Khand", sans-serif;
-  }
-
-  h1 {
-    font-family: "Khand", sans-serif;
-    margin: 0;
   }
 
   a {
