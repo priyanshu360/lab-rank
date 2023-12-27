@@ -6,6 +6,11 @@
     console.log("click");
     goto("/login");
   };
+  const handleSignOutClick = () => {
+    // Navigate to the "/login" page
+    console.log("click");
+    goto("/logout");
+  };
   export let data;
 </script>
 
@@ -30,7 +35,7 @@
       </ul>
     </div>
     <div class="flex items-center gap-6">
-      {#if data.user_not_signin}
+      {#if data.user_not_signin === undefined || data.user_not_signin}
         <button
           on:click={handleSignInClick}
           href
@@ -39,7 +44,7 @@
         >
       {:else}
         <button
-          on:click={handleSignInClick}
+          on:click={handleSignOutClick}
           href
           class="bg-[#a6c1ee] text-white px-5 py-2 rounded-full hover:bg-[#87acec]"
           >Sign Out</button

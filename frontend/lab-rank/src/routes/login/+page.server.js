@@ -1,3 +1,4 @@
+import { redirect } from '@sveltejs/kit';
 
 export const load = ({cookies}) => {
   let user_not_signin = true
@@ -7,6 +8,9 @@ export const load = ({cookies}) => {
       user_not_signin = false
   } 
   
+     if (jwt != undefined) {
+      throw redirect(303, '/subjects') 
+     }
   console.log(user_not_signin)
 
   return {
@@ -36,6 +40,6 @@ export const actions = {
     console.log(jwt.Message)
     cookies.set("jwt-lab-rank", jwt.Message)
   }
-	
+  
 };
 

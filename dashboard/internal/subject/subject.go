@@ -13,6 +13,7 @@ import (
 type Service interface {
 	Create(context.Context, *models.Subject) (*models.Subject, models.AppError)
 	Fetch(context.Context, string, string) ([]*models.Subject, models.AppError)
+	FetchByUniversityID(context.Context, uuid.UUID) ([]*models.Subject, models.AppError)
 }
 
 type service struct {
@@ -65,4 +66,7 @@ func (s *service) Fetch(ctx context.Context, id, limit string) ([]*models.Subjec
 
 		return s.repo.GetSubjectsListByLimit(ctx, 1, 10)
 	}
+}
+func (s *service) FetchByUniversityID(ctx context.Context, universityId uuid.UUID) ([]*models.Subject, models.AppError) {
+	return s.repo.GetSubjectsByUniversityID(ctx, universityId)
 }

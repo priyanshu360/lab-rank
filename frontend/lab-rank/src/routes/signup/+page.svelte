@@ -47,6 +47,7 @@
         );
         const data = await response.json();
         colleges = data.Message; // Assuming the API returns an array of colleges with properties Id and Title
+        console.log(colleges);
       } catch (error) {
         console.error("Error fetching colleges:", error);
       }
@@ -55,45 +56,18 @@
 
   // Fetch colleges when the selected university changes
   $: fetchColleges();
-
-  const handleSubmit = async () => {
-    try {
-      const response = await fetch("http://localhost:8080/auth/signup", {
-        mode: "no-cors",
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          college_id,
-          email,
-          contact_no,
-          dob,
-          university_id,
-          name,
-          user_name,
-          password,
-        }),
-      });
-
-      const data = await response.json();
-      console.log(data); // Handle the response as needed
-    } catch (error) {
-      console.error("Error during signup:", error);
-    }
-  };
 </script>
 
 <!-- Remaining HTML and styling unchanged -->
-<Header />
+<Header {data} />
 <Description />
 
 <main class="text-center max-w-2xl mx-auto p-8">
   <h1 class="text-2xl font-bold mb-4">Create New Account</h1>
-  <form on:submit|preventDefault={handleSubmit} class="grid gap-4">
-    <label>
+  <form action="?/create" method="POST" class="grid gap-4">
+    <label on:change={fetchColleges}>
       University:
-      <select bind:value={university_id}>
+      <select bind:value={university_id} name="university_id">
         <option value="" disabled selected>Select your option</option>
         {#each data.universities as university}
           <option value={university.ID}>{university.Title}</option>
@@ -103,7 +77,7 @@
 
     <label>
       College:
-      <select bind:value={college_id}>
+      <select bind:value={college_id} name="college_id">
         <option value="" disabled selected>Select your option</option>
         {#each colleges as college}
           <option value={college.ID}>{college.Title}</option>
@@ -113,7 +87,12 @@
 
     <label>
       Email:
-      <input bind:value={email} type="email" on:input={validateEmail} />
+      <input
+        bind:value={email}
+        type="email"
+        on:input={validateEmail}
+        name="email"
+      />
       {#if !emailValid}
         <p class="error">Invalid email address</p>
       {/if}
@@ -125,6 +104,7 @@
         bind:value={contact_no}
         type="tel"
         on:input={validateContactNumber}
+        name="contact_no"
       />
       {#if !contactNoValid}
         <p class="error">Invalid contact number</p>
@@ -133,22 +113,22 @@
 
     <label>
       Date of Birth:
-      <input bind:value={fdob} on:input={formattedDob} type="date" />
+      <input bind:value={fdob} on:input={formattedDob} type="date" name="dob" />
     </label>
 
     <label>
       Name:
-      <input bind:value={name} type="text" />
+      <input bind:value={name} type="text" name="name" />
     </label>
 
     <label>
       User Name:
-      <input bind:value={user_name} type="text" />
+      <input bind:value={user_name} type="text" name="user_name" />
     </label>
 
     <label>
       Password:
-      <input bind:value={password} type="password" />
+      <input bind:value={password} type="password" name="password" />
     </label>
 
     <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded"
