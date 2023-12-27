@@ -26,6 +26,19 @@ func (psql *subjectPostgres) CreateSubject(ctx context.Context, subject models.S
 	return models.NoError
 }
 
+func (psql *subjectPostgres) GetSubjectsByUniversityID(ctx context.Context, universityID uuid.UUID) ([]*models.Subject, models.AppError) {
+	var subjects []*models.Subject
+	result := psql.db.Offset(0).Table("lab_rank.subject").Limit(10).Find(&subjects).Where("university_id", universityID.String())
+	if result.Error != nil {
+		if result.Error == gorm.ErrRecordNotFound {
+			// Subject not found
+			return subjects, models.SubjectNotFoundError
+		}
+		return subjects, models.InternalError.Add(result.Error)
+	}
+	return subjects, models.NoError
+}
+
 // GetSubjectByID retrieves a subject by its ID.
 func (psql *subjectPostgres) GetSubjectByID(ctx context.Context, subjectID uuid.UUID) (models.Subject, models.AppError) {
 	var subject models.Subject

@@ -1,14 +1,15 @@
 <script>
-  import Header from "../../lib/Header.svelte";
-  import Footer from "../../lib/Footer.svelte";
-  import Table from "../../lib/Table.svelte";
-  import Description from "../../lib/Description.svelte";
+  import Header from "$lib/Header.svelte";
+  import Footer from "$lib/Footer.svelte";
+  import Table from "$lib/Table.svelte";
+  import Description from "$lib/Description.svelte";
+  export let data;
 </script>
 
 <main>
   <!-- Your main content goes here -->
 
-  <Header />
+  <Header {data} />
 
   <!-- Rest of your content -->
   <Description />

@@ -72,7 +72,7 @@
   };
 </script>
 
-<Header />
+<Header {data} />
 <Description />
 
 <main>

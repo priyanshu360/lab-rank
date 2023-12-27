@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	subject_svc "github.com/priyanshu360/lab-rank/dashboard/internal/subject"
 	"github.com/priyanshu360/lab-rank/dashboard/models"
@@ -25,6 +26,7 @@ func NewSubjectHandler(svc subject_svc.Service) *subjectHandler {
 }
 
 func (h *subjectHandler) initRoutes() *subjectHandler {
+	h.sRouter.HandleFunc("/subject/{university_id}", serveHTTPWrapper(h.handleGetByUniversityID)).Methods("GET")
 	h.sRouter.HandleFunc("/subject", serveHTTPWrapper(h.handleGet)).Methods("GET")
 	h.sRouter.HandleFunc("/subject", serveHTTPWrapper(h.handleCreate)).Methods("POST")
 	// h.sRouter.HandleFunc("/subjects", serveHTTPWrapper(h.handleUpdate)).Methods("PUT")
@@ -51,6 +53,21 @@ func (h *subjectHandler) handleCreate(ctx context.Context, r *http.Request) apiR
 	}
 
 	return models.NewCreateSubjectAPIResponse(subject)
+}
+
+func (h *subjectHandler) handleGetByUniversityID(ctx context.Context, r *http.Request) apiResponse {
+	vars := mux.Vars(r)
+	universityId, err := uuid.Parse(vars["university_id"])
+	if err != nil {
+		return newAPIError(models.BadRequest.Add(err))
+	}
+
+	subjects, appError := h.svc.FetchByUniversityID(ctx, universityId)
+	if appError != models.NoError {
+		return newAPIError(appError)
+	}
+	response := models.NewListSubjectsAPIResponse(subjects)
+	return response
 }
 
 func (h *subjectHandler) handleGet(ctx context.Context, r *http.Request) apiResponse {

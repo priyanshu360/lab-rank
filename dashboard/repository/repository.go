@@ -38,6 +38,8 @@ type SyllabusRepository interface {
 
 type SubjectRepository interface {
 	CreateSubject(context.Context, models.Subject) models.AppError
+
+	GetSubjectsByUniversityID(context.Context, uuid.UUID) ([]*models.Subject, models.AppError)
 	GetSubjectByID(context.Context, uuid.UUID) (models.Subject, models.AppError)
 	GetSubjectsListByLimit(context.Context, int, int) ([]*models.Subject, models.AppError)
 	// Add other repository methods specific to Subject
