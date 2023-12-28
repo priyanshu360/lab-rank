@@ -13,6 +13,7 @@ type Service interface {
 	Create(context.Context, *models.Problem) (*models.Problem, models.AppError)
 	Fetch(context.Context, string, string) ([]*models.Problem, models.AppError)
 	GetInitCode(context.Context, uuid.UUID, string) (*models.InitProblemCode, models.AppError)
+	GetProblemsForSubject(context.Context, uuid.UUID, uuid.UUID) ([]*models.Problem, models.AppError)
 }
 
 type service struct {
@@ -96,4 +97,8 @@ func (s *service) GetInitCode(ctx context.Context, id uuid.UUID, lang string) (*
 
 	code, err := s.fs.GetFile(ctx, link)
 	return models.NewInitProblemCode(code), err
+}
+
+func (s *service) GetProblemsForSubject(ctx context.Context, subjectID uuid.UUID, collegeID uuid.UUID) ([]*models.Problem, models.AppError) {
+	return s.repo.GetProblemsForSubject(ctx, subjectID, collegeID)
 }

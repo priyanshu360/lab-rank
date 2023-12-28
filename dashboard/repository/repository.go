@@ -49,6 +49,7 @@ type ProblemRepository interface {
 	CreateProblem(context.Context, models.Problem) models.AppError
 	GetProblemByID(context.Context, uuid.UUID) (models.Problem, models.AppError)
 	GetProblemsListByLimit(context.Context, int, int) ([]*models.Problem, models.AppError)
+	GetProblemsForSubject(context.Context, uuid.UUID, uuid.UUID) ([]*models.Problem, models.AppError)
 	// Add other repository methods specific to Problem
 }
 
@@ -65,6 +66,7 @@ type SubmissionRepository interface {
 	GetSubmissionsListByLimit(context.Context, int, int) ([]*models.Submission, models.AppError)
 	GetQueueData(context.Context, models.Submission) (queue_models.QueueObj, models.AppError)
 	UpdateSubmission(context.Context, uuid.UUID, models.Submission) models.AppError
+	GetSubmissionsByUserID(context.Context, uuid.UUID) ([]*models.Submission, models.AppError)
 	// Add other repository methods specific to Submission
 }
 

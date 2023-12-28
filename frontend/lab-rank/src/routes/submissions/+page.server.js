@@ -13,14 +13,14 @@ export const load = async ({ cookies }) => {
         throw redirect(303, "/signup")
     }
 
-    let subjects = []
+    let submission = []
     const fetchSubjects = async () => {
         try {
             console.log("server fetchUniversity")
-            const response = await fetch(`http://127.0.0.1:8080/subject/${universityId}`);
+            const response = await fetch(`http://127.0.0.1:8080/submission/user/b1e5f45c-f857-4540-8b45-e42091ac494a`);
             const data = await response.json();
-            subjects = data.Message;
-            console.log(subjects);
+            submission = data.Message;
+            console.log(submission);
         } catch (error) {
             console.error("Error fetching universities:", error);
         }
@@ -30,7 +30,7 @@ export const load = async ({ cookies }) => {
     await fetchSubjects();
     return {
         user_not_signin,
-        subjects
+        submission
     };
 
 }

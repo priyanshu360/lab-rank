@@ -4,6 +4,8 @@
   import Table from "$lib/Table.svelte";
   import Description from "$lib/Description.svelte";
   export let data;
+  export let subjectID = data.subjectID;
+  export let collegeID = data.collegeID;
 </script>
 
 <main>
@@ -13,7 +15,7 @@
 
   <!-- Rest of your content -->
   <Description />
-  <Table />
+  <Table {subjectID} {collegeID} />
 
   <Footer />
 </main>
