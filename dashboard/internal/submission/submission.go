@@ -17,6 +17,7 @@ type Service interface {
 	Create(context.Context, *models.Submission) (*models.Submission, models.AppError)
 	Fetch(context.Context, string, string) ([]*models.Submission, models.AppError)
 	Update(context.Context, uuid.UUID, *models.Submission) (*models.Submission, models.AppError)
+	FetchForUserID(context.Context, uuid.UUID) ([]*models.Submission, models.AppError)
 }
 
 type service struct {
@@ -102,4 +103,8 @@ func (s *service) Fetch(ctx context.Context, id, limit string) ([]*models.Submis
 
 		return s.repo.GetSubmissionsListByLimit(ctx, 1, 10)
 	}
+}
+
+func (s *service) FetchForUserID(ctx context.Context, userID uuid.UUID) ([]*models.Submission, models.AppError) {
+	return s.repo.GetSubmissionsByUserID(ctx, userID)
 }

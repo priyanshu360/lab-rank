@@ -26,6 +26,9 @@ func NewSubmissionsHandler(svc submission.Service) *submissionsHandler {
 }
 
 func (h *submissionsHandler) initRoutes() *submissionsHandler {
+
+	h.sRouter.HandleFunc("/submission/user/{user_id}", serveHTTPWrapper(h.handleGetForUserID)).Methods("GET")
+	h.sRouter.HandleFunc("/submission/problem/{problem_id}", serveHTTPWrapper(h.handleGet)).Methods("GET")
 	h.sRouter.HandleFunc("/submission", serveHTTPWrapper(h.handleGet)).Methods("GET")
 	h.sRouter.HandleFunc("/submission", serveHTTPWrapper(h.handleCreate)).Methods("POST")
 	h.sRouter.HandleFunc("/submission", serveHTTPWrapper(h.handleUpdate)).Methods("PUT")
@@ -52,6 +55,25 @@ func (h *submissionsHandler) handleCreate(ctx context.Context, r *http.Request) 
 	}
 
 	return models.NewCreateSubmissionAPIResponse(submission)
+}
+
+func (h *submissionsHandler) handleGetForUserID(ctx context.Context, r *http.Request) apiResponse {
+	vars := mux.Vars(r)
+	userID, err := uuid.Parse(vars["user_id"])
+	if err != nil {
+		return newAPIError(models.BadRequest.Add(err))
+	}
+
+	submissions, err := h.svc.FetchForUserID(ctx, userID)
+	if err != models.NoError {
+		return newAPIError(models.InternalError.Add(err))
+	}
+	if len(submissions) == 1 {
+		return models.NewCreateSubmissionAPIResponse(submissions[0]) // Reusing the same Response from Create in Get
+	} else {
+		response := models.NewListSubmissionsAPIResponse(submissions)
+		return response
+	}
 }
 
 func (h *submissionsHandler) handleGet(ctx context.Context, r *http.Request) apiResponse {

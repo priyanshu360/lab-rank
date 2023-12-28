@@ -26,6 +26,7 @@ func NewProblemsHandler(svc problems_svc.Service) *problemsHandler {
 }
 
 func (h *problemsHandler) initRoutes() *problemsHandler {
+	h.pRouter.HandleFunc("/problem/{subject_id}/{college_id}", serveHTTPWrapper(h.handleGetProblemsForSubject)).Methods("GET")
 	h.pRouter.HandleFunc("/problem", serveHTTPWrapper(h.handleGet)).Methods("GET")
 	h.pRouter.HandleFunc("/problem", serveHTTPWrapper(h.handleCreate)).Methods("POST")
 	// Add other routes as needed
@@ -79,3 +80,22 @@ func (h *problemsHandler) handleGet(ctx context.Context, r *http.Request) apiRes
 }
 
 // Implement other handler methods for problems-related operations
+func (h *problemsHandler) handleGetProblemsForSubject(ctx context.Context, r *http.Request) apiResponse {
+	vars := mux.Vars(r)
+	subjectID, err := uuid.Parse(vars["subject_id"])
+	if err != nil {
+		return newAPIError(models.BadRequest.Add(err))
+	}
+
+	collegeID, err := uuid.Parse(vars["college_id"])
+	if err != nil {
+		return newAPIError(models.BadRequest.Add(err))
+	}
+
+	problems, appError := h.svc.GetProblemsForSubject(ctx, subjectID, collegeID)
+	if appError != models.NoError {
+		return newAPIError(appError)
+	}
+	response := models.NewListProblemsAPIResponse(problems)
+	return response
+}

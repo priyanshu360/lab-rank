@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"errors"
 	"log"
 
 	"github.com/google/uuid"
@@ -113,4 +114,47 @@ func (psql *submissionPostgres) UpdateSubmission(ctx context.Context, id uuid.UU
 	}
 
 	return models.NoError
+}
+
+// GetSubmissionsByUserID(context.Context, uuid.UUID) ([]*models.Submission, models.AppError)
+func (psql *submissionPostgres) GetSubmissionsByUserID(ctx context.Context, userID uuid.UUID) ([]*models.Submission, models.AppError) {
+	var submissions []*models.Submission
+	result := psql.db.WithContext(ctx).Where("created_by = ?", userID).Find(&submissions)
+
+	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			// Submission not found
+			return submissions, models.SubmissionNotFoundError
+		}
+		return submissions, models.InternalError.Add(result.Error)
+	}
+	return submissions, models.NoError
+}
+
+func (psql *submissionPostgres) GetSubmissionsByProblemID(ctx context.Context, problemID uuid.UUID) ([]*models.Submission, models.AppError) {
+	var submissions []*models.Submission
+	result := psql.db.WithContext(ctx).Where("problem_id = ?", problemID).Find(&submissions)
+
+	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			// Submission not found
+			return submissions, models.SubmissionNotFoundError
+		}
+		return submissions, models.InternalError.Add(result.Error)
+	}
+	return submissions, models.NoError
+}
+
+func (psql *submissionPostgres) GetSubmissionsByUserAndProblemID(ctx context.Context, userID uuid.UUID, problemID uuid.UUID) (*models.Submission, models.AppError) {
+	var submission models.Submission
+	result := psql.db.WithContext(ctx).Where("user_id = ? AND problem_id = ?", userID, problemID).First(&submission)
+
+	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			// Submission not found
+			return nil, models.SubmissionNotFoundError
+		}
+		return nil, models.InternalError.Add(result.Error)
+	}
+	return &submission, models.NoError
 }

@@ -2,28 +2,31 @@
   import { onMount } from "svelte";
   import CodeMirror from "svelte-codemirror-editor";
   import { javascript } from "@codemirror/lang-javascript";
+  import { python } from "@codemirror/lang-python";
+  import { sql } from "@codemirror/lang-sql";
   import Header from "../../../lib/Header.svelte";
   import Footer from "../../../lib/Footer.svelte";
   import Description from "../../../lib/Description.svelte";
+  // import { oneDark } from "@codemirror/theme-one-dark";
 
   export let data;
-  export let problem_title;
-  export let problem_file;
+  export let problem_title = data.responseData.Message.title;
+  export let problem_file = atob(data.responseData.Message.problem_file);
+
+  let languages = data.responseData.Message.environment.map(
+    (env) => env.language
+  ); // Replace this with your array of language options
+  let selectedLanguage = languages[0];
+
+  let languageMap = {
+    JavaScript: javascript(),
+    Python: python(),
+    MySql: sql(),
+  };
 
   export let code;
 
   onMount(async () => {
-    try {
-      const response = await fetch(
-        `http://localhost:8080/problem?id=${data.slug}`
-      );
-      const responseData = await response.json();
-
-      problem_title = responseData.Message.title;
-      problem_file = atob(responseData.Message.problem_file);
-    } catch (error) {
-      console.error("Error fetching problem details:", error);
-    }
     try {
       const response = await fetch(
         `http://localhost:8080/problem?id=${data.slug}&lang=Go`
@@ -47,7 +50,7 @@
         body: JSON.stringify({
           problem_id: data.slug,
           link: "submission_link",
-          created_by: "f77ad338-7fe7-4093-bdbb-c24ec489e10c",
+          created_by: "b1e5f45c-f857-4540-8b45-e42091ac494a",
           score: null,
           run_time: null,
           metadata: {},
@@ -74,17 +77,30 @@
 
 <Header {data} />
 <Description />
-
 <main>
   <section class="problem-description">
     <h2>{problem_title}</h2>
     <p>{@html problem_file}</p>
   </section>
 
-  <section class="code-editor-container">
+  <form class="code-editor-container" action="?/create">
+    <label for="language-select">Select Language:</label>
+    <select id="language-select" bind:value={selectedLanguage} name="language">
+      {#each languages as lang (lang)}
+        <option value={lang}>{lang}</option>
+      {/each}
+    </select>
     <CodeMirror
+      name="code"
+      styles={{
+        "&": {
+          // width: "500px",
+          // maxWidth: "100%",
+          height: "50rem",
+        },
+      }}
       bind:value={code}
-      lang={javascript()}
+      lang={languageMap[selectedLanguage]}
       options={{
         lineNumbers: true,
         theme: "default", // Adjust the theme based on your preferences
@@ -93,7 +109,7 @@
     />
 
     <button on:click={submitCode}>Submit Code</button>
-  </section>
+  </form>
 </main>
 
 <Footer />
@@ -101,7 +117,7 @@
 <style>
   main {
     display: flex;
-    justify-content: space-around;
+    justify-content: space-between; /* Changed to space-between for better distribution */
     align-items: flex-start;
     margin: 20px;
     font-family: "Khand", sans-serif;
@@ -109,25 +125,51 @@
 
   .problem-description {
     flex: 1;
-    max-width: 800px;
+    /* max-width: 800px; */
     max-height: 1000px;
     overflow: auto;
-    display: flex;
-    word-wrap: break-word; /* Allow words to break and wrap onto the next line */
+    word-wrap: break-word;
     flex-direction: column;
+    padding-right: 20px; /* Added padding to the right for better spacing */
   }
+
   .code-editor-container {
     flex: 1;
-    margin-top: 100px;
-    max-width: 600px;
-    margin-left: 20px;
+    margin-top: 20px; /* Adjusted margin-top for better spacing */
+    padding: 20px;
+    /* max-width: 600px; */
     display: flex;
     flex-direction: column;
   }
 
+  label {
+    display: -webkit-inline-box;
+    margin-bottom: 5px; /* Added margin-bottom for better spacing between label and select */
+  }
+
+  select {
+    max-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+    padding: 12px 16px;
+    z-index: 1;
+    margin-bottom: 10px;
+    display: -webkit-inline-box;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+  }
+
   button {
+    max-width: 160px;
     margin-top: 10px;
-    padding: 10px;
+    padding: 20px;
     cursor: pointer;
+    background-color: #04aa6d; /* Green */
+    border: none;
+    color: white;
+    text-align: center;
+    text-decoration: none;
+    display: flex;
+    font-size: 16px;
   }
 </style>

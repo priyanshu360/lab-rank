@@ -3,11 +3,15 @@
 
   // Sample data for initial rendering
   let problems = [];
+  export let subjectID;
+  export let collegeID;
 
   onMount(async () => {
     try {
       // Make an API request
-      const response = await fetch("http://localhost:8080/problem"); // Replace with your API endpoint
+      const response = await fetch(
+        `http://localhost:8080/problem/${subjectID}/${collegeID}`
+      ); // Replace with your API endpoint
       const data = await response.json();
 
       // Update the problems array with the API response
