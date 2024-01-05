@@ -35,12 +35,18 @@ type SignUpAPIRequest struct {
 type SignUpAPIResponse CreateUserAPIResponse
 
 type LoginAPIResponse struct {
-	Message string
+	Jwt           string
+	UniversityID string
+	CollegeID     uuid.UUID
+	UserID       uuid.UUID
 }
 
-func NewLoginAPIResponse(jwt string) *LoginAPIResponse {
+func NewLoginAPIResponse(jwt, universityID string, userID, collegeID uuid.UUID) *LoginAPIResponse {
 	return &LoginAPIResponse{
-		Message: jwt,
+		Jwt:           jwt,
+		UniversityID:  universityID,
+		CollegeID:     collegeID,
+		UserID:        userID,
 	}
 }
 

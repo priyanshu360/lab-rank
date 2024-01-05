@@ -17,8 +17,9 @@
       <tr>
         <th>Serial Number</th>
         <th style="width: 60%;">Title</th>
-        <th style="width: 20%;">Score</th>
-        <th style="width: 20%;">Status</th>
+        <th style="width: 15%;">Score</th>
+        <th style="width: 15%;">Status</th>
+        <th style="width: 10%;">Time</th>
       </tr>
     </thead>
     <tbody>
@@ -31,6 +32,7 @@
           </td>
           <td>{submission.score}</td>
           <td>{submission.status}</td>
+          <td>{submission.created_at}
         </tr>
       {/each}
     </tbody>

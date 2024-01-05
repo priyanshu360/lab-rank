@@ -52,7 +52,7 @@ func (s *service) Login(ctx context.Context, email, password string) (*models.Lo
 		return nil, models.InternalError.Add(jwtErr)
 	}
 
-	return models.NewLoginAPIResponse(token), models.NoError
+	return models.NewLoginAPIResponse(token,user.UniversityID,user.ID,user.CollegeID), models.NoError
 }
 
 func (s *service) SignUp(ctx context.Context, user *models.User, password string) models.AppError {
