@@ -27,6 +27,18 @@ type Auth struct {
 	Mode         AccessLevelModeEnum `json:"mode"`
 }
 
+type AuthSession struct {
+	User
+	Mode AccessLevelModeEnum `json:"mode"`
+}
+
+func NewAuthSession(user *User, mode AccessLevelModeEnum) *AuthSession {
+	return &AuthSession{
+		User: *user,
+		Mode: mode,
+	}
+}
+
 type SignUpAPIRequest struct {
 	CreateUserAPIRequest
 	Password string `json:"password"`

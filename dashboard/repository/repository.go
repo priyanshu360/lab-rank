@@ -89,3 +89,8 @@ type AuthRepository interface {
 	SignUp(context.Context, models.User, models.Auth) models.AppError
 	GetUserAuthByEmail(context.Context, string) (*models.User, *models.Auth, models.AppError)
 }
+
+type SessionRepository interface {
+	GetSession(context.Context, uuid.UUID) (*models.AuthSession, models.AppError)
+	SetSession(context.Context, *models.AuthSession) (uuid.UUID, models.AppError)
+}

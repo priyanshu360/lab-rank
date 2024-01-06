@@ -104,3 +104,51 @@ var K8sConfig = getEnvWithDefault("KUBE_CONFIG", filepath.Join(homedir.HomeDir()
 func AuthEnabled() bool {
 	return getEnvWithDefault("AUTH_ENABLED", "false") != "false"
 }
+
+type RedisConfig struct {
+	address  string
+	password string
+	db       int
+}
+
+// NewRedisConfig creates a new instance of RedisConfig with default values
+func NewRedisConfig() RedisConfig {
+	return RedisConfig{
+		address:  getEnvWithDefault("REDIS_ADDRESS", "localhost:6379"),
+		password: getEnvWithDefault("REDIS_PASSWORD", ""),
+		db:       getIntEnvWithDefault("REDIS_DB", 0),
+	}
+}
+
+// GetAddress returns the Redis server address
+func (c RedisConfig) GetAddress() string {
+	return c.address
+}
+
+// GetPassword returns the Redis password
+func (c RedisConfig) GetPassword() string {
+	return c.password
+}
+
+// GetDB returns the Redis database number
+func (c RedisConfig) GetDB() int {
+	return c.db
+}
+
+// getIntEnvWithDefault retrieves the integer value of the environment variable with a default value
+func getIntEnvWithDefault(key string, defaultValue int) int {
+	value, exists := os.LookupEnv(key)
+	if !exists {
+		return defaultValue
+	}
+	return convertStringToInt(value, defaultValue)
+}
+
+// convertStringToInt converts a string to an integer, with a default value in case of an error
+func convertStringToInt(s string, defaultValue int) int {
+	value, err := strconv.Atoi(s)
+	if err != nil {
+		return defaultValue
+	}
+	return value
+}

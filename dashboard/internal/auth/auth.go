@@ -3,7 +3,6 @@ package auth
 import (
 	"context"
 	"crypto/rand"
-	"encoding/json"
 	"errors"
 	"time"
 
@@ -25,10 +24,12 @@ type service struct {
 	// You can add any dependencies or data storage components here
 	syllabus syllabus.Service
 	repo     repository.AuthRepository
+	session  repository.SessionRepository
 }
 
-func New(repo repository.AuthRepository, syllabus syllabus.Service) *service {
+func New(repo repository.AuthRepository, session repository.SessionRepository, syllabus syllabus.Service) *service {
 	return &service{
+		session:  session,
 		repo:     repo,
 		syllabus: syllabus,
 	}
@@ -46,8 +47,13 @@ func (s *service) Login(ctx context.Context, email, password string) (*models.Lo
 		return nil, models.InternalError.Add(errors.New("Login failed"))
 	}
 
+	session := models.NewAuthSession(user, auth.Mode)
+	sessionID, err := s.session.SetSession(ctx, session)
+	if err != models.NoError {
+		return nil, err
+	}
 	// Create JWT token
-	token, jwtErr := generateJWTToken(user, &auth.Mode)
+	token, jwtErr := generateJWTToken(sessionID)
 	if jwtErr != nil {
 		return nil, models.InternalError.Add(jwtErr)
 	}
@@ -122,22 +128,17 @@ func verifyPassword(password, hashedPassword, salt string) bool {
 	return err == nil
 }
 
-func generateJWTToken(user *models.User, mode *models.AccessLevelModeEnum) (string, error) {
+func generateJWTToken(sessionID uuid.UUID) (string, error) {
 	// Replace the following with your own secret key and token expiration time
 	secretKey := []byte("your_secret_key")
 	expirationTime := time.Now().Add(24 * time.Hour)
 
 	// Create the JWT claims
-	accesses, err := json.Marshal(mode)
-	if err != nil {
-		return "", err
-	}
 
 	claims := &jwt.RegisteredClaims{
-		ID:        user.ID.String(),
 		ExpiresAt: jwt.NewNumericDate(expirationTime),
 		IssuedAt:  jwt.NewNumericDate(time.Now()),
-		Subject:   string(accesses),
+		Subject:   sessionID.String(),
 	}
 
 	// Create the JWT token
