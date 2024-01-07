@@ -36,9 +36,12 @@ export const actions = {
         password,
       }),
     });
-    const jwt = await res.json()
-    console.log(jwt.Message)
-    cookies.set("jwt-lab-rank", jwt.Message)
+    const authData = await res.json()
+    cookies.set("jwt-lab-rank", authData.Jwt) // TODO : Set university and College 
+    cookies.set("college-id",authData.CollegeID)
+    cookies.set("university-id",authData.UniversityID)
+    cookies.set("user-id",authData.UserID)
+    
   }
   
 };

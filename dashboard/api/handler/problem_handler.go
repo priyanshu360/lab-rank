@@ -71,7 +71,7 @@ func (h *problemsHandler) handleGet(ctx context.Context, r *http.Request) apiRes
 	if err != models.NoError {
 		return newAPIError(models.InternalError.Add(err))
 	}
-	if len(problems) == 1 {
+	if (len(problems) == 1 && id != "") {
 		return models.NewCreateProblemAPIResponse(problems[0]) // Reusing the same Response from Create in Get
 	} else {
 		response := models.NewListProblemsAPIResponse(problems)

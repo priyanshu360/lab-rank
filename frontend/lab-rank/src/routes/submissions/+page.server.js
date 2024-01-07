@@ -5,6 +5,7 @@ export const load = async ({ cookies }) => {
     const jwt = cookies.get("jwt-lab-rank")
     const universityId = cookies.get("university-id")
     const collegeId = cookies.get("college-id")
+    const userId = cookies.get("user-id")
 
     let user_not_signin = true
     if (jwt != undefined) {
@@ -14,10 +15,10 @@ export const load = async ({ cookies }) => {
     }
 
     let submission = []
-    const fetchSubjects = async () => {
+    const fetchSubmission = async () => {
         try {
             console.log("server fetchUniversity")
-            const response = await fetch(`http://127.0.0.1:8080/submission/user/b1e5f45c-f857-4540-8b45-e42091ac494a`);
+            const response = await fetch(`http://127.0.0.1:8080/submission/user/${userId}`);
             const data = await response.json();
             submission = data.Message;
             console.log(submission);
@@ -27,7 +28,7 @@ export const load = async ({ cookies }) => {
     };
 
 
-    await fetchSubjects();
+    await fetchSubmission();
     return {
         user_not_signin,
         submission

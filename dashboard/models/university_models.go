@@ -87,6 +87,9 @@ func (pr *ListUniversitiesAPIResponse) Write(w http.ResponseWriter) error {
 	return json.NewEncoder(w).Encode(pr)
 }
 func NewListUniversitiesIdNamesAPIResponse(universities []*UniversityIdName) *ListUniversitiesIdNamesAPIResponse {
+	if universities == nil {
+        universities = []*UniversityIdName{} // Initialize an empty slice if it's nil
+    }
 	return &ListUniversitiesIdNamesAPIResponse{
 		Message: universities,
 	}
