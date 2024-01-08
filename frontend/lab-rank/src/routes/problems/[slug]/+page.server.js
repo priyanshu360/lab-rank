@@ -4,12 +4,12 @@ import { redirect } from '@sveltejs/kit';
 export async function load({ params, cookies }) {
   console.log("Load function called!");
   const slug = params.slug
-  let jwt = cookies.get("jwt-lab-rank")
+  let jwt = cookies.get("jwt_lab_rank")
   let user_not_signin = true
   if (jwt != undefined) {
     user_not_signin = false
   } else {
-    throw redirect(303, "/signup")
+    // throw redirect(303, "/signup")
   }
 
   const response = await fetch(
@@ -47,7 +47,7 @@ export const actions = {
     });
     const jwt = await res.json()
     console.log(jwt.Message)
-    cookies.set("jwt-lab-rank", jwt.Message)
+    cookies.set("jwt_lab_rank", jwt.Message)
   }
 
 };

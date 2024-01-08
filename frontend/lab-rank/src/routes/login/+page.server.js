@@ -1,16 +1,16 @@
 import { redirect } from '@sveltejs/kit';
 
-export const load = ({cookies}) => {
+export const load = ({ cookies }) => {
   let user_not_signin = true
 
-  let jwt = cookies.get("jwt-lab-rank")
+  let jwt = cookies.get("jwt_lab_rank")
   if (jwt != undefined) {
-      user_not_signin = false
-  } 
-  
-     if (jwt != undefined) {
-      throw redirect(303, '/subjects') 
-     }
+    user_not_signin = false
+  }
+
+  if (jwt != undefined) {
+    throw redirect(303, '/subjects')
+  }
   console.log(user_not_signin)
 
   return {
@@ -21,11 +21,11 @@ export const load = ({cookies}) => {
 
 
 export const actions = {
-	create: async ({ fetch, cookies, request }) => {
-		const data = await request.formData();
+  create: async ({ fetch, cookies, request }) => {
+    const data = await request.formData();
     console.log(data)
     const email = data.get("email")
-    const password= data.get("password")
+    const password = data.get("password")
     const res = await fetch("http://127.0.0.1:8080/auth/login", {
       method: "POST",
       headers: {
@@ -36,13 +36,10 @@ export const actions = {
         password,
       }),
     });
-    const authData = await res.json()
-    cookies.set("jwt-lab-rank", authData.Jwt) // TODO : Set university and College 
-    cookies.set("college-id",authData.CollegeID)
-    cookies.set("university-id",authData.UniversityID)
-    cookies.set("user-id",authData.UserID)
-    
+    const jwt = await res.json()
+    console.log(jwt.Message)
+    cookies.set("jwt_lab_rank", jwt.Message)
   }
-  
+
 };
 
