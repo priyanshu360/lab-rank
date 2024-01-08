@@ -25,9 +25,9 @@ func NewUniversityHandler(svc university_svc.Service) *universityHandler {
 }
 
 func (h *universityHandler) initRoutes() *universityHandler {
-	h.uRouter.HandleFunc("/university/names", serveHTTPWrapper(h.handleGetName)).Methods("GET")
-	h.uRouter.HandleFunc("/university", serveHTTPWrapper(h.handleGet)).Methods("GET")
-	h.uRouter.HandleFunc("/university", serveHTTPWrapper(h.handleCreate)).Methods("POST")
+	h.uRouter.HandleFunc("/university/names", serveHTTPWrapper(h.handleGetName, models.AccessLevelStudent)).Methods("GET")
+	h.uRouter.HandleFunc("/university", serveHTTPWrapper(h.handleGet, models.AccessLevelStudent)).Methods("GET")
+	h.uRouter.HandleFunc("/university", serveHTTPWrapper(h.handleCreate, models.AccessLevelAdmin)).Methods("POST")
 	// h.uRouter.HandleFunc("/university", serveHTTPWrapper(h.handleUpdate)).Methods("PUT")
 	// h.uRouter.HandleFunc("/university", serveHTTPWrapper(h.handleDelete)).Methods("DELETE")
 	// Add other routes as needed

@@ -26,9 +26,9 @@ func NewSubjectHandler(svc subject_svc.Service) *subjectHandler {
 }
 
 func (h *subjectHandler) initRoutes() *subjectHandler {
-	h.sRouter.HandleFunc("/subject/{university_id}", serveHTTPWrapper(h.handleGetByUniversityID)).Methods("GET")
-	h.sRouter.HandleFunc("/subject", serveHTTPWrapper(h.handleGet)).Methods("GET")
-	h.sRouter.HandleFunc("/subject", serveHTTPWrapper(h.handleCreate)).Methods("POST")
+	h.sRouter.HandleFunc("/subject/{university_id}", serveHTTPWrapper(h.handleGetByUniversityID, models.AccessLevelStudent)).Methods("GET")
+	h.sRouter.HandleFunc("/subject", serveHTTPWrapper(h.handleGet, models.AccessLevelStudent)).Methods("GET")
+	h.sRouter.HandleFunc("/subject", serveHTTPWrapper(h.handleCreate, models.AccessLevelAdmin)).Methods("POST")
 	// h.sRouter.HandleFunc("/subjects", serveHTTPWrapper(h.handleUpdate)).Methods("PUT")
 	// Add other routes as needed
 

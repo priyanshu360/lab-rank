@@ -27,11 +27,11 @@ func NewSubmissionsHandler(svc submission.Service) *submissionsHandler {
 
 func (h *submissionsHandler) initRoutes() *submissionsHandler {
 
-	h.sRouter.HandleFunc("/submission/user/{user_id}", serveHTTPWrapper(h.handleGetForUserID)).Methods("GET")
-	h.sRouter.HandleFunc("/submission/problem/{problem_id}", serveHTTPWrapper(h.handleGet)).Methods("GET")
-	h.sRouter.HandleFunc("/submission", serveHTTPWrapper(h.handleGet)).Methods("GET")
-	h.sRouter.HandleFunc("/submission", serveHTTPWrapper(h.handleCreate)).Methods("POST")
-	h.sRouter.HandleFunc("/submission", serveHTTPWrapper(h.handleUpdate)).Methods("PUT")
+	h.sRouter.HandleFunc("/submission/user/{user_id}", serveHTTPWrapper(h.handleGetForUserID, models.AccessLevelStudent)).Methods("GET")
+	h.sRouter.HandleFunc("/submission/problem/{problem_id}", serveHTTPWrapper(h.handleGet, models.AccessLevelStudent)).Methods("GET")
+	h.sRouter.HandleFunc("/submission", serveHTTPWrapper(h.handleGet, models.AccessLevelStudent)).Methods("GET")
+	h.sRouter.HandleFunc("/submission", serveHTTPWrapper(h.handleCreate, models.AccessLevelStudent)).Methods("POST")
+	h.sRouter.HandleFunc("/submission", serveHTTPWrapper(h.handleUpdate, models.AccessLevelAdmin)).Methods("PUT")
 	// Add other routes as needed
 
 	return h
@@ -68,7 +68,7 @@ func (h *submissionsHandler) handleGetForUserID(ctx context.Context, r *http.Req
 	if err != models.NoError {
 		return newAPIError(models.InternalError.Add(err))
 	}
-	
+
 	response := models.NewListSubmissionsWithProbTitleAPIResponse(submissions)
 	return response
 
@@ -81,7 +81,7 @@ func (h *submissionsHandler) handleGet(ctx context.Context, r *http.Request) api
 	if err != models.NoError {
 		return newAPIError(models.InternalError.Add(err))
 	}
-	if len(submissions) == 1 && id != ""{
+	if len(submissions) == 1 && id != "" {
 		return models.NewCreateSubmissionAPIResponse(submissions[0]) // Reusing the same Response from Create in Get
 	} else {
 		response := models.NewListSubmissionsAPIResponse(submissions)

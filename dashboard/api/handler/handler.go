@@ -9,6 +9,7 @@ import (
 	"net/http"
 
 	"github.com/google/uuid"
+	"github.com/priyanshu360/lab-rank/dashboard/config"
 	"github.com/priyanshu360/lab-rank/dashboard/models"
 )
 
@@ -91,10 +92,20 @@ func newAPIError(e models.AppError) *apiError {
 	return &err
 }
 
-func serveHTTPWrapper(f func(context.Context, *http.Request) apiResponse) http.HandlerFunc {
+func serveHTTPWrapper(f func(context.Context, *http.Request) apiResponse, requiredRole models.AccessLevelModeEnum) http.HandlerFunc {
 
 	return func(w http.ResponseWriter, r *http.Request) {
 		var ctx = r.Context()
+
+		if requiredRole != models.AccessLevelNone {
+			session, ok := ctx.Value(config.SessionKey).(models.AuthSession)
+			if !ok || !models.CanAccess[session.Mode][requiredRole] {
+				response := newAPIError(models.UnauthorizedError)
+				response.Write(w)
+				return
+			}
+		}
+
 		response := f(ctx, r)
 
 		// w.Header().Set("Access-Control-Allow-Origin", "*")

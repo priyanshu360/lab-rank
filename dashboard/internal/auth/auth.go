@@ -203,7 +203,7 @@ func (s *service) Logout(ctx context.Context, jwtToken string) models.AppError {
 
 	// Remove the session from the data store (e.g., Redis)
 	appErr := s.session.RemoveSession(ctx, sessionID)
-	if err != models.NoError {
+	if appErr != models.NoError {
 		return appErr
 	}
 

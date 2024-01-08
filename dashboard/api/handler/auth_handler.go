@@ -29,10 +29,10 @@ func NewAuthHandler(svc auth.Service) *authHandler {
 
 func (h *authHandler) initRoutes() *authHandler {
 	log.Print("auth handler")
-	h.aRouter.HandleFunc("/auth/login", serveHTTPWrapper(h.handleLogin)).Methods("POST")
-	h.aRouter.HandleFunc("/auth/signup", serveHTTPWrapper(h.handleSignUp)).Methods("POST")
-	h.aRouter.HandleFunc("/auth/user", serveHTTPWrapper(h.handleAuthenticate)).Methods("POST")
-	h.aRouter.HandleFunc("/auth/logout", serveHTTPWrapper(h.handleLogout)).Methods("POST")
+	h.aRouter.HandleFunc("/auth/login", serveHTTPWrapper(h.handleLogin, models.AccessLevelNone)).Methods("POST")
+	h.aRouter.HandleFunc("/auth/signup", serveHTTPWrapper(h.handleSignUp, models.AccessLevelNone)).Methods("POST")
+	h.aRouter.HandleFunc("/auth/user", serveHTTPWrapper(h.handleAuthenticate, models.AccessLevelNone)).Methods("POST")
+	h.aRouter.HandleFunc("/auth/logout", serveHTTPWrapper(h.handleLogout, models.AccessLevelNone)).Methods("POST")
 	// h.aRouter.HandleFunc("/auth/reset", serveHTTPWrapper(h.handleLogout)).Methods("PUT")
 	// Add other routes as needed
 

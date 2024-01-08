@@ -26,10 +26,10 @@ func NewSyllabusHandler(svc syllabus_svc.Service) *syllabusHandler {
 }
 
 func (h *syllabusHandler) initRoutes() *syllabusHandler {
-	h.sRouter.HandleFunc("/syllabus", serveHTTPWrapper(h.handleGet)).Methods("GET")
-	h.sRouter.HandleFunc("/syllabus/by_subject/{subject_id}", serveHTTPWrapper(h.handleGetBySubjectID)).Methods("GET")
+	h.sRouter.HandleFunc("/syllabus", serveHTTPWrapper(h.handleGet, models.AccessLevelStudent)).Methods("GET")
+	h.sRouter.HandleFunc("/syllabus/by_subject/{subject_id}", serveHTTPWrapper(h.handleGetBySubjectID, models.AccessLevelStudent)).Methods("GET")
 
-	h.sRouter.HandleFunc("/syllabus", serveHTTPWrapper(h.handleCreate)).Methods("POST")
+	h.sRouter.HandleFunc("/syllabus", serveHTTPWrapper(h.handleCreate, models.AccessLevelAdmin)).Methods("POST")
 	// h.sRouter.HandleFunc("/syllabus", serveHTTPWrapper(h.handleUpdate)).Methods("PUT")
 	// h.sRouter.HandleFunc("/syllabus", serveHTTPWrapper(h.handleDelete)).Methods("DELETE")
 	// Add other routes as needed

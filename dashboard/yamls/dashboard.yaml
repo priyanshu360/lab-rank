@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dashboard-deployment
+  labels:
+    app: dashboard
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dashboard
+  template:
+    metadata:
+      labels:
+        app: dashboard
+    spec:
+      containers:
+        - name: dashboard
+          image: dashboard
+          ports:
+            - containerPort: 8080
+          env:
+            - name: DB_USERNAME
+              value: lab_rank_user
+            - name: DB_PASSWORD
+              value: lab_rank_password
+            - name: DB_NAME
+              value: lab_rank
+            - name: DB_ADDRESS
+              value: localhost
+            - name: DB_PORT
+              value: "5432"
+            - name: READ_TIMEOUT
+              value: "5"
+            - name: WRITE_TIMEOUT
+              value: "5"
+            - name: SERVER_ADDRESS
+              value: localhost
+            - name: SERVER_PORT
+              value: "8080"
+            - name: LOG_LEVEL
+              value: INFO
+            - name: LOG_FORMAT
+              value: json
+            - name: KUBE_CONFIG
+              value: /path/to/.kube/config
+            - name: AUTH_ENABLED
+              value: "true"
+            - name: REDIS_ADDRESS
+              value: localhost:6379
+            - name: REDIS_PASSWORD
+              value: ""
+            - name: REDIS_DB
+              value: "0"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dashboard-service
+spec:
+  selector:
+    app.kubernetes.io/name: dashboard
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080

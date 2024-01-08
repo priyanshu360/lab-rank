@@ -25,8 +25,8 @@ func NewEnvironmentHandler(svc environment_svc.Service) *environmentHandler {
 }
 
 func (h *environmentHandler) initRoutes() *environmentHandler {
-	h.eRouter.HandleFunc("/environment", serveHTTPWrapper(h.handleGet)).Methods("GET")
-	h.eRouter.HandleFunc("/environment", serveHTTPWrapper(h.handleCreate)).Methods("POST")
+	h.eRouter.HandleFunc("/environment", serveHTTPWrapper(h.handleGet, models.AccessLevelAdmin)).Methods("GET")
+	h.eRouter.HandleFunc("/environment", serveHTTPWrapper(h.handleCreate, models.AccessLevelAdmin)).Methods("POST")
 	// Add other routes as needed
 
 	return h

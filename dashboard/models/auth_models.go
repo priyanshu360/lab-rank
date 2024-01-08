@@ -18,7 +18,35 @@ const (
 	AccessLevelAdmin   AccessLevelModeEnum = "ADMIN"
 	AccessLevelTeacher AccessLevelModeEnum = "TEACHER"
 	AccessLevelStudent AccessLevelModeEnum = "STUDENT"
+	AccessLevelNone    AccessLevelModeEnum = "NONE"
 )
+
+var CanAccess map[AccessLevelModeEnum]map[AccessLevelModeEnum]bool = map[AccessLevelModeEnum]map[AccessLevelModeEnum]bool{
+	AccessLevelAdmin: {
+		AccessLevelAdmin:   true,
+		AccessLevelTeacher: true,
+		AccessLevelStudent: true,
+		AccessLevelNone:    true,
+	},
+	AccessLevelTeacher: {
+		AccessLevelAdmin:   false,
+		AccessLevelTeacher: true,
+		AccessLevelStudent: true,
+		AccessLevelNone:    true,
+	},
+	AccessLevelStudent: {
+		AccessLevelAdmin:   false,
+		AccessLevelTeacher: false,
+		AccessLevelStudent: true,
+		AccessLevelNone:    true,
+	},
+	AccessLevelNone: {
+		AccessLevelAdmin:   false,
+		AccessLevelTeacher: false,
+		AccessLevelStudent: false,
+		AccessLevelNone:    false,
+	},
+}
 
 type Auth struct {
 	UserID       uuid.UUID           `json:"user_id"`

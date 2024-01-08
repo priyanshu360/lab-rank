@@ -26,9 +26,9 @@ func NewCollegeHandler(svc college_svc.Service) *collegeHandler {
 }
 
 func (h *collegeHandler) initRoutes() *collegeHandler {
-	h.cRouter.HandleFunc("/college/names/{university_id}", serveHTTPWrapper(h.handleGetName)).Methods("GET")
-	h.cRouter.HandleFunc("/college", serveHTTPWrapper(h.handleGet)).Methods("GET")
-	h.cRouter.HandleFunc("/college", serveHTTPWrapper(h.handleCreate)).Methods("POST")
+	h.cRouter.HandleFunc("/college/names/{university_id}", serveHTTPWrapper(h.handleGetName, models.AccessLevelStudent)).Methods("GET")
+	h.cRouter.HandleFunc("/college", serveHTTPWrapper(h.handleGet, models.AccessLevelStudent)).Methods("GET")
+	h.cRouter.HandleFunc("/college", serveHTTPWrapper(h.handleCreate, models.AccessLevelAdmin)).Methods("POST")
 
 	return h
 }

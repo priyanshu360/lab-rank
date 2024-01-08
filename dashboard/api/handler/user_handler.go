@@ -25,10 +25,10 @@ func NewUserHandler(svc user_svc.Service) *userHandler {
 }
 
 func (h *userHandler) initRoutes() *userHandler {
-	h.uRouter.HandleFunc("/user", serveHTTPWrapper(h.handleGet)).Methods("GET")
-	h.uRouter.HandleFunc("/user", serveHTTPWrapper(h.handleCreate)).Methods("POST")
-	h.uRouter.HandleFunc("/user", serveHTTPWrapper(h.handleUpdate)).Methods("PUT")
-	h.uRouter.HandleFunc("/user", serveHTTPWrapper(h.handleDelete)).Methods("DELETE")
+	h.uRouter.HandleFunc("/user", serveHTTPWrapper(h.handleGet, models.AccessLevelStudent)).Methods("GET")
+	h.uRouter.HandleFunc("/user", serveHTTPWrapper(h.handleCreate, models.AccessLevelAdmin)).Methods("POST")
+	h.uRouter.HandleFunc("/user", serveHTTPWrapper(h.handleUpdate, models.AccessLevelAdmin)).Methods("PUT")
+	h.uRouter.HandleFunc("/user", serveHTTPWrapper(h.handleDelete, models.AccessLevelAdmin)).Methods("DELETE")
 
 	return h
 }

@@ -26,9 +26,9 @@ func NewProblemsHandler(svc problems_svc.Service) *problemsHandler {
 }
 
 func (h *problemsHandler) initRoutes() *problemsHandler {
-	h.pRouter.HandleFunc("/problem/{subject_id}/{college_id}", serveHTTPWrapper(h.handleGetProblemsForSubject)).Methods("GET")
-	h.pRouter.HandleFunc("/problem", serveHTTPWrapper(h.handleGet)).Methods("GET")
-	h.pRouter.HandleFunc("/problem", serveHTTPWrapper(h.handleCreate)).Methods("POST")
+	h.pRouter.HandleFunc("/problem/{subject_id}/{college_id}", serveHTTPWrapper(h.handleGetProblemsForSubject, models.AccessLevelStudent)).Methods("GET")
+	h.pRouter.HandleFunc("/problem", serveHTTPWrapper(h.handleGet, models.AccessLevelStudent)).Methods("GET")
+	h.pRouter.HandleFunc("/problem", serveHTTPWrapper(h.handleCreate, models.AccessLevelTeacher)).Methods("POST")
 	// Add other routes as needed
 
 	return h
@@ -71,7 +71,7 @@ func (h *problemsHandler) handleGet(ctx context.Context, r *http.Request) apiRes
 	if err != models.NoError {
 		return newAPIError(models.InternalError.Add(err))
 	}
-	if (len(problems) == 1 && id != "") {
+	if len(problems) == 1 && id != "" {
 		return models.NewCreateProblemAPIResponse(problems[0]) // Reusing the same Response from Create in Get
 	} else {
 		response := models.NewListProblemsAPIResponse(problems)
