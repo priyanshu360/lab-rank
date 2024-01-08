@@ -1,4 +1,5 @@
 /** @type {import('@sveltejs/kit').Handle} */
+/** @type {import('@sveltejs/kit').HandleFetch} */
 import cookie from 'cookie';
 
 import { redirect } from '@sveltejs/kit';
@@ -53,4 +54,20 @@ export async function handle({ event, resolve }) {
 
 
     const response = await resolve(event); return response;
+}
+
+
+export async function handleFetch({ event, request, fetch }) {
+    console.log("hello my dear friend")
+    const cookies = cookie.parse(event.request.headers.get('cookie') || '');
+    const jwtToken = cookies.jwt_lab_rank;
+    console.log(cookies, jwtToken)
+    if (jwtToken) {
+        // clone the original request, but change the URL
+        request.headers.set('Authorization', `Bearer ${jwtToken}`)
+    }
+
+    console.log(request)
+
+    return fetch(request);
 }

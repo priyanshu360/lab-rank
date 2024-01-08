@@ -1,7 +1,7 @@
 
 import { redirect } from '@sveltejs/kit';
 
-export const load = async ({ locals, cookies }) => {
+export const load = async ({ locals, cookies, fetch }) => {
     const jwt = cookies.get("jwt_lab_rank")
     const universityId = locals.user.university_id
 
