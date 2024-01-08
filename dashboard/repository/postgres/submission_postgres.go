@@ -131,6 +131,26 @@ func (psql *submissionPostgres) GetSubmissionsByUserID(ctx context.Context, user
 	return submissions, models.NoError
 }
 
+func (psql *submissionPostgres) GetSubmissionsWithTitleByUserID(ctx context.Context, userID uuid.UUID) ([]*models.SubmissionWithProblemTitle, models.AppError) {
+	var submissions []*models.SubmissionWithProblemTitle
+
+	// Join Submission and Problem tables based on ProblemID and CreatedBy
+	result := psql.db.WithContext(ctx).
+		Table("submissions").
+		Select("submissions.*, problems.title as ProblemTitle").
+		Joins("INNER JOIN problems ON submissions.Problem_id = problems.id").
+		Where("submissions.Created_by = ?", userID).
+		Find(&submissions)
+	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			// Submission not found
+			return submissions, models.SubmissionNotFoundError
+		}
+		return submissions, models.InternalError.Add(result.Error)
+	}
+	return submissions, models.NoError
+}
+
 func (psql *submissionPostgres) GetSubmissionsByProblemID(ctx context.Context, problemID uuid.UUID) ([]*models.Submission, models.AppError) {
 	var submissions []*models.Submission
 	result := psql.db.WithContext(ctx).Where("problem_id = ?", problemID).Find(&submissions)

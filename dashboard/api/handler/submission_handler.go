@@ -68,12 +68,10 @@ func (h *submissionsHandler) handleGetForUserID(ctx context.Context, r *http.Req
 	if err != models.NoError {
 		return newAPIError(models.InternalError.Add(err))
 	}
-	if len(submissions) == 1 {
-		return models.NewCreateSubmissionAPIResponse(submissions[0]) // Reusing the same Response from Create in Get
-	} else {
-		response := models.NewListSubmissionsAPIResponse(submissions)
-		return response
-	}
+	
+	response := models.NewListSubmissionsWithProbTitleAPIResponse(submissions)
+	return response
+
 }
 
 func (h *submissionsHandler) handleGet(ctx context.Context, r *http.Request) apiResponse {
@@ -83,7 +81,7 @@ func (h *submissionsHandler) handleGet(ctx context.Context, r *http.Request) api
 	if err != models.NoError {
 		return newAPIError(models.InternalError.Add(err))
 	}
-	if len(submissions) == 1 {
+	if len(submissions) == 1 && id != ""{
 		return models.NewCreateSubmissionAPIResponse(submissions[0]) // Reusing the same Response from Create in Get
 	} else {
 		response := models.NewListSubmissionsAPIResponse(submissions)
