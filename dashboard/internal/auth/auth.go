@@ -3,8 +3,9 @@ package auth
 import (
 	"context"
 	"crypto/rand"
-	"encoding/json"
 	"errors"
+	"fmt"
+	"log"
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
@@ -17,7 +18,8 @@ import (
 
 type Service interface {
 	Login(context.Context, string, string) (*models.LoginAPIResponse, models.AppError)
-	// Logout(context.Context, string) error
+	Logout(context.Context, string) models.AppError
+	Authenticate(context.Context, string) (*models.AuthSession, models.AppError)
 	SignUp(context.Context, *models.User, string) models.AppError
 }
 
@@ -25,10 +27,12 @@ type service struct {
 	// You can add any dependencies or data storage components here
 	syllabus syllabus.Service
 	repo     repository.AuthRepository
+	session  repository.SessionRepository
 }
 
-func New(repo repository.AuthRepository, syllabus syllabus.Service) *service {
+func New(repo repository.AuthRepository, session repository.SessionRepository, syllabus syllabus.Service) *service {
 	return &service{
+		session:  session,
 		repo:     repo,
 		syllabus: syllabus,
 	}
@@ -46,13 +50,28 @@ func (s *service) Login(ctx context.Context, email, password string) (*models.Lo
 		return nil, models.InternalError.Add(errors.New("Login failed"))
 	}
 
+	session := models.NewAuthSession(user, auth.Mode)
+	sessionID, err := s.session.SetSession(ctx, session)
+	if err != models.NoError {
+		return nil, err
+	}
 	// Create JWT token
-	token, jwtErr := generateJWTToken(user, &auth.Mode)
+	token, jwtErr := generateJWTToken(sessionID)
 	if jwtErr != nil {
 		return nil, models.InternalError.Add(jwtErr)
 	}
 
 	return models.NewLoginAPIResponse(token), models.NoError
+}
+
+func (s *service) Authenticate(ctx context.Context, jwt string) (*models.AuthSession, models.AppError) {
+	log.Println(jwt)
+	sessionID, err := validateJWTToken(jwt)
+	if err != nil {
+		return nil, models.InternalError.Add(err)
+	}
+
+	return s.session.GetSession(ctx, sessionID)
 }
 
 func (s *service) SignUp(ctx context.Context, user *models.User, password string) models.AppError {
@@ -122,22 +141,48 @@ func verifyPassword(password, hashedPassword, salt string) bool {
 	return err == nil
 }
 
-func generateJWTToken(user *models.User, mode *models.AccessLevelModeEnum) (string, error) {
+func validateJWTToken(tokenString string) (uuid.UUID, error) {
+	secretKey := []byte("your_secret_key")
+	// Parse the token
+	token, err := jwt.ParseWithClaims(tokenString, &jwt.RegisteredClaims{}, func(token *jwt.Token) (interface{}, error) {
+		// Check the signing method
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
+		return secretKey, nil
+	})
+
+	log.Println("error, ", err)
+
+	if err != nil {
+		return uuid.Nil, err
+	}
+
+	// Check if the token is valid
+	if claims, ok := token.Claims.(*jwt.RegisteredClaims); ok && token.Valid {
+		// Validate the session ID
+		sessionID, err := uuid.Parse(claims.Subject)
+		if err != nil {
+			return uuid.Nil, fmt.Errorf("invalid session ID format")
+		}
+
+		return sessionID, nil
+	}
+
+	return uuid.Nil, fmt.Errorf("invalid token")
+}
+
+func generateJWTToken(sessionID uuid.UUID) (string, error) {
 	// Replace the following with your own secret key and token expiration time
 	secretKey := []byte("your_secret_key")
 	expirationTime := time.Now().Add(24 * time.Hour)
 
 	// Create the JWT claims
-	accesses, err := json.Marshal(mode)
-	if err != nil {
-		return "", err
-	}
 
 	claims := &jwt.RegisteredClaims{
-		ID:        user.ID.String(),
 		ExpiresAt: jwt.NewNumericDate(expirationTime),
 		IssuedAt:  jwt.NewNumericDate(time.Now()),
-		Subject:   string(accesses),
+		Subject:   sessionID.String(),
 	}
 
 	// Create the JWT token
@@ -148,4 +193,19 @@ func generateJWTToken(user *models.User, mode *models.AccessLevelModeEnum) (stri
 	}
 
 	return signedToken, nil
+}
+
+func (s *service) Logout(ctx context.Context, jwtToken string) models.AppError {
+	sessionID, err := validateJWTToken(jwtToken)
+	if err != nil {
+		return models.InternalError.Add(err)
+	}
+
+	// Remove the session from the data store (e.g., Redis)
+	appErr := s.session.RemoveSession(ctx, sessionID)
+	if err != models.NoError {
+		return appErr
+	}
+
+	return models.NoError
 }

@@ -18,6 +18,11 @@ func main() {
 	dbConf := config.NewDBConfig()
 	loggerConf := config.InitLoggerConfig()
 	serverConf := config.NewServerConfig()
+	redisConf := config.NewRedisConfig()
+
+	if err := api.InitRedisClient(redisConf); err != nil {
+		log.Fatal(err)
+	}
 
 	api.InitDB(dbConf)
 	if err := api.InitK8sClientset(config.K8sConfig); err != nil {

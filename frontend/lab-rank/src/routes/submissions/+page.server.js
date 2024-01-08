@@ -2,7 +2,7 @@
 import { redirect } from '@sveltejs/kit';
 
 export const load = async ({ cookies }) => {
-    const jwt = cookies.get("jwt-lab-rank")
+    const jwt = cookies.get("jwt_lab_rank")
     const universityId = cookies.get("university-id")
     const collegeId = cookies.get("college-id")
     const userId = cookies.get("user-id")
@@ -11,7 +11,7 @@ export const load = async ({ cookies }) => {
     if (jwt != undefined) {
         user_not_signin = false
     } else {
-        throw redirect(303, "/signup")
+        // throw redirect(303, "/signup")
     }
 
     let submission = []

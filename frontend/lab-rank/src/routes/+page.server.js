@@ -1,11 +1,11 @@
-export const load = ({cookies}) => {
+export const load = ({ cookies }) => {
   let user_not_signin = true
 
-  let jwt = cookies.get("jwt-lab-rank")
+  let jwt = cookies.get("jwt_lab_rank")
   if (jwt != undefined) {
-      user_not_signin = false
-  } 
-  
+    user_not_signin = false
+  }
+
   console.log(user_not_signin)
 
   return {

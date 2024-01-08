@@ -43,6 +43,7 @@ var (
 	InternalError            = NewAppError(ErrorInternal, "internal server error")
 	BadRequest               = NewAppError(ErrorBadData, "bad request")
 	NoError                  = NewAppError(ErrorNone, "")
+	UnauthorizedError        = NewAppError(ErrorUnauthorized, "unauthorized")
 )
 
 type ErrorType string
@@ -57,6 +58,7 @@ const (
 	ErrorUnavailable   ErrorType = "unavailable"
 	ErrorNotFound      ErrorType = "not_found"
 	ErrorNotAcceptable ErrorType = "not_acceptable"
+	ErrorUnauthorized  ErrorType = "unauthorized"
 )
 
 type FileType string

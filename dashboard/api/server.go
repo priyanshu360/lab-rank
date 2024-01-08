@@ -11,6 +11,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/go-redis/redis/v8"
 	"github.com/golang-jwt/jwt"
 	"github.com/gorilla/mux" // Import Gorilla Mux
 	"github.com/priyanshu360/lab-rank/dashboard/api/handler"
@@ -27,6 +28,7 @@ import (
 	"github.com/priyanshu360/lab-rank/dashboard/models"
 	filesys "github.com/priyanshu360/lab-rank/dashboard/repository/fs"
 	psql "github.com/priyanshu360/lab-rank/dashboard/repository/postgres"
+	redisrepo "github.com/priyanshu360/lab-rank/dashboard/repository/redis"
 	"github.com/priyanshu360/lab-rank/queue/queue"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -36,6 +38,7 @@ import (
 
 var db *gorm.DB
 var clientset *kubernetes.Clientset
+var rClient *redis.Client
 
 // ServerConfig is your server configuration interface.
 
@@ -92,7 +95,7 @@ func (s *APIServer) initRoutesAndMiddleware() {
 		log.Fatal(err)
 	}
 
-	s.add("/auth", models.AccessLevelAdmin, handler.NewAuthHandler(auth.New(psql.NewAuthPostgresRepo(db), syllabus.New(psql.NewSyllabusPostgresRepo(db)))))
+	s.add("/auth", models.AccessLevelAdmin, handler.NewAuthHandler(auth.New(psql.NewAuthPostgresRepo(db), redisrepo.NewRedisSessionRepository(rClient), syllabus.New(psql.NewSyllabusPostgresRepo(db)))))
 	s.add("/user", models.AccessLevelAdmin, handler.NewUserHandler(user.New(psql.NewUserPostgresRepo(db))))
 	s.add("/subject", models.AccessLevelAdmin, handler.NewSubjectHandler(subject.New(psql.NewSubjectPostgresRepo(db), syllabus.New(psql.NewSyllabusPostgresRepo(db)))))
 	s.add("/college", models.AccessLevelAdmin, handler.NewCollegeHandler(college.New(psql.NewCollegePostgresRepo(db), syllabus.New(psql.NewSyllabusPostgresRepo(db)))))
@@ -220,6 +223,22 @@ func InitK8sClientset(kubeconfig string) error {
 	clientset, err = kubernetes.NewForConfig(config)
 	if err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func InitRedisClient(cfg config.RedisConfig) error {
+	rClient = redis.NewClient(&redis.Options{
+		Addr:     cfg.GetAddress(),
+		Password: cfg.GetPassword(),
+		DB:       cfg.GetDB(),
+	})
+
+	// Ping the Redis server to check if the connection is successful
+	_, err := rClient.Ping(context.Background()).Result()
+	if err != nil {
+		return fmt.Errorf("failed to ping Redis server: %v", err)
 	}
 
 	return nil
