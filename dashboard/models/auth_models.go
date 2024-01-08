@@ -39,6 +39,16 @@ func NewAuthSession(user *User, mode AccessLevelModeEnum) *AuthSession {
 	}
 }
 
+type AuthenticateAPIResponse struct {
+	Message *AuthSession
+}
+
+func NewAuthenticateAPIResponse(jwt *AuthSession) *AuthenticateAPIResponse {
+	return &AuthenticateAPIResponse{
+		Message: jwt,
+	}
+}
+
 type SignUpAPIRequest struct {
 	CreateUserAPIRequest
 	Password string `json:"password"`
@@ -54,6 +64,11 @@ func NewLoginAPIResponse(jwt string) *LoginAPIResponse {
 	return &LoginAPIResponse{
 		Message: jwt,
 	}
+}
+
+func (res *AuthenticateAPIResponse) Write(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	return json.NewEncoder(w).Encode(res)
 }
 
 func (res *LoginAPIResponse) Write(w http.ResponseWriter) error {

@@ -4,6 +4,8 @@ import (
 	"context"
 	"crypto/rand"
 	"errors"
+	"fmt"
+	"log"
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
@@ -17,6 +19,7 @@ import (
 type Service interface {
 	Login(context.Context, string, string) (*models.LoginAPIResponse, models.AppError)
 	// Logout(context.Context, string) error
+	Authenticate(context.Context, string) (*models.AuthSession, models.AppError)
 	SignUp(context.Context, *models.User, string) models.AppError
 }
 
@@ -59,6 +62,16 @@ func (s *service) Login(ctx context.Context, email, password string) (*models.Lo
 	}
 
 	return models.NewLoginAPIResponse(token), models.NoError
+}
+
+func (s *service) Authenticate(ctx context.Context, jwt string) (*models.AuthSession, models.AppError) {
+	log.Println(jwt)
+	sessionID, err := validateJWTToken(jwt)
+	if err != nil {
+		return nil, models.InternalError.Add(err)
+	}
+
+	return s.session.GetSession(ctx, sessionID)
 }
 
 func (s *service) SignUp(ctx context.Context, user *models.User, password string) models.AppError {
@@ -126,6 +139,37 @@ func verifyPassword(password, hashedPassword, salt string) bool {
 	hashedPasswordBytes := []byte(hashedPassword)
 	err := bcrypt.CompareHashAndPassword(hashedPasswordBytes, passwordBytes)
 	return err == nil
+}
+
+func validateJWTToken(tokenString string) (uuid.UUID, error) {
+	secretKey := []byte("your_secret_key")
+	// Parse the token
+	token, err := jwt.ParseWithClaims(tokenString, &jwt.RegisteredClaims{}, func(token *jwt.Token) (interface{}, error) {
+		// Check the signing method
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
+		return secretKey, nil
+	})
+
+	log.Println("error, ", err)
+
+	if err != nil {
+		return uuid.Nil, err
+	}
+
+	// Check if the token is valid
+	if claims, ok := token.Claims.(*jwt.RegisteredClaims); ok && token.Valid {
+		// Validate the session ID
+		sessionID, err := uuid.Parse(claims.Subject)
+		if err != nil {
+			return uuid.Nil, fmt.Errorf("invalid session ID format")
+		}
+
+		return sessionID, nil
+	}
+
+	return uuid.Nil, fmt.Errorf("invalid token")
 }
 
 func generateJWTToken(sessionID uuid.UUID) (string, error) {
