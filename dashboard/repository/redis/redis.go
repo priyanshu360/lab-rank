@@ -56,3 +56,16 @@ func (r *RedisSessionRepository) SetSession(ctx context.Context, session *models
 
 	return sessionID, models.NoError
 }
+
+func (r *RedisSessionRepository) RemoveSession(ctx context.Context, sessionID uuid.UUID) models.AppError {
+	key := sessionKeyPrefix + sessionID.String()
+
+	// Delete the session from Redis
+	err := r.client.Del(ctx, key).Err()
+	if err != nil {
+		// Handle error (failed to delete session from Redis, etc.)
+		return models.InternalError.Add(err)
+	}
+
+	return models.NoError
+}

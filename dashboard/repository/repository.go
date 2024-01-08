@@ -93,4 +93,5 @@ type AuthRepository interface {
 type SessionRepository interface {
 	GetSession(context.Context, uuid.UUID) (*models.AuthSession, models.AppError)
 	SetSession(context.Context, *models.AuthSession) (uuid.UUID, models.AppError)
+	RemoveSession(context.Context, uuid.UUID) models.AppError
 }

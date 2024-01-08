@@ -18,7 +18,7 @@ import (
 
 type Service interface {
 	Login(context.Context, string, string) (*models.LoginAPIResponse, models.AppError)
-	// Logout(context.Context, string) error
+	Logout(context.Context, string) models.AppError
 	Authenticate(context.Context, string) (*models.AuthSession, models.AppError)
 	SignUp(context.Context, *models.User, string) models.AppError
 }
@@ -193,4 +193,19 @@ func generateJWTToken(sessionID uuid.UUID) (string, error) {
 	}
 
 	return signedToken, nil
+}
+
+func (s *service) Logout(ctx context.Context, jwtToken string) models.AppError {
+	sessionID, err := validateJWTToken(jwtToken)
+	if err != nil {
+		return models.InternalError.Add(err)
+	}
+
+	// Remove the session from the data store (e.g., Redis)
+	appErr := s.session.RemoveSession(ctx, sessionID)
+	if err != models.NoError {
+		return appErr
+	}
+
+	return models.NoError
 }

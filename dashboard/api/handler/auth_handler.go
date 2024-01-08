@@ -31,8 +31,8 @@ func (h *authHandler) initRoutes() *authHandler {
 	log.Print("auth handler")
 	h.aRouter.HandleFunc("/auth/login", serveHTTPWrapper(h.handleLogin)).Methods("POST")
 	h.aRouter.HandleFunc("/auth/signup", serveHTTPWrapper(h.handleSignUp)).Methods("POST")
-	h.aRouter.HandleFunc("/authenticate", serveHTTPWrapper(h.handleAuthenticate)).Methods("POST")
-	// h.aRouter.HandleFunc("/auth/logout", serveHTTPWrapper(h.handleLogout)).Methods("POST")
+	h.aRouter.HandleFunc("/auth/user", serveHTTPWrapper(h.handleAuthenticate)).Methods("POST")
+	h.aRouter.HandleFunc("/auth/logout", serveHTTPWrapper(h.handleLogout)).Methods("POST")
 	// h.aRouter.HandleFunc("/auth/reset", serveHTTPWrapper(h.handleLogout)).Methods("PUT")
 	// Add other routes as needed
 
@@ -56,10 +56,6 @@ func (h *authHandler) handleLogin(ctx context.Context, r *http.Request) apiRespo
 		return newAPIError(err)
 	}
 	return response
-}
-
-func (h *authHandler) handleLogout(ctx context.Context, r *http.Request) apiResponse {
-	return nil
 }
 
 func (h *authHandler) handleSignUp(ctx context.Context, r *http.Request) apiResponse {
@@ -87,12 +83,22 @@ func (h *authHandler) handleAuthenticate(ctx context.Context, r *http.Request) a
 	token := strings.TrimPrefix(jwtToken, "Bearer ")
 	log.Println(token)
 
-	// Call the Authenticate method in the service
 	authSession, appErr := h.svc.Authenticate(ctx, token)
 	if appErr != models.NoError {
 		return newAPIError(appErr)
 	}
 
-	// Return the authenticated session as a response
 	return models.NewAuthenticateAPIResponse(authSession)
+}
+
+func (h *authHandler) handleLogout(ctx context.Context, r *http.Request) apiResponse {
+	// Extract JWT token from the request headers
+	jwtToken := r.Header.Get("Authorization")
+	if jwtToken == "" || !strings.HasPrefix(jwtToken, "Bearer ") {
+		return newAPIError(models.UnauthorizedError.Add(errors.New("invalid or missing JWT token")))
+	}
+
+	token := strings.TrimPrefix(jwtToken, "Bearer ")
+	// Call the LogOut method in the service
+	return newAPIError(h.svc.Logout(ctx, token))
 }
