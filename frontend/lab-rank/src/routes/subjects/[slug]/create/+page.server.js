@@ -1,4 +1,3 @@
-import { redirect } from '@sveltejs/kit';
 
 export const load = ({ locals, params, cookies }) => {
     let user_not_signin = true
@@ -8,8 +7,6 @@ export const load = ({ locals, params, cookies }) => {
     let subjectID = params.slug
     if (jwt != undefined) {
         user_not_signin = false
-    } else {
-        throw redirect(303, "/signup")
     }
 
     console.log(user_not_signin)
