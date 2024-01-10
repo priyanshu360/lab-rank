@@ -41,6 +41,7 @@ func (s *service) Create(ctx context.Context, environment *models.Environment) (
 	return environment, models.NoError
 }
 
+// Todo : fix single value response for list api
 func (s *service) Fetch(ctx context.Context, id, limit string) ([]*models.Environment, models.AppError) {
 	var environments []*models.Environment
 	switch {

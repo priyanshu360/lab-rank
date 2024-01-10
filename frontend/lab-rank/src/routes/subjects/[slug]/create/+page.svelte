@@ -5,66 +5,30 @@
   import Description from "$lib/Description.svelte";
   let problemData = {
     title: "",
-    createdBy: "",
     difficulty: "",
     syllabusId: "",
     environments: [], // Use an array to store multiple environments
     testFiles: [],
+    file: "",
   };
 
   export let data;
-  // Example data for testing
-  let testData = {
-    title: "TEST",
-    createdBy: "2ddc8a9e-c558-4246-ae5d-1964c1dedf62",
-    difficulty: "MEDIUM",
-    syllabusId: "a51a659e-ec11-4d84-ae67-39b3c3e70820",
-    environments: [
-      {
-        language: "Go",
-        id: "9809a649-9200-4e85-aaab-12bab28947c8",
-      },
-      {
-        language: "JavaScript",
-        id: "1234",
-      },
-      // Add more environments as needed
-    ],
-    testFiles: [],
-  };
 
   // Dropdown options
-  let environmentOptions = [
-    { id: "1", language: "JavaScript" },
-    { id: "2", language: "Python" },
-    { id: "3", language: "Java" },
-    { id: "4", language: "Go" },
-    { id: "5", language: "C++" },
-  ];
+  let environmentOptions = data.environmentMap;
 
-  let syllabusOptions = [
-    { id: "a51a659e-ec11-4d84-ae67-39b3c3e70820", name: "Syllabus 1" },
-    { id: "another-syllabus-id", name: "Syllabus 2" },
-    // Add more syllabus options as needed
-  ];
+  let syllabusOptions = data.syllabusMap;
 
   onMount(() => {
     // Initialize the component with test data
-    problemData = testData;
     initializeTestFiles();
   });
-
-  const handleSubmit = () => {
-    // Implement your logic to handle form submission
-    console.log("Submitting problem data:", problemData);
-    // Add your API call or further processing logic here
-  };
 
   const initializeTestFiles = () => {
     console.log(problemData.testFiles);
     environmentOptions.forEach((env) => {
       problemData.testFiles.push({
-        language: env.language,
+        language: env.title,
         title: "",
         init_code: "",
         file: "",
@@ -73,11 +37,46 @@
     });
   };
 
-  initializeTestFiles;
+  console.log(data.environmentMap, environmentOptions);
   // Function to update the test file language based on the selected environment
   const updateTestFileLanguage = (language) => {
     problemData.testFiles[0].language = language;
   };
+
+  function handleFileChange(e) {
+    const file = e.target.files[0];
+    console.log(" handle file change 2");
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = function (event) {
+        problemData.file = event.target.result;
+      };
+      reader.readAsText(file);
+    } else {
+      problemData.file = "";
+    }
+  }
+
+  function handleFileChangeAtIndex(e, index) {
+    const file = e.target.files[0];
+    console.log(e);
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = function (event) {
+        problemData.testFiles[index].file = event.target.result;
+        console.log(
+          "File content for index",
+          index,
+          ":",
+          problemData.testFiles[index].file
+        );
+      };
+      reader.readAsText(file);
+      console.log("affsf", problemData.testFiles);
+    } else {
+      problemData.testFiles[index].file = "";
+    }
+  }
 </script>
 
 <Header {data} />
@@ -85,79 +84,94 @@
 <main>
   <h1>Create Problem</h1>
 
-  <form on:submit|preventDefault={handleSubmit}>
+  <form action="?/create" method="POST">
     <!-- Other form fields -->
     <label>
       Title:
-      <input bind:value={problemData.title} />
-    </label>
-
-    <label>
-      Created By:
-      <input bind:value={problemData.createdBy} />
+      <input type="text" bind:value={problemData.title} name="title" />
     </label>
 
     <label>
       Difficulty:
-      <input bind:value={problemData.difficulty} />
+      <select bind:value={problemData.difficulty} name="difficulty">
+        <option value="">Select Difficulty</option>
+        <option value="EASY">Easy</option>
+        <option value="MEDIUM">Medium</option>
+        <option value="HARD">Hard</option>
+      </select>
     </label>
 
     <label>
-      Syllabus ID:
-      <select bind:value={problemData.syllabusId}>
-        {#each syllabusOptions as { id, name }}
-          <option value={id}>{name}</option>
+      Syllabus Level:
+      <select bind:value={problemData.syllabusId} name="syllabusId">
+        {#each syllabusOptions as slb}
+          <option value={slb.id}>{slb.syllabus_level}</option>
         {/each}
       </select>
     </label>
 
     <label>
       Environments:
-      {#each environmentOptions as { id, language }}
+      {#each environmentOptions as env}
         <label>
           <input
             type="checkbox"
             bind:group={problemData.environments}
-            value={id}
+            value={env.id + "_" + env.title}
+            name="environments"
           />
-          {language}
+          {env.title}
         </label>
       {/each}
     </label>
 
     <label>
       Problem File:
-      <input
-        type="file"
-        accept=".txt, .json"
-        on:change={(e) => (problemData.testFiles[0].file = e.target.files[0])}
-      />
+      <input type="file" accept=".txt, .json" on:change={handleFileChange} />
     </label>
 
     <label>
+      <input hidden name="problemFile" bind:value={problemData.file} />
+    </label>
+    <label>
       Test Script:
       {#each problemData.testFiles as { language, title, init_code, file, ...rest }, index (language)}
-        <div bind:this={problemData.testFiles[index]}>
+        <div>
           <label>
             Test File for {language}:
             <input
               type="file"
               accept=".txt, .json"
-              on:change={(e) => {
-                problemData.testFiles[index].file = e.target.files[0];
-                updateTestFileLanguage(index, language);
-              }}
+              on:change={(e) => handleFileChangeAtIndex(e, index)}
+            />
+          </label><br />
+
+          <label>
+            Title:
+            <input
+              type="text"
+              hidden
+              value={`${language}_${problemData.title}`}
+              name={`testFileTitle_${language}`}
             />
           </label><br />
           <label>
-            Title:
-            <input type="text" bind:value={title} />
-          </label><br />
-          <label>
             Init Code:
-            <textarea rows="5" cols="33" bind:value={init_code}></textarea>
+            <textarea
+              rows="5"
+              cols="33"
+              bind:value={problemData.testFiles[index].init_code}
+              name={`testFileInitCode_${language}`}
+            ></textarea>
           </label><br />
         </div>
+        <label>
+          <input
+            name={`testFile_${language}`}
+            hidden
+            bind:value={problemData.testFiles[index].file}
+          /></label
+        >
         <br />
       {/each}
     </label>
