@@ -85,6 +85,20 @@ func (psql *syllabusPostgres) GetSubjectsByUniversityID(ctx context.Context, uni
 	return subjects, models.NoError
 }
 
+// GetSyllabusByID retrieves a syllabus by its ID.
+func (psql *syllabusPostgres) GetSyllabusBySubjectID(ctx context.Context, subjectID uuid.UUID) ([]*models.Syllabus, models.AppError) {
+	var syllabus []*models.Syllabus
+	result := psql.db.WithContext(ctx).Table("lab_rank.syllabus").Where("subject_id = ?", subjectID).Find(&syllabus)
+	if result.Error != nil {
+		if result.Error == gorm.ErrRecordNotFound {
+			// Syllabus not found
+			return syllabus, models.SyllabusNotFoundError
+		}
+		return syllabus, models.InternalError.Add(result.Error)
+	}
+	return syllabus, models.NoError
+}
+
 // func (psql *syllabusPostgres) UpdateUserAccessIDs(ctx context.Context, user models.User) models.AppError {
 // 	// Step 1: Get user's university ID using college ID
 // 	var universityID string

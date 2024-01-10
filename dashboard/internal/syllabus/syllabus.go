@@ -15,6 +15,7 @@ type Service interface {
 	Fetch(context.Context, string, string) ([]*models.Syllabus, models.AppError)
 	AutoGenerateFromCollege(context.Context, *models.College) models.AppError
 	AutoGenerateFromSubject(context.Context, *models.Subject) models.AppError
+	FetchBySubjectID(context.Context, uuid.UUID) ([]*models.Syllabus, models.AppError)
 	// UpdateAccessIDsForUser(context.Context, *models.User) models.AppError
 }
 
@@ -102,6 +103,14 @@ func (s *service) Fetch(ctx context.Context, id, limit string) ([]*models.Syllab
 	}
 }
 
-// func (s service) UpdateAccessIDsForUser(ctx context.Context, user *models.User) models.AppError {
-// 	return s.repo.UpdateUserAccessIDs(ctx, *user)
-// }
+func (s *service) FetchBySubjectID(ctx context.Context, subjectID uuid.UUID) ([]*models.Syllabus, models.AppError) {
+	// You may need to convert subjectID to uuid.UUID if necessary
+	// For example, subjectUUID, err := uuid.Parse(subjectID)
+
+	syllabuss, err := s.repo.GetSyllabusBySubjectID(ctx, subjectID)
+	if err != models.NoError {
+		return nil, err
+	}
+
+	return syllabuss, models.NoError
+}

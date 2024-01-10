@@ -41,9 +41,17 @@
       console.error("Error fetching individual problem:", error);
     }
   };
+
+  // Function to handle "Create Problem" button click
 </script>
 
 <main>
+  <div style="margin-bottom: 20px;">
+    <a href={`/subjects/${subjectID}/create`}>
+      <button type="button">Create Problem</button>
+    </a>
+  </div>
+
   <table>
     <thead>
       <tr>
@@ -57,7 +65,11 @@
         <tr>
           <td>{problem.serialNumber}</td>
           <td>
-            <a href={`/problems/${problem.id}`}>{problem.title}</a>
+            <a
+              href={`/problems/${problem.id}`}
+              on:click={(e) => handleTitleClick(problem.id, e)}
+              >{problem.title}</a
+            >
           </td>
           <td>{problem.difficulty}</td>
         </tr>
@@ -99,5 +111,18 @@
 
   a:hover {
     text-decoration: underline; /* Underline on hover */
+  }
+
+  button {
+    padding: 10px;
+    background-color: #4caf50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+
+  button:hover {
+    background-color: #45a049;
   }
 </style>

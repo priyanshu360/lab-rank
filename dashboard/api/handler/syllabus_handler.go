@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	syllabus_svc "github.com/priyanshu360/lab-rank/dashboard/internal/syllabus"
 	"github.com/priyanshu360/lab-rank/dashboard/models"
@@ -26,6 +27,8 @@ func NewSyllabusHandler(svc syllabus_svc.Service) *syllabusHandler {
 
 func (h *syllabusHandler) initRoutes() *syllabusHandler {
 	h.sRouter.HandleFunc("/syllabus", serveHTTPWrapper(h.handleGet)).Methods("GET")
+	h.sRouter.HandleFunc("/syllabus/by_subject/{subject_id}", serveHTTPWrapper(h.handleGetBySubjectID)).Methods("GET")
+
 	h.sRouter.HandleFunc("/syllabus", serveHTTPWrapper(h.handleCreate)).Methods("POST")
 	// h.sRouter.HandleFunc("/syllabus", serveHTTPWrapper(h.handleUpdate)).Methods("PUT")
 	// h.sRouter.HandleFunc("/syllabus", serveHTTPWrapper(h.handleDelete)).Methods("DELETE")
@@ -70,3 +73,19 @@ func (h *syllabusHandler) handleGet(ctx context.Context, r *http.Request) apiRes
 }
 
 // Implement other handler methods for syllabus-related operations
+
+func (h *syllabusHandler) handleGetBySubjectID(ctx context.Context, r *http.Request) apiResponse {
+	vars := mux.Vars(r)
+	subjectID, err := uuid.Parse(vars["subject_id"])
+	if err != nil {
+		return newAPIError(models.BadRequest.Add(err))
+	}
+
+	syllabus, err := h.svc.FetchBySubjectID(ctx, subjectID)
+	if err != models.NoError {
+		return newAPIError(models.InternalError.Add(err))
+	}
+
+	response := models.NewListSyllabusAPIResponse(syllabus)
+	return response
+}

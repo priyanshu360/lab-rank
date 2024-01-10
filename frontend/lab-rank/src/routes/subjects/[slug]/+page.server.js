@@ -1,10 +1,10 @@
 import { redirect } from '@sveltejs/kit';
 
-export const load = ({ params, cookies }) => {
+export const load = ({ locals, params, cookies }) => {
     let user_not_signin = true
 
     let jwt = cookies.get("jwt_lab_rank")
-    let collegeID = cookies.get("college-id")
+    let collegeID = locals.user.college_id
     let subjectID = params.slug
     if (jwt != undefined) {
         user_not_signin = false

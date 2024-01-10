@@ -47,7 +47,7 @@ export async function handle({ event, resolve }) {
         }
     }
 
-    console.log("jwt verified", event)
+    // console.log("jwt verified", event)
 
 
     const response = await resolve(event); return response;
