@@ -26,10 +26,10 @@
 
   export let code;
 
-  onMount(async () => {
+  const getInitCode = async () => {
     try {
       const response = await fetch(
-        `http://localhost:8080/problem?id=${data.slug}&lang=Go`
+        `http://localhost:8080/problem?id=${data.slug}&lang=${selectedLanguage}`
       );
       const responseData = await response.json();
       console.log(responseData);
@@ -38,7 +38,7 @@
     } catch (error) {
       console.error("Error fetching problem details:", error);
     }
-  });
+  };
 
   const submitCode = async () => {
     try {
@@ -49,8 +49,7 @@
         },
         body: JSON.stringify({
           problem_id: data.slug,
-          link: "submission_link",
-          created_by: "b1e5f45c-f857-4540-8b45-e42091ac494a",
+          created_by: data.userID,
           score: null,
           run_time: null,
           metadata: {},
@@ -59,6 +58,8 @@
           solution: btoa(code),
         }),
       });
+
+      console.log(data.slug);
 
       const responseData = await response.json();
       console.log("Submission response:", responseData);
@@ -85,7 +86,12 @@
 
   <form class="code-editor-container" action="?/create">
     <label for="language-select">Select Language:</label>
-    <select id="language-select" bind:value={selectedLanguage} name="language">
+    <select
+      id="language-select"
+      bind:value={selectedLanguage}
+      on:change={getInitCode}
+      name="language"
+    >
       {#each languages as lang (lang)}
         <option value={lang}>{lang}</option>
       {/each}

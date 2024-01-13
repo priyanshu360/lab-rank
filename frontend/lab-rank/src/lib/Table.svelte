@@ -28,19 +28,6 @@
   });
 
   // Function to handle title click
-  const handleTitleClick = async (id, event) => {
-    event.preventDefault(); // Prevent the default behavior of the anchor link
-    try {
-      // Make an API request based on the clicked title's ID
-      const response = await fetch(`http://localhost:8080/problem/${id}`);
-      const data = await response.json();
-
-      // Log or process the data from the API response
-      console.log(data);
-    } catch (error) {
-      console.error("Error fetching individual problem:", error);
-    }
-  };
 
   // Function to handle "Create Problem" button click
 </script>
@@ -65,11 +52,7 @@
         <tr>
           <td>{problem.serialNumber}</td>
           <td>
-            <a
-              href={`/problems/${problem.id}`}
-              on:click={(e) => handleTitleClick(problem.id, e)}
-              >{problem.title}</a
-            >
+            <a href={`/problems/${problem.id}`}>{problem.title}</a>
           </td>
           <td>{problem.difficulty}</td>
         </tr>

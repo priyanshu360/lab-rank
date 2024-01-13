@@ -1,7 +1,7 @@
 import { redirect } from '@sveltejs/kit';
 
 
-export async function load({ params, cookies }) {
+export async function load({ params, locals, cookies }) {
   console.log("Load function called!");
   const slug = params.slug
   let jwt = cookies.get("jwt_lab_rank")
@@ -11,6 +11,8 @@ export async function load({ params, cookies }) {
   } else {
     // throw redirect(303, "/signup")
   }
+
+  const userID = locals.user.id
 
   const response = await fetch(
     `http://127.0.0.1:8080/problem?id=${slug}`
@@ -23,7 +25,8 @@ export async function load({ params, cookies }) {
   return {
     slug,
     user_not_signin,
-    responseData
+    responseData,
+    userID
   };
 
 }
