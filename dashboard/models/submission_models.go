@@ -28,7 +28,7 @@ const (
 // Submission struct
 type Submission struct {
 	ID        uuid.UUID               `json:"id" validate:"required" gorm:"column:id"`
-	ProblemID uuid.UUID               `json:"problem_id" validate:"required" gorm:"column:Problem_id;tableName:submissions"`
+	ProblemID uuid.UUID               `json:"problem_id" validate:"required" gorm:"column:problem_id;tableName:submissions"`
 	Link      string                  `json:"link" validate:"required"`
 	CreatedBy uuid.UUID               `json:"created_by" validate:"required"`
 	CreatedAt time.Time               `json:"created_at" validate:"required"`
@@ -41,20 +41,19 @@ type Submission struct {
 }
 
 type SubmissionWithProblemTitle struct {
-    ID          uuid.UUID               `json:"id"`
-    ProblemID   uuid.UUID               `json:"problem_id"`
-    Link        string                  `json:"link"`
-    CreatedBy   uuid.UUID               `json:"created_by"`
-    CreatedAt   time.Time               `json:"created_at"`
-    Score       float64                 `json:"score"`
-    RunTime     string                  `json:"run_time"`
-    Metadata    json.RawMessage         `json:"metadata"`
-    Lang        ProgrammingLanguageEnum `json:"lang"`
-    Status      Status                  `json:"status"`
-    Solution    []byte                  `json:"-"`
-    ProblemTitle string                 `json:"problem_title" gorm:"column:problemtitle"`
+	ID           uuid.UUID               `json:"id"`
+	ProblemID    uuid.UUID               `json:"problem_id"`
+	Link         string                  `json:"link"`
+	CreatedBy    uuid.UUID               `json:"created_by"`
+	CreatedAt    time.Time               `json:"created_at"`
+	Score        float64                 `json:"score"`
+	RunTime      string                  `json:"run_time"`
+	Metadata     json.RawMessage         `json:"metadata"`
+	Lang         ProgrammingLanguageEnum `json:"lang"`
+	Status       Status                  `json:"status"`
+	Solution     []byte                  `json:"-"`
+	ProblemTitle string                  `json:"problem_title" gorm:"column:problemtitle"`
 }
-
 
 func (s *Submission) UpdateFrom(us Submission) {
 	if us.Score > 0 && us.Score < 100 {

@@ -43,6 +43,8 @@ export async function handle({ event, resolve }) {
         } catch (error) {
             // Handle authentication error (e.g., redirect to /login)
             console.log(error)
+            // Todo : delete coookie
+            // cookie.delete()
             throw redirect(303, '/signup');
         }
     }
