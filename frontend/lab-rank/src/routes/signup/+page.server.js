@@ -12,7 +12,7 @@ export const load = async ({ cookies }) => {
   console.log("hello signup load")
   const fetchUniversities = async () => {
     try {
-      console.log("server fetchUniversity")
+      console.log("server fetch Universities")
       const response = await fetch("http://127.0.0.1:8080/university/names");
       const data = await response.json();
       universities = data.Message;
