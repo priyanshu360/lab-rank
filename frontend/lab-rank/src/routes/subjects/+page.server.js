@@ -21,21 +21,33 @@ export const load = async ({ locals, cookies }) => {
     let subjects = []
     const fetchSubjects = async () => {
         try {
-            console.log("server fetchUniversity")
             const response = await fetch(`http://127.0.0.1:8080/subject/${universityId}`);
             const data = await response.json();
             subjects = data.Message;
-            console.log(subjects);
+            console.log("subjects in server.js ",subjects);
         } catch (error) {
-            console.error("Error fetching universities:", error);
+            console.error("Error fetching Subjects:", error);
         }
     };
-
-
     await fetchSubjects();
+
+    var universities = []
+    const fetchUniversities = async () => {
+      try {
+        console.log("server fetch Universities")
+        const response = await fetch("http://127.0.0.1:8080/university/names");
+        const data = await response.json();
+        universities = data.Message;
+      } catch (error) {
+        console.error("Error fetching universities:", error);
+      }
+    };
+    await fetchUniversities();
+
     return {
         user_not_signin,
-        subjects
+        subjects,
+        universities,
     };
 
 }
