@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
@@ -63,8 +64,8 @@ func NewServer(cfg config.ServerConfig) *APIServer {
 	}
 }
 
-func (s *APIServer) add(path string, role models.AccessLevelModeEnum, handler http.Handler) {
-	s.router.PathPrefix(path).Handler(handler)
+func (s *APIServer) add(path string, role models.AccessLevelModeEnum, handler http.Handler, middlewares ...http.Handler) {
+	s.router.PathPrefix(path).Handler(handler).Subrouter().Use()
 	s.rbac[handler] = role
 }
 
@@ -73,6 +74,7 @@ func (s *APIServer) RbacMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		if !config.AuthEnabled() {
 			next.ServeHTTP(w, req)
+			return
 		}
 		authHeader := req.Header.Get("Authorization")
 		if authHeader == "" {
@@ -81,6 +83,7 @@ func (s *APIServer) RbacMiddleware(next http.Handler) http.Handler {
 		}
 
 		if _, err := validateTokenWithRole(authHeader, requiredRole); err != nil {
+			log.Println("validate token err", err)
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		}
 
@@ -109,7 +112,7 @@ func (s *APIServer) initRoutesAndMiddleware() {
 		mux.CORSMethodMiddleware(s.router),
 		handler.NewReqIDMiddleware().Decorate,
 		OptionMiddleware,
-		// s.RbacMiddleware,
+		s.RbacMiddleware,
 	}
 	s.router.Use(s.middlewares...)
 	s.httpServer.Handler = s.router
@@ -129,34 +132,43 @@ func OptionMiddleware(next http.Handler) http.Handler {
 		next.ServeHTTP(w, req)
 	})
 }
-func validateTokenWithRole(tokenString string, requiredRole models.AccessLevelModeEnum) (*jwt.StandardClaims, error) {
-	// Replace the following with your own secret key
-	secretKey := []byte("your_secret_key")
 
+func validateTokenWithRole(tokenString string, requiredRole models.AccessLevelModeEnum) (*jwt.StandardClaims, error) {
 	// Parse the JWT token
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+	// log.Println("claims ", claims)
+	tokenString = strings.TrimPrefix(tokenString, "Bearer ")
+	token, err := jwt.ParseWithClaims(tokenString, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
 		// Validate the signing method
-		return secretKey, nil
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
+
+		return []byte(config.GetJWTKey()), nil
 	})
 
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to parse token: %v", err)
 	}
 
+	log.Println("claims ", token)
 	// Check if the token is valid
 	if !token.Valid {
-		return nil, errors.New("Invalid token")
+		return nil, errors.New("invalid token")
 	}
 
 	// Extract and return the claims
 	claims, ok := token.Claims.(*jwt.StandardClaims)
 	if !ok {
-		return nil, errors.New("Failed to extract claims")
+		return nil, errors.New("failed to extract claims")
 	}
 
-	if claims.Subject != string(requiredRole) {
-		return nil, errors.New("Unauthorised")
-	}
+	// Check if the user has the required role
+	// if claims.Subject != string(requiredRole) {
+	// 	return nil, fmt.Errorf("user does not have the required role '%s'", requiredRole)
+	// }
+
+	log.Println("claims ", claims)
+
 	return claims, nil
 }
 

@@ -10,6 +10,7 @@ import (
 
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/google/uuid"
+	"github.com/priyanshu360/lab-rank/dashboard/config"
 	"github.com/priyanshu360/lab-rank/dashboard/internal/syllabus"
 	"github.com/priyanshu360/lab-rank/dashboard/models"
 	"github.com/priyanshu360/lab-rank/dashboard/repository"
@@ -142,14 +143,13 @@ func verifyPassword(password, hashedPassword, salt string) bool {
 }
 
 func validateJWTToken(tokenString string) (uuid.UUID, error) {
-	secretKey := []byte("your_secret_key")
 	// Parse the token
 	token, err := jwt.ParseWithClaims(tokenString, &jwt.RegisteredClaims{}, func(token *jwt.Token) (interface{}, error) {
 		// Check the signing method
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
-		return secretKey, nil
+		return []byte(config.GetJWTKey()), nil
 	})
 
 	log.Println("error, ", err)
@@ -174,7 +174,6 @@ func validateJWTToken(tokenString string) (uuid.UUID, error) {
 
 func generateJWTToken(sessionID uuid.UUID) (string, error) {
 	// Replace the following with your own secret key and token expiration time
-	secretKey := []byte("your_secret_key")
 	expirationTime := time.Now().Add(24 * time.Hour)
 
 	// Create the JWT claims
@@ -187,7 +186,7 @@ func generateJWTToken(sessionID uuid.UUID) (string, error) {
 
 	// Create the JWT token
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	signedToken, err := token.SignedString(secretKey)
+	signedToken, err := token.SignedString([]byte(config.GetJWTKey()))
 	if err != nil {
 		return "", err
 	}

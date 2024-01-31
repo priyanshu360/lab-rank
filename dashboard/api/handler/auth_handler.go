@@ -88,6 +88,8 @@ func (h *authHandler) handleAuthenticate(ctx context.Context, r *http.Request) a
 		return newAPIError(appErr)
 	}
 
+	log.Println("auth session", authSession)
+
 	return models.NewAuthenticateAPIResponse(authSession)
 }
 
