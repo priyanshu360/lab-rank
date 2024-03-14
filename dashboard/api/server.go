@@ -2,17 +2,16 @@ package api
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
 	"github.com/go-redis/redis/v8"
-	"github.com/golang-jwt/jwt"
 	"github.com/gorilla/mux" // Import Gorilla Mux
 	"github.com/priyanshu360/lab-rank/dashboard/api/handler"
 	"github.com/priyanshu360/lab-rank/dashboard/config"
@@ -68,26 +67,6 @@ func (s *APIServer) add(path string, role models.AccessLevelModeEnum, handler ht
 	s.rbac[handler] = role
 }
 
-func (s *APIServer) RbacMiddleware(next http.Handler) http.Handler {
-	requiredRole := s.rbac[next]
-	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		if !config.AuthEnabled() {
-			next.ServeHTTP(w, req)
-		}
-		authHeader := req.Header.Get("Authorization")
-		if authHeader == "" {
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
-			return
-		}
-
-		if _, err := validateTokenWithRole(authHeader, requiredRole); err != nil {
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
-		}
-
-		next.ServeHTTP(w, req)
-	})
-}
-
 func (s *APIServer) initRoutesAndMiddleware() {
 	fileStorage := filesys.NewK8sCMStore(clientset, "storage")
 	publisher, err := queue.InitRabbitMQPublisher("lab-rank")
@@ -109,7 +88,7 @@ func (s *APIServer) initRoutesAndMiddleware() {
 		mux.CORSMethodMiddleware(s.router),
 		handler.NewReqIDMiddleware().Decorate,
 		OptionMiddleware,
-		// s.RbacMiddleware,
+		AuthMiddleware,
 	}
 	s.router.Use(s.middlewares...)
 	s.httpServer.Handler = s.router
@@ -129,35 +108,33 @@ func OptionMiddleware(next http.Handler) http.Handler {
 		next.ServeHTTP(w, req)
 	})
 }
-func validateTokenWithRole(tokenString string, requiredRole models.AccessLevelModeEnum) (*jwt.StandardClaims, error) {
-	// Replace the following with your own secret key
-	secretKey := []byte("your_secret_key")
 
-	// Parse the JWT token
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		// Validate the signing method
-		return secretKey, nil
+func AuthMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		log.Println(req.URL.Path, req.Header)
+		if strings.HasPrefix(req.URL.Path, "/auth") || !config.AuthEnabled() {
+			next.ServeHTTP(w, req)
+			return
+		}
+		// Extract JWT token from the request headers
+		jwtToken := req.Header.Get("Authorization")
+		if jwtToken == "" || !strings.HasPrefix(jwtToken, "Bearer ") {
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+
+		token := strings.TrimPrefix(jwtToken, "Bearer ")
+		log.Println(token)
+
+		svc := auth.New(psql.NewAuthPostgresRepo(db), redisrepo.NewRedisSessionRepository(rClient), syllabus.New(psql.NewSyllabusPostgresRepo(db)))
+		authSession, appErr := svc.Authenticate(context.Background(), token)
+		if appErr != models.NoError {
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+		nReq := req.WithContext(context.WithValue(req.Context(), "authSession", authSession))
+		next.ServeHTTP(w, nReq)
 	})
-
-	if err != nil {
-		return nil, err
-	}
-
-	// Check if the token is valid
-	if !token.Valid {
-		return nil, errors.New("Invalid token")
-	}
-
-	// Extract and return the claims
-	claims, ok := token.Claims.(*jwt.StandardClaims)
-	if !ok {
-		return nil, errors.New("Failed to extract claims")
-	}
-
-	if claims.Subject != string(requiredRole) {
-		return nil, errors.New("Unauthorised")
-	}
-	return claims, nil
 }
 
 func (s *APIServer) run() {
