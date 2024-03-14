@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"strings"
 	"syscall"
 	"time"
 
@@ -92,49 +91,6 @@ func (s *APIServer) initRoutesAndMiddleware() {
 	}
 	s.router.Use(s.middlewares...)
 	s.httpServer.Handler = s.router
-}
-
-func OptionMiddleware(next http.Handler) http.Handler {
-
-	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:5173")
-		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
-		if req.Method == "OPTIONS" {
-			w.WriteHeader(http.StatusAccepted)
-			return
-		}
-
-		next.ServeHTTP(w, req)
-	})
-}
-
-func AuthMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		log.Println(req.URL.Path, req.Header)
-		if strings.HasPrefix(req.URL.Path, "/auth") || !config.AuthEnabled() {
-			next.ServeHTTP(w, req)
-			return
-		}
-		// Extract JWT token from the request headers
-		jwtToken := req.Header.Get("Authorization")
-		if jwtToken == "" || !strings.HasPrefix(jwtToken, "Bearer ") {
-			w.WriteHeader(http.StatusUnauthorized)
-			return
-		}
-
-		token := strings.TrimPrefix(jwtToken, "Bearer ")
-		log.Println(token)
-
-		svc := auth.New(psql.NewAuthPostgresRepo(db), redisrepo.NewRedisSessionRepository(rClient), syllabus.New(psql.NewSyllabusPostgresRepo(db)))
-		authSession, appErr := svc.Authenticate(context.Background(), token)
-		if appErr != models.NoError {
-			w.WriteHeader(http.StatusUnauthorized)
-			return
-		}
-		nReq := req.WithContext(context.WithValue(req.Context(), "authSession", authSession))
-		next.ServeHTTP(w, nReq)
-	})
 }
 
 func (s *APIServer) run() {
