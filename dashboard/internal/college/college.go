@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/google/uuid"
+	"github.com/priyanshu360/lab-rank/dashboard/config"
 	"github.com/priyanshu360/lab-rank/dashboard/internal/syllabus"
 	"github.com/priyanshu360/lab-rank/dashboard/models"
 	"github.com/priyanshu360/lab-rank/dashboard/repository"
@@ -41,18 +42,29 @@ func (s *service) Create(ctx context.Context, college *models.College) (*models.
 }
 
 func (s *service) Fetch(ctx context.Context, id, limit string) ([]*models.College, models.AppError) {
+	session, ok := ctx.Value(config.SessionKey).(models.AuthSession)
+	if !ok {
+		return nil, models.UnauthorizedError
+	}
+
 	var colleges []*models.College
 	switch {
 	case id != "":
-		if collegeID, err := uuid.Parse(id); err != nil {
-			return colleges, models.InternalError.Add(err)
-		} else {
-			if college, err := s.repo.GetCollegeByID(ctx, collegeID); err != models.NoError {
-				return nil, err
+		switch session.Mode {
+		case models.AccessLevelAdmin:
+			if collegeID, err := uuid.Parse(id); err != nil {
+				return colleges, models.InternalError.Add(err)
 			} else {
-				colleges = append(colleges, &college)
-				return colleges, models.NoError
+				if college, err := s.repo.GetCollegeByID(ctx, collegeID); err != models.NoError {
+					return nil, err
+				} else {
+					colleges = append(colleges, &college)
+					return colleges, models.NoError
+				}
 			}
+		case models.AccessLevelStudent:
+
+		case models.AccessLevelTeacher:
 		}
 
 	case limit != "":

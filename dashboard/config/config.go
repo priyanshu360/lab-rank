@@ -12,6 +12,10 @@ import (
 
 var BasePathFS = getEnvWithDefault("BASE_PATH_FS", "./uploads/")
 
+type ctxKey string
+
+var SessionKey ctxKey = ctxKey(getEnvWithDefault("ctx_key", "ctx_key"))
+
 func GetJWTKey() string {
 	return getEnvWithDefault("JWT_KEY", "randomkey")
 }
