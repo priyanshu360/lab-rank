@@ -87,7 +87,7 @@ func (s *APIServer) initRoutesAndMiddleware() {
 		mux.CORSMethodMiddleware(s.router),
 		handler.NewReqIDMiddleware().Decorate,
 		OptionMiddleware,
-		AuthMiddleware,
+		// AuthMiddleware,
 	}
 	s.router.Use(s.middlewares...)
 	s.httpServer.Handler = s.router
@@ -131,10 +131,10 @@ func InitDB(cfg config.DBConfig) {
 		log.Fatal(err)
 	}
 
-	err = db.Exec("SET search_path TO lab_rank").Error
-	if err != nil {
-		log.Fatal(err)
-	}
+	// err = db.Exec("SET search_path TO lab_rank").Error
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
 
 	tables, err := db.Migrator().GetTables()
 	if err != nil {

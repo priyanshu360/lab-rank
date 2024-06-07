@@ -2,16 +2,15 @@ package environment
 
 import (
 	"context"
-	"strconv"
+	"fmt"
 
-	"github.com/google/uuid"
 	"github.com/priyanshu360/lab-rank/dashboard/models"
 	"github.com/priyanshu360/lab-rank/dashboard/repository"
 )
 
 type Service interface {
 	Create(context.Context, *models.Environment) (*models.Environment, models.AppError)
-	Fetch(context.Context, string, string) ([]*models.Environment, models.AppError)
+	Fetch(context.Context, int) (*models.Environment, models.AppError)
 }
 
 type service struct {
@@ -27,10 +26,8 @@ func New(repo repository.EnvironmentRepository, fs repository.FileSystem) *servi
 }
 
 func (s *service) Create(ctx context.Context, environment *models.Environment) (*models.Environment, models.AppError) {
-	environment.ID = uuid.New()
-
 	var err models.AppError
-	if environment.Link, err = s.fs.StoreFile(ctx, environment.File, environment.ID, models.ENVIRONMENT, models.YAML.GetExtension()); err != models.NoError {
+	if environment.Link, err = s.fs.StoreFile(ctx, environment.File, fmt.Sprintf("%d", environment.ID), models.ENVIRONMENT, models.YAML.GetExtension()); err != models.NoError {
 		return nil, err
 	}
 
@@ -42,30 +39,13 @@ func (s *service) Create(ctx context.Context, environment *models.Environment) (
 }
 
 // Todo : fix single value response for list api
-func (s *service) Fetch(ctx context.Context, id, limit string) ([]*models.Environment, models.AppError) {
-	var environments []*models.Environment
-	switch {
-	case id != "":
-		if environmentID, err := uuid.Parse(id); err != nil {
-			return environments, models.InternalError.Add(err)
-		} else {
-			if environment, err := s.repo.GetEnvironmentByID(ctx, environmentID); err != models.NoError {
-				return nil, err
-			} else {
-				environments = append(environments, &environment)
-				return environments, models.NoError
-			}
-		}
+func (s *service) Fetch(ctx context.Context, id int) (*models.Environment, models.AppError) {
+	var environment models.Environment
+	var err models.AppError
 
-	case limit != "":
-		if limit, err := strconv.ParseInt(limit, 10, 64); err != nil {
-			return s.repo.GetEnvironmentsListByLimit(ctx, 1, 10)
-
-		} else {
-			return s.repo.GetEnvironmentsListByLimit(ctx, 1, int(limit))
-		}
-	default:
-
-		return s.repo.GetEnvironmentsListByLimit(ctx, 1, 10)
+	if environment, err = s.repo.GetEnvironmentByID(ctx, id); err != models.NoError {
+		return nil, err
 	}
+
+	return &environment, err
 }

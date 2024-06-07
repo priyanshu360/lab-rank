@@ -2,9 +2,7 @@ package subject
 
 import (
 	"context"
-	"strconv"
 
-	"github.com/google/uuid"
 	"github.com/priyanshu360/lab-rank/dashboard/internal/syllabus"
 	"github.com/priyanshu360/lab-rank/dashboard/models"
 	"github.com/priyanshu360/lab-rank/dashboard/repository"
@@ -12,8 +10,8 @@ import (
 
 type Service interface {
 	Create(context.Context, *models.Subject) (*models.Subject, models.AppError)
-	Fetch(context.Context, string, string) ([]*models.Subject, models.AppError)
-	FetchByUniversityID(context.Context, uuid.UUID) ([]*models.Subject, models.AppError)
+	Fetch(context.Context, int) (*models.Subject, models.AppError)
+	FetchByUniversityID(context.Context, int) ([]*models.Subject, models.AppError)
 }
 
 type service struct {
@@ -29,7 +27,6 @@ func New(repo repository.SubjectRepository, syllabus syllabus.Service) *service 
 }
 
 func (s *service) Create(ctx context.Context, subject *models.Subject) (*models.Subject, models.AppError) {
-	subject.ID = uuid.New()
 
 	if err := s.repo.CreateSubject(ctx, *subject); err != models.NoError {
 		return nil, err
@@ -40,33 +37,15 @@ func (s *service) Create(ctx context.Context, subject *models.Subject) (*models.
 	return subject, models.NoError
 }
 
-func (s *service) Fetch(ctx context.Context, id, limit string) ([]*models.Subject, models.AppError) {
-	var subjects []*models.Subject
-	switch {
-	case id != "":
-		if subjectID, err := uuid.Parse(id); err != nil {
-			return subjects, models.InternalError.Add(err)
-		} else {
-			if subject, err := s.repo.GetSubjectByID(ctx, subjectID); err != models.NoError {
-				return nil, err
-			} else {
-				subjects = append(subjects, &subject)
-				return subjects, models.NoError
-			}
-		}
+func (s *service) Fetch(ctx context.Context, id int) (*models.Subject, models.AppError) {
+	var subject models.Subject
+	var err models.AppError
 
-	case limit != "":
-		if limit, err := strconv.ParseInt(limit, 10, 64); err != nil {
-			return s.repo.GetSubjectsListByLimit(ctx, 1, 10)
-
-		} else {
-			return s.repo.GetSubjectsListByLimit(ctx, 1, int(limit))
-		}
-	default:
-
-		return s.repo.GetSubjectsListByLimit(ctx, 1, 10)
+	if subject, err = s.repo.GetSubjectByID(ctx, id); err != models.NoError {
+		return nil, err
 	}
+	return &subject, err
 }
-func (s *service) FetchByUniversityID(ctx context.Context, universityId uuid.UUID) ([]*models.Subject, models.AppError) {
+func (s *service) FetchByUniversityID(ctx context.Context, universityId int) ([]*models.Subject, models.AppError) {
 	return s.repo.GetSubjectsByUniversityID(ctx, universityId)
 }

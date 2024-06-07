@@ -14,13 +14,16 @@ type authPostgres struct {
 
 // NewauthPostgresRepo creates a new PostgreSQL repository for auths.
 func NewAuthPostgresRepo(db *gorm.DB) *authPostgres {
+	if err := db.AutoMigrate(models.Auth{}); err != nil {
+		panic(err)
+	}
 	return &authPostgres{db}
 }
 
 func (r *authPostgres) SignUp(ctx context.Context, user models.User, auth models.Auth) models.AppError {
 	// Check if the email is already registered
 	var existingUser models.User
-	result := r.db.Where("email = ?", user.Email).Table("lab_rank.user").First(&existingUser)
+	result := r.db.Where("email = ?", user.Email).First(&existingUser)
 	if result.Error == nil {
 		return models.InternalError.Add(errors.New("user already exist"))
 	}
@@ -31,13 +34,13 @@ func (r *authPostgres) SignUp(ctx context.Context, user models.User, auth models
 	}
 
 	// Insert user data into the "user" table
-	if err := tx.Table("lab_rank.user").Create(&user).Error; err != nil {
+	if err := tx.Create(&user).Error; err != nil {
 		tx.Rollback()
 		return models.InternalError.Add(err)
 	}
 
 	// Insert authentication data into the "auth" table
-	if err := tx.Table("lab_rank.auth").Create(&auth).Error; err != nil {
+	if err := tx.Create(&auth).Error; err != nil {
 		tx.Rollback()
 		return models.InternalError.Add(err)
 	}
@@ -53,7 +56,7 @@ func (r *authPostgres) SignUp(ctx context.Context, user models.User, auth models
 func (psql *authPostgres) GetUserAuthByEmail(ctx context.Context, email string) (*models.User, *models.Auth, models.AppError) {
 	var user models.User
 	var auth models.Auth
-	result := psql.db.WithContext(ctx).Where("email = ?", email).Table("lab_rank.user").First(&user)
+	result := psql.db.WithContext(ctx).Where("email = ?", email).First(&user)
 	if result.Error != nil {
 		if result.Error == gorm.ErrRecordNotFound {
 			// User not found
@@ -62,7 +65,7 @@ func (psql *authPostgres) GetUserAuthByEmail(ctx context.Context, email string) 
 		return &user, &auth, models.InternalError.Add(result.Error)
 	}
 
-	result = psql.db.WithContext(ctx).Where("user_id = ?", user.ID).Table("lab_rank.auth").First(&auth)
+	result = psql.db.WithContext(ctx).Where("user_id = ?", user.ID).First(&auth)
 	if result.Error != nil {
 		if result.Error == gorm.ErrRecordNotFound {
 			// User not found

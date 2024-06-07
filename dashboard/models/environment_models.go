@@ -12,23 +12,23 @@ import (
 
 // Environment struct
 type Environment struct {
-	ID             uuid.UUID       `json:"id" validate:"required"`
-	Title          string          `json:"title" validate:"required"`
-	Link           string          `json:"link" validate:"required"`
-	CreatedBy      uuid.UUID       `json:"created_by" validate:"required"`
-	CreatedAt      time.Time       `json:"created_at" validate:"required"`
-	UpdateEvents   json.RawMessage `json:"update_events" validate:"required"`
-	LiveDockerCIDs json.RawMessage `json:"live_dockerc_ids" validate:"required" gorm:"column:live_dockerc_ids"`
-	File           []byte          `json:"file" gorm:"-"`
+	ID             int       `json:"id" validate:"required" gorm:"column:id;primaryKey;autoIncrement"`
+	Title          string    `json:"title" validate:"required" gorm:"column:title"`
+	Link           string    `json:"link" validate:"required" gorm:"column:link"`
+	CreatedBy      uuid.UUID `json:"created_by" validate:"required" gorm:"column:created_by"`
+	CreatedAt      time.Time `json:"created_at" validate:"required" gorm:"column:created_at"`
+	UpdateEvents   string    `json:"update_events" validate:"required" gorm:"column:update_events"`
+	LiveDockerCIDs string    `json:"live_dockerc_ids" validate:"required" gorm:"column:live_dockerc_ids"`
+	File           []byte    `json:"file" gorm:"-"`
 }
 
 // CreateEnvironmentAPIRequest struct
 type CreateEnvironmentAPIRequest struct {
-	Title          string          `json:"title" validate:"required"`
-	CreatedBy      uuid.UUID       `json:"created_by" validate:"required"`
-	UpdateEvents   json.RawMessage `json:"update_events"`
-	LiveDockerCIDs json.RawMessage `json:"live_dockerc_ids"`
-	File           []byte          `json:"file" validate:"required"`
+	Title          string    `json:"title" validate:"required"`
+	CreatedBy      uuid.UUID `json:"created_by" validate:"required"`
+	UpdateEvents   string    `json:"update_events"`
+	LiveDockerCIDs string    `json:"live_dockerc_ids"`
+	File           []byte    `json:"file" validate:"required"`
 }
 
 // EnvironmentAPIResponse struct
@@ -52,13 +52,11 @@ func (er *EnvironmentAPIResponse) Write(w http.ResponseWriter) error {
 
 func (r *CreateEnvironmentAPIRequest) ToEnvironment() *Environment {
 	return &Environment{
-		ID:             uuid.New(),
-		Title:          r.Title,
-		CreatedBy:      r.CreatedBy,
-		CreatedAt:      time.Now(),
-		UpdateEvents:   []byte("[]"),
-		LiveDockerCIDs: []byte("[]"),
-		File:           r.File,
+		Title:     r.Title,
+		CreatedBy: r.CreatedBy,
+		CreatedAt: time.Now(),
+
+		File: r.File,
 	}
 }
 

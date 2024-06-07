@@ -15,13 +15,16 @@ type userPostgres struct {
 
 // NewUserPostgresRepo creates a new PostgreSQL repository for users.
 func NewUserPostgresRepo(db *gorm.DB) *userPostgres {
+	if err := db.AutoMigrate(models.User{}); err != nil {
+		panic(err)
+	}
 	return &userPostgres{db}
 }
 
 // GetUserByID retrieves a user by their user ID.
 func (psql *userPostgres) GetUserByID(ctx context.Context, userID uuid.UUID) (models.User, models.AppError) {
 	var user models.User
-	result := psql.db.WithContext(ctx).Table("lab_rank.user").First(&user, userID)
+	result := psql.db.WithContext(ctx).First(&user, userID)
 	if result.Error != nil {
 		if result.Error == gorm.ErrRecordNotFound {
 			// User not found
@@ -35,7 +38,7 @@ func (psql *userPostgres) GetUserByID(ctx context.Context, userID uuid.UUID) (mo
 // GetUserByEmail retrieves a user by their email.
 func (psql *userPostgres) GetUserByEmail(ctx context.Context, email string) (models.User, models.AppError) {
 	var user models.User
-	result := psql.db.WithContext(ctx).Where("email = ?", email).Table("lab_rank.user").First(&user)
+	result := psql.db.WithContext(ctx).Where("email = ?", email).First(&user)
 	if result.Error != nil {
 		if result.Error == gorm.ErrRecordNotFound {
 			// User not found
@@ -104,7 +107,7 @@ func (psql *userPostgres) ListUsersWisthLimit(ctx context.Context, page int, pag
 	offset := (page - 1) * pageSize
 
 	// Fetch users with the specified pagination
-	result := psql.db.Offset(offset).Table("lab_rank.user").Limit(pageSize).Find(&users)
+	result := psql.db.Offset(offset).Limit(pageSize).Find(&users)
 	if result.Error != nil {
 		return nil, models.InternalError.Add(result.Error)
 	}
@@ -113,7 +116,7 @@ func (psql *userPostgres) ListUsersWisthLimit(ctx context.Context, page int, pag
 }
 
 func (psql *userPostgres) CreateUser(ctx context.Context, user models.User) models.AppError {
-	result := psql.db.WithContext(ctx).Table("lab_rank.user").Create(user)
+	result := psql.db.WithContext(ctx).Create(&user)
 	if result.Error != nil {
 		return models.InternalError.Add(result.Error)
 	}

@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/gorilla/mux"
 	university_svc "github.com/priyanshu360/lab-rank/dashboard/internal/university"
@@ -64,18 +65,13 @@ func (h *universityHandler) handleCreate(ctx context.Context, r *http.Request) a
 }
 
 func (h *universityHandler) handleGet(ctx context.Context, r *http.Request) apiResponse {
-	id := r.URL.Query().Get("id")
-	limit := r.URL.Query().Get("limit")
-	universities, err := h.svc.Fetch(ctx, id, limit)
+	id, _ := strconv.Atoi(r.URL.Query().Get("id"))
+	university, err := h.svc.Fetch(ctx, id)
 	if err != models.NoError {
 		return newAPIError(models.InternalError.Add(err))
 	}
-	if len(universities) == 1 {
-		return models.NewCreateUniversityAPIResponse(universities[0]) // Reusing the same Response from Create in Get
-	} else {
-		response := models.NewListUniversitiesAPIResponse(universities)
-		return response
-	}
+
+	return models.NewCreateUniversityAPIResponse(university) // Reusing the same Response from Create in Get
 }
 
 // Implement other handler methods for university-related operations

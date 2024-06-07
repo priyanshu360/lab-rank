@@ -5,21 +5,19 @@ package models
 import (
 	"encoding/json"
 	"net/http"
-
-	"github.com/google/uuid"
 )
 
 // University struct
 type University struct {
-	ID          uuid.UUID       `json:"id" validate:"required"`
-	Title       string          `json:"title" validate:"required"`
-	Description json.RawMessage `json:"description" validate:"required"`
+	ID          int    `json:"id" validate:"required" gorm:"column:id;primaryKey;autoIncrement"`
+	Title       string `json:"title" validate:"required" gorm:"column:title"`
+	Description string `json:"description" validate:"required" gorm:"column:description"`
 }
 
 // CreateUniversityAPIRequest struct
 type CreateUniversityAPIRequest struct {
-	Title       string          `json:"title" validate:"required"`
-	Description json.RawMessage `json:"description" validate:"required"`
+	Title       string `json:"title" validate:"required"`
+	Description string `json:"description" validate:"required"`
 }
 
 // UniversityAPIResponse struct
@@ -43,7 +41,6 @@ func (ur *UniversityAPIResponse) Write(w http.ResponseWriter) error {
 
 func (r *CreateUniversityAPIRequest) ToUniversity() *University {
 	return &University{
-		ID:          uuid.New(),
 		Title:       r.Title,
 		Description: r.Description,
 	}
@@ -56,11 +53,11 @@ func NewCreateUniversityAPIResponse(university *University) *UniversityAPIRespon
 }
 
 type UniversityIdName struct {
-	ID    uuid.UUID
+	ID    int
 	Title string
 }
 
-func NewUniversityIdName(id uuid.UUID, name string) *UniversityIdName {
+func NewUniversityIdName(id int, name string) *UniversityIdName {
 	return &UniversityIdName{
 		ID:    id,
 		Title: name,
@@ -88,8 +85,8 @@ func (pr *ListUniversitiesAPIResponse) Write(w http.ResponseWriter) error {
 }
 func NewListUniversitiesIdNamesAPIResponse(universities []*UniversityIdName) *ListUniversitiesIdNamesAPIResponse {
 	if universities == nil {
-        universities = []*UniversityIdName{} // Initialize an empty slice if it's nil
-    }
+		universities = []*UniversityIdName{} // Initialize an empty slice if it's nil
+	}
 	return &ListUniversitiesIdNamesAPIResponse{
 		Message: universities,
 	}

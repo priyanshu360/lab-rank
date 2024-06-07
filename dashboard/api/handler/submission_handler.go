@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
@@ -75,22 +76,17 @@ func (h *submissionsHandler) handleGetForUserID(ctx context.Context, r *http.Req
 }
 
 func (h *submissionsHandler) handleGet(ctx context.Context, r *http.Request) apiResponse {
-	id := r.URL.Query().Get("id")
-	limit := r.URL.Query().Get("limit")
-	submissions, err := h.svc.Fetch(ctx, id, limit)
+	id, _ := strconv.Atoi(r.URL.Query().Get("id"))
+	submission, err := h.svc.Fetch(ctx, id)
 	if err != models.NoError {
 		return newAPIError(models.InternalError.Add(err))
 	}
-	if len(submissions) == 1 && id != "" {
-		return models.NewCreateSubmissionAPIResponse(submissions[0]) // Reusing the same Response from Create in Get
-	} else {
-		response := models.NewListSubmissionsAPIResponse(submissions)
-		return response
-	}
+	return models.NewCreateSubmissionAPIResponse(submission) // Reusing the same Response from Create in Get
+
 }
 
 func (h *submissionsHandler) handleUpdate(ctx context.Context, r *http.Request) apiResponse {
-	id, err := uuid.Parse(r.URL.Query().Get("id"))
+	id, err := strconv.Atoi(r.URL.Query().Get("id"))
 
 	var request models.UpdateSubmissionAPIRequest
 	if err := request.Parse(r); err != nil {

@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/gorilla/mux"
 	environment_svc "github.com/priyanshu360/lab-rank/dashboard/internal/environment"
@@ -52,18 +53,12 @@ func (h *environmentHandler) handleCreate(ctx context.Context, r *http.Request) 
 }
 
 func (h *environmentHandler) handleGet(ctx context.Context, r *http.Request) apiResponse {
-	id := r.URL.Query().Get("id")
-	limit := r.URL.Query().Get("limit")
-	environments, err := h.svc.Fetch(ctx, id, limit)
+	id, _ := strconv.Atoi(r.URL.Query().Get("id"))
+	environment, err := h.svc.Fetch(ctx, id)
 	if err != models.NoError {
 		return newAPIError(models.InternalError.Add(err))
 	}
-	if len(environments) == 1 {
-		return models.NewCreateEnvironmentAPIResponse(environments[0]) // Reusing the same Response from Create in Get
-	} else {
-		response := models.NewListEnvironmentsAPIResponse(environments)
-		return response
-	}
+	return models.NewCreateEnvironmentAPIResponse(environment) // Reusing the same Response from Create in Get
 }
 
 // Implement other handler methods for environment-related operations

@@ -5,8 +5,6 @@ package models
 import (
 	"encoding/json"
 	"net/http"
-
-	"github.com/google/uuid"
 )
 
 type SyllabusLevelEnum string
@@ -20,16 +18,16 @@ const (
 // AccessLevelModeEnum represents the lab_rank.access_level_mode_enum enum type.
 // Syllabus struct
 type Syllabus struct {
-	ID            uuid.UUID         `json:"id" validate:"required"`
-	SubjectID     uuid.UUID         `json:"subject_id" validate:"required"`
-	UniCollegeID  uuid.UUID         `json:"uni_college_id" validate:"required"`
-	SyllabusLevel SyllabusLevelEnum `json:"syllabus_level" validate:"required"`
+	ID            int               `json:"id" validate:"required" gorm:"column:id;primaryKey;autoIncrement"`
+	SubjectID     int               `json:"subject_id" validate:"required" gorm:"column:subject_id"`
+	UniCollegeID  int               `json:"uni_college_id" validate:"required" gorm:"column:uni_college_id"`
+	SyllabusLevel SyllabusLevelEnum `json:"syllabus_level" validate:"required" gorm:"column:syllabus_level"`
 }
 
 // CreateSyllabusAPIRequest struct
 type CreateSyllabusAPIRequest struct {
-	SubjectID     uuid.UUID         `json:"subject_id" validate:"required"`
-	UniCollegeID  uuid.UUID         `json:"uni_college_id" validate:"required"`
+	SubjectID     int               `json:"subject_id" validate:"required"`
+	UniCollegeID  int               `json:"uni_college_id" validate:"required"`
 	SyllabusLevel SyllabusLevelEnum `json:"syllabus_level" validate:"required"`
 }
 
@@ -54,7 +52,6 @@ func (sr *SyllabusAPIResponse) Write(w http.ResponseWriter) error {
 
 func (r *CreateSyllabusAPIRequest) ToSyllabus() *Syllabus {
 	return &Syllabus{
-		ID:            uuid.New(),
 		SubjectID:     r.SubjectID,
 		UniCollegeID:  r.UniCollegeID,
 		SyllabusLevel: r.SyllabusLevel,
@@ -83,9 +80,8 @@ func NewListSyllabusAPIResponse(syllabus []*Syllabus) *ListSyllabusAPIResponse {
 	}
 }
 
-func (r Subject) ToSyllabus(id uuid.UUID, level SyllabusLevelEnum) *Syllabus {
+func (r Subject) ToSyllabus(id int, level SyllabusLevelEnum) *Syllabus {
 	return &Syllabus{
-		ID:            uuid.New(),
 		SubjectID:     r.ID,
 		UniCollegeID:  id,
 		SyllabusLevel: level,
