@@ -29,7 +29,7 @@ type TestFilesType struct {
 
 type ProblemEnvironmentType struct {
 	Language ProgrammingLanguageEnum `json:"language" validate:"required"`
-	Id       uuid.UUID               `json:"id" validate:"required"`
+	Id       int                     `json:"id" validate:"required"`
 }
 
 // TODO : instead of list maybe have map
@@ -46,15 +46,15 @@ type TestLinkJSON []TestLinkType
 
 // Problem struct
 type Problem struct {
-	ID          uuid.UUID       `json:"id" validate:"required"`
-	Title       string          `json:"title" validate:"required"`
-	CreatedBy   uuid.UUID       `json:"created_by" validate:"required"`
-	CreatedAt   time.Time       `json:"created_at" validate:"required"`
-	Environment EnvironmentJSON `json:"environment" validate:"required"`
-	ProblemLink string          `json:"problem_link" validate:"required"`
-	Difficulty  DifficultyEnum  `json:"difficulty" validate:"required"`
-	SyllabusID  uuid.UUID       `json:"syllabus_id" validate:"required"`
-	TestLinks   TestLinkJSON    `json:"test_links" validate:"required"`
+	ID          int             `json:"id" validate:"required" gorm:"column:id;primaryKey;autoIncrement"`
+	Title       string          `json:"title" validate:"required" gorm:"column:title"`
+	CreatedBy   uuid.UUID       `json:"created_by" validate:"required" gorm:"column:created_by"`
+	CreatedAt   time.Time       `json:"created_at" validate:"required" gorm:"column:created_at"`
+	Environment EnvironmentJSON `json:"environment" validate:"required" gorm:"column:environment"`
+	ProblemLink string          `json:"problem_link" validate:"required" gorm:"column:problem_link"`
+	Difficulty  DifficultyEnum  `json:"difficulty" validate:"required" gorm:"column:difficulty"`
+	SyllabusID  int             `json:"syllabus_id" validate:"required" gorm:"column:syllabus_id"`
+	TestLinks   TestLinkJSON    `json:"test_links" validate:"required" gorm:"column:test_links"`
 	ProblemFile []byte          `json:"problem_file" validate:"required" gorm:"-"`
 	TestFiles   []TestFilesType `json:"test_files" validate:"required" gorm:"-"`
 }
@@ -66,7 +66,7 @@ type CreateProblemAPIRequest struct {
 	Environment EnvironmentJSON `json:"environment" validate:"required"`
 	ProblemFile []byte          `json:"problem_file" validate:"required"`
 	Difficulty  DifficultyEnum  `json:"difficulty" validate:"required"`
-	SyllabusID  uuid.UUID       `json:"syllabus_id" validate:"required"`
+	SyllabusID  int             `json:"syllabus_id" validate:"required"`
 	TestFiles   []TestFilesType `json:"test_files" validate:"required"`
 }
 
@@ -197,7 +197,6 @@ func NewInitProblemCode(code []byte) *InitProblemCode {
 
 func (r *CreateProblemAPIRequest) ToProblem() *Problem {
 	return &Problem{
-		ID:          uuid.New(),
 		Title:       r.Title,
 		CreatedBy:   r.CreatedBy,
 		CreatedAt:   time.Now(),

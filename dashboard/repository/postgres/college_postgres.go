@@ -3,7 +3,6 @@ package postgres
 import (
 	"context"
 
-	"github.com/google/uuid"
 	"github.com/priyanshu360/lab-rank/dashboard/models"
 	"gorm.io/gorm"
 )
@@ -14,12 +13,15 @@ type collegePostgres struct {
 
 // NewCollegePostgresRepo creates a new PostgreSQL repository for colleges.
 func NewCollegePostgresRepo(db *gorm.DB) *collegePostgres {
+	if err := db.AutoMigrate(models.College{}); err != nil {
+		panic(err)
+	}
 	return &collegePostgres{db}
 }
 
 // CreateCollege creates a new college.
 func (psql *collegePostgres) CreateCollege(ctx context.Context, college models.College) models.AppError {
-	result := psql.db.WithContext(ctx).Table("lab_rank.college").Create(college)
+	result := psql.db.WithContext(ctx).Create(&college)
 	if result.Error != nil {
 		return models.InternalError.Add(result.Error)
 	}
@@ -27,9 +29,9 @@ func (psql *collegePostgres) CreateCollege(ctx context.Context, college models.C
 }
 
 // GetCollegeByID retrieves a college by its ID.
-func (psql *collegePostgres) GetCollegeByID(ctx context.Context, collegeID uuid.UUID) (models.College, models.AppError) {
+func (psql *collegePostgres) GetCollegeByID(ctx context.Context, collegeID int) (models.College, models.AppError) {
 	var college models.College
-	result := psql.db.WithContext(ctx).Table("lab_rank.college").First(&college, collegeID)
+	result := psql.db.WithContext(ctx).First(&college, collegeID)
 	if result.Error != nil {
 		if result.Error == gorm.ErrRecordNotFound {
 			// College not found
@@ -47,7 +49,10 @@ func (psql *collegePostgres) GetCollegesListByLimit(ctx context.Context, page in
 	offset := (page - 1) * pageSize
 
 	// Fetch colleges with the specified pagination
-	result := psql.db.Offset(offset).Table("lab_rank.college").Limit(pageSize).Find(&colleges)
+	result := psql.db.WithContext(ctx).
+		Offset(offset).
+		Limit(pageSize).
+		Find(&colleges)
 	if result.Error != nil {
 		return nil, models.InternalError.Add(result.Error)
 	}
@@ -56,15 +61,14 @@ func (psql *collegePostgres) GetCollegesListByLimit(ctx context.Context, page in
 }
 
 // Add other repository methods for colleges as needed.
-func (psql *collegePostgres) GetCollegesByUniversityID(ctx context.Context, universityID uuid.UUID) ([]*models.CollegeIdName, models.AppError) {
+func (psql *collegePostgres) GetCollegesByUniversityID(ctx context.Context, universityID int) ([]*models.CollegeIdName, models.AppError) {
 	var colleges []*models.CollegeIdName
 
 	// Fetch college names and IDs based on the university ID
 	result := psql.db.WithContext(ctx).
-		Table("lab_rank.college").
 		Select("id, title").
 		Where("university_id = ?", universityID).
-		Scan(&colleges)
+		Find(&colleges)
 
 	if result.Error != nil {
 		if result.Error == gorm.ErrRecordNotFound {

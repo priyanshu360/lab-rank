@@ -4,8 +4,8 @@ import (
 	"context"
 	"log"
 	"net/http"
+	"strconv"
 
-	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	college_svc "github.com/priyanshu360/lab-rank/dashboard/internal/college"
 	"github.com/priyanshu360/lab-rank/dashboard/models"
@@ -55,7 +55,7 @@ func (h *collegeHandler) handleCreate(ctx context.Context, r *http.Request) apiR
 
 func (h *collegeHandler) handleGetName(ctx context.Context, r *http.Request) apiResponse {
 	vars := mux.Vars(r)
-	universityId, err := uuid.Parse(vars["university_id"])
+	universityId, err := strconv.Atoi(vars["university_id"])
 	if err != nil {
 		return newAPIError(models.BadRequest.Add(err))
 	}
@@ -67,18 +67,12 @@ func (h *collegeHandler) handleGetName(ctx context.Context, r *http.Request) api
 }
 
 func (h *collegeHandler) handleGet(ctx context.Context, r *http.Request) apiResponse {
-	id := r.URL.Query().Get("id")
-	limit := r.URL.Query().Get("limit")
-	colleges, err := h.svc.Fetch(ctx, id, limit)
+	id, _ := strconv.Atoi(r.URL.Query().Get("id"))
+	college, err := h.svc.Fetch(ctx, id)
 	if err != models.NoError {
 		return newAPIError(models.InternalError.Add(err))
 	}
-	if len(colleges) == 1 {
-		return models.NewCreateCollegeAPIResponse(colleges[0]) // Reusing the same Response from Create in Get
-	} else {
-		response := models.NewListCollegesAPIResponse(colleges)
-		return response
-	}
+	return models.NewCreateCollegeAPIResponse(college)
 }
 
 // Implement other handler methods for college-related operations

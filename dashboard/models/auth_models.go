@@ -49,10 +49,10 @@ var CanAccess map[AccessLevelModeEnum]map[AccessLevelModeEnum]bool = map[AccessL
 }
 
 type Auth struct {
-	UserID       uuid.UUID           `json:"user_id"`
-	Salt         []byte              `json:"salt"`
-	PasswordHash string              `json:"password_hash"`
-	Mode         AccessLevelModeEnum `json:"mode"`
+	UserID       uuid.UUID           `json:"user_id" gorm:"primaryKey"`
+	Salt         []byte              `json:"salt" gorm:"type:bytea"`
+	PasswordHash string              `json:"password_hash" gorm:"type:string"`
+	Mode         AccessLevelModeEnum `json:"mode" gorm:"type:string"`
 }
 
 type AuthSession struct {
@@ -117,9 +117,9 @@ func (r SignUpAPIRequest) ToUser() *User {
 		Email:        r.Email,
 		ContactNo:    r.ContactNo,
 		UniversityID: r.UniversityID,
-		DOB:          r.DOB,
-		Name:         r.Name,
-		UserName:     r.UserName,
+		// DOB:          r.DOB,
+		Name:     r.Name,
+		UserName: r.UserName,
 	}
 }
 

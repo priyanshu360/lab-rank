@@ -4,8 +4,8 @@ import (
 	"context"
 	"log"
 	"net/http"
+	"strconv"
 
-	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	problems_svc "github.com/priyanshu360/lab-rank/dashboard/internal/problem"
 	"github.com/priyanshu360/lab-rank/dashboard/models"
@@ -56,38 +56,26 @@ func (h *problemsHandler) handleCreate(ctx context.Context, r *http.Request) api
 
 func (h *problemsHandler) handleGet(ctx context.Context, r *http.Request) apiResponse {
 	// Todo : cleanup
-	lang := r.URL.Query().Get("lang")
-	id := r.URL.Query().Get("id")
+	id, _ := strconv.Atoi(r.URL.Query().Get("id"))
 
-	// todo : fix this hack
-	if id != "" && lang != "" {
-		uuid, _ := uuid.Parse(id)
-		resp, _ := h.svc.GetInitCode(ctx, uuid, lang)
-		return resp
-	}
-
-	limit := r.URL.Query().Get("limit")
-	problems, err := h.svc.Fetch(ctx, id, limit)
+	problem, err := h.svc.Fetch(ctx, id)
 	if err != models.NoError {
 		return newAPIError(models.InternalError.Add(err))
 	}
-	if len(problems) == 1 && id != "" {
-		return models.NewCreateProblemAPIResponse(problems[0]) // Reusing the same Response from Create in Get
-	} else {
-		response := models.NewListProblemsAPIResponse(problems)
-		return response
-	}
+
+	return models.NewCreateProblemAPIResponse(problem)
+
 }
 
 // Implement other handler methods for problems-related operations
 func (h *problemsHandler) handleGetProblemsForSubject(ctx context.Context, r *http.Request) apiResponse {
 	vars := mux.Vars(r)
-	subjectID, err := uuid.Parse(vars["subject_id"])
+	subjectID, err := strconv.Atoi(vars["subject_id"])
 	if err != nil {
 		return newAPIError(models.BadRequest.Add(err))
 	}
 
-	collegeID, err := uuid.Parse(vars["college_id"])
+	collegeID, err := strconv.Atoi(vars["college_id"])
 	if err != nil {
 		return newAPIError(models.BadRequest.Add(err))
 	}

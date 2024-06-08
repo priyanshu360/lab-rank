@@ -4,8 +4,8 @@ import (
 	"context"
 	"log"
 	"net/http"
+	"strconv"
 
-	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	subject_svc "github.com/priyanshu360/lab-rank/dashboard/internal/subject"
 	"github.com/priyanshu360/lab-rank/dashboard/models"
@@ -57,7 +57,7 @@ func (h *subjectHandler) handleCreate(ctx context.Context, r *http.Request) apiR
 
 func (h *subjectHandler) handleGetByUniversityID(ctx context.Context, r *http.Request) apiResponse {
 	vars := mux.Vars(r)
-	universityId, err := uuid.Parse(vars["university_id"])
+	universityId, err := strconv.Atoi(vars["university_id"])
 	if err != nil {
 		return newAPIError(models.BadRequest.Add(err))
 	}
@@ -71,16 +71,11 @@ func (h *subjectHandler) handleGetByUniversityID(ctx context.Context, r *http.Re
 }
 
 func (h *subjectHandler) handleGet(ctx context.Context, r *http.Request) apiResponse {
-	id := r.URL.Query().Get("id")
-	limit := r.URL.Query().Get("limit")
-	subjects, err := h.svc.Fetch(ctx, id, limit)
+	id, _ := strconv.Atoi(r.URL.Query().Get("id"))
+	subject, err := h.svc.Fetch(ctx, id)
 	if err != models.NoError {
 		return newAPIError(models.InternalError.Add(err))
 	}
-	if len(subjects) == 1 {
-		return models.NewCreateSubjectAPIResponse(subjects[0]) // Reusing the same Response from Create in Get
-	} else {
-		response := models.NewListSubjectsAPIResponse(subjects)
-		return response
-	}
+
+	return models.NewCreateSubjectAPIResponse(subject) // Reusing the same Response from Create in Get
 }

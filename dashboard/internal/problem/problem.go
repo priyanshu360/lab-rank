@@ -2,7 +2,7 @@ package problem
 
 import (
 	"context"
-	"strconv"
+	"fmt"
 
 	"github.com/google/uuid"
 	"github.com/priyanshu360/lab-rank/dashboard/models"
@@ -11,9 +11,9 @@ import (
 
 type Service interface {
 	Create(context.Context, *models.Problem) (*models.Problem, models.AppError)
-	Fetch(context.Context, string, string) ([]*models.Problem, models.AppError)
-	GetInitCode(context.Context, uuid.UUID, string) (*models.InitProblemCode, models.AppError)
-	GetProblemsForSubject(context.Context, uuid.UUID, uuid.UUID) ([]*models.Problem, models.AppError)
+	Fetch(context.Context, int) (*models.Problem, models.AppError)
+	GetInitCode(context.Context, int, string) (*models.InitProblemCode, models.AppError)
+	GetProblemsForSubject(context.Context, int, int) ([]*models.Problem, models.AppError)
 }
 
 type service struct {
@@ -29,17 +29,15 @@ func New(repo repository.ProblemRepository, fs repository.FileSystem) *service {
 }
 
 func (s *service) Create(ctx context.Context, problem *models.Problem) (*models.Problem, models.AppError) {
-	problem.ID = uuid.New()
-
 	var err models.AppError
-	if problem.ProblemLink, err = s.fs.StoreFile(ctx, []byte(problem.ProblemFile), problem.ID, models.PROBLEM, models.Text.GetExtension()); err != models.NoError {
+	if problem.ProblemLink, err = s.fs.StoreFile(ctx, []byte(problem.ProblemFile), fmt.Sprintf("%d", problem.ID), models.PROBLEM, models.Text.GetExtension()); err != models.NoError {
 		return nil, err
 	}
 
 	testLinks := make([]models.TestLinkType, len(problem.TestFiles))
 	for i, testFile := range problem.TestFiles {
 		testLinks[i].Language = testFile.Language
-		if testLinks[i].Link, err = s.fs.StoreFile(ctx, []byte(testFile.File), uuid.New(), models.TESTFILE, testFile.Language.GetExtension()); err != models.NoError {
+		if testLinks[i].Link, err = s.fs.StoreFile(ctx, []byte(testFile.File), uuid.New().String(), models.TESTFILE, testFile.Language.GetExtension()); err != models.NoError {
 			return nil, err
 		}
 	}
@@ -52,36 +50,17 @@ func (s *service) Create(ctx context.Context, problem *models.Problem) (*models.
 	return problem, models.NoError
 }
 
-func (s *service) Fetch(ctx context.Context, id, limit string) ([]*models.Problem, models.AppError) {
-	var problems []*models.Problem
-	switch {
-	case id != "":
-		if problemID, err := uuid.Parse(id); err != nil {
-			return problems, models.InternalError.Add(err)
-		} else {
-			if problem, err := s.repo.GetProblemByID(ctx, problemID); err != models.NoError {
-				return nil, err
-			} else {
-				problem.ProblemFile, _ = s.fs.GetFile(ctx, problem.ProblemLink)
-				problems = append(problems, &problem)
-				return problems, models.NoError
-			}
-		}
+func (s *service) Fetch(ctx context.Context, id int) (*models.Problem, models.AppError) {
+	var problem models.Problem
+	var err models.AppError
 
-	case limit != "":
-		if limit, err := strconv.ParseInt(limit, 10, 64); err != nil {
-			return s.repo.GetProblemsListByLimit(ctx, 1, 10)
-
-		} else {
-			return s.repo.GetProblemsListByLimit(ctx, 1, int(limit))
-		}
-	default:
-
-		return s.repo.GetProblemsListByLimit(ctx, 1, 10)
+	if problem, err = s.repo.GetProblemByID(ctx, id); err != models.NoError {
+		return nil, err
 	}
+	return &problem, err
 }
 
-func (s *service) GetInitCode(ctx context.Context, id uuid.UUID, lang string) (*models.InitProblemCode, models.AppError) {
+func (s *service) GetInitCode(ctx context.Context, id int, lang string) (*models.InitProblemCode, models.AppError) {
 	problem, err := s.repo.GetProblemByID(ctx, id)
 	if err != models.NoError {
 		return nil, err
@@ -99,6 +78,6 @@ func (s *service) GetInitCode(ctx context.Context, id uuid.UUID, lang string) (*
 	return models.NewInitProblemCode(code), err
 }
 
-func (s *service) GetProblemsForSubject(ctx context.Context, subjectID uuid.UUID, collegeID uuid.UUID) ([]*models.Problem, models.AppError) {
+func (s *service) GetProblemsForSubject(ctx context.Context, subjectID, collegeID int) ([]*models.Problem, models.AppError) {
 	return s.repo.GetProblemsForSubject(ctx, subjectID, collegeID)
 }

@@ -27,28 +27,28 @@ const (
 
 // Submission struct
 type Submission struct {
-	ID        uuid.UUID               `json:"id" validate:"required" gorm:"column:id"`
-	ProblemID uuid.UUID               `json:"problem_id" validate:"required" gorm:"column:problem_id;tableName:submissions"`
-	Link      string                  `json:"link" validate:"required"`
-	CreatedBy uuid.UUID               `json:"created_by" validate:"required"`
-	CreatedAt time.Time               `json:"created_at" validate:"required"`
-	Score     float64                 `json:"score" validate:"required,min=0,max=100"`
-	RunTime   string                  `json:"run_time" validate:"required"`
-	Metadata  json.RawMessage         `json:"metadata" validate:"required"`
-	Lang      ProgrammingLanguageEnum `json:"lang" validate:"required"`
-	Status    Status                  `json:"status"`
+	ID        int                     `json:"id" validate:"required" gorm:"column:id;primaryKey;autoIncrement"`
+	ProblemID int                     `json:"problem_id" validate:"required" gorm:"column:problem_id"`
+	Link      string                  `json:"link" validate:"required" gorm:"column:link"`
+	CreatedBy uuid.UUID               `json:"created_by" validate:"required" gorm:"column:created_by"`
+	CreatedAt time.Time               `json:"created_at" validate:"required" gorm:"column:created_at"`
+	Score     float64                 `json:"score" validate:"required,min=0,max=100" gorm:"column:score"`
+	RunTime   string                  `json:"run_time" validate:"required" gorm:"column:run_time"`
+	Metadata  string                  `json:"metadata" validate:"required" gorm:"column:metadata"`
+	Lang      ProgrammingLanguageEnum `json:"lang" validate:"required" gorm:"column:lang"`
+	Status    Status                  `json:"status" gorm:"column:status"`
 	Solution  []byte                  `json:"solution" gorm:"-"`
 }
 
 type SubmissionWithProblemTitle struct {
-	ID           uuid.UUID               `json:"id"`
-	ProblemID    uuid.UUID               `json:"problem_id"`
+	ID           int                     `json:"id"`
+	ProblemID    int                     `json:"problem_id"`
 	Link         string                  `json:"link"`
 	CreatedBy    uuid.UUID               `json:"created_by"`
 	CreatedAt    time.Time               `json:"created_at"`
 	Score        float64                 `json:"score"`
 	RunTime      string                  `json:"run_time"`
-	Metadata     json.RawMessage         `json:"metadata"`
+	Metadata     string                  `json:"metadata"`
 	Lang         ProgrammingLanguageEnum `json:"lang"`
 	Status       Status                  `json:"status"`
 	Solution     []byte                  `json:"-"`
@@ -62,7 +62,7 @@ func (s *Submission) UpdateFrom(us Submission) {
 	if us.RunTime != "" {
 		s.RunTime = us.RunTime
 	}
-	if us.Metadata != nil {
+	if us.Metadata != "" {
 		s.Metadata = us.Metadata
 	}
 	if us.Status != "" {
@@ -74,10 +74,10 @@ func (s *Submission) UpdateFrom(us Submission) {
 // Todo ; change Lang to Language / add status in sql
 
 type CreateSubmissionAPIRequest struct {
-	ProblemID uuid.UUID               `json:"problem_id" validate:"required"`
+	ProblemID int                     `json:"problem_id" validate:"required"`
 	Solution  []byte                  `json:"solution" validate:"required"`
 	CreatedBy uuid.UUID               `json:"created_by" validate:"required"`
-	Metadata  json.RawMessage         `json:"metadata"`
+	Metadata  string                  `json:"metadata"`
 	Lang      ProgrammingLanguageEnum `json:"lang" validate:"required"`
 }
 
@@ -87,10 +87,10 @@ type SubmissionAPIResponse struct {
 }
 
 type UpdateSubmissionAPIRequest struct {
-	Score    float64         `json:"score" validate:"min=0,max=100"`
-	RunTime  string          `json:"run_time"`
-	Metadata json.RawMessage `json:"metadata"`
-	Status   Status          `json:"status"`
+	Score    float64 `json:"score" validate:"min=0,max=100"`
+	RunTime  string  `json:"run_time"`
+	Metadata string  `json:"metadata"`
+	Status   Status  `json:"status"`
 }
 
 func (r *UpdateSubmissionAPIRequest) Parse(req *http.Request) error {
@@ -124,7 +124,6 @@ func (sr *SubmissionAPIResponse) Write(w http.ResponseWriter) error {
 
 func (r *CreateSubmissionAPIRequest) ToSubmissions() *Submission {
 	return &Submission{
-		ID:        uuid.New(),
 		ProblemID: r.ProblemID,
 		Solution:  r.Solution,
 		CreatedBy: r.CreatedBy,

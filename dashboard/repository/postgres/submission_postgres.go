@@ -11,18 +11,22 @@ import (
 	"gorm.io/gorm"
 )
 
+// CreateSubmission creates a new submission.
 type submissionPostgres struct {
 	db *gorm.DB
 }
 
 // NewSubmissionPostgresRepo creates a new PostgreSQL repository for submissions.
 func NewSubmissionPostgresRepo(db *gorm.DB) *submissionPostgres {
+	if err := db.AutoMigrate(models.Submission{}); err != nil {
+		panic(err)
+	}
 	return &submissionPostgres{db}
 }
 
 // CreateSubmission creates a new submission.
 func (psql *submissionPostgres) CreateSubmission(ctx context.Context, submission models.Submission) models.AppError {
-	result := psql.db.WithContext(ctx).Create(submission)
+	result := psql.db.WithContext(ctx).Create(&submission)
 	if result.Error != nil {
 		return models.InternalError.Add(result.Error)
 	}
@@ -30,7 +34,7 @@ func (psql *submissionPostgres) CreateSubmission(ctx context.Context, submission
 }
 
 // GetSubmissionByID retrieves a submission by its ID.
-func (psql *submissionPostgres) GetSubmissionByID(ctx context.Context, submissionID uuid.UUID) (models.Submission, models.AppError) {
+func (psql *submissionPostgres) GetSubmissionByID(ctx context.Context, submissionID int) (models.Submission, models.AppError) {
 	var submission models.Submission
 	result := psql.db.WithContext(ctx).First(&submission, submissionID)
 	if result.Error != nil {
@@ -50,7 +54,7 @@ func (psql *submissionPostgres) GetSubmissionsListByLimit(ctx context.Context, p
 	offset := (page - 1) * pageSize
 
 	// Fetch submissions with the specified pagination
-	result := psql.db.Offset(offset).Table("lab_rank.submissions").Limit(pageSize).Find(&submissions)
+	result := psql.db.WithContext(ctx).Offset(offset).Limit(pageSize).Find(&submissions)
 	if result.Error != nil {
 		return nil, models.InternalError.Add(result.Error)
 	}
@@ -70,7 +74,7 @@ func (psql *submissionPostgres) GetQueueData(ctx context.Context, submission mod
 		return queue_models.QueueObj{}, models.InternalError.Add(err)
 	}
 
-	var environmentID uuid.UUID
+	var environmentID int
 	var environmentLink string
 	for _, env := range envArray {
 		if env.Language == submission.Lang {
@@ -79,7 +83,7 @@ func (psql *submissionPostgres) GetQueueData(ctx context.Context, submission mod
 	}
 
 	if err := psql.db.Model(&models.Environment{}).
-		Select("link").Table("environment").
+		Select("link").
 		Where("id = ?", environmentID).
 		First(&environmentLink).Error; err != nil {
 		return queue_models.QueueObj{}, models.InternalError.Add(err)
@@ -105,18 +109,18 @@ func (psql *submissionPostgres) GetQueueData(ctx context.Context, submission mod
 	return queue, models.NoError
 }
 
-func (psql *submissionPostgres) UpdateSubmission(ctx context.Context, id uuid.UUID, submission models.Submission) models.AppError {
+func (psql *submissionPostgres) UpdateSubmission(ctx context.Context, id int, submission models.Submission) models.AppError {
 
 	if err := psql.db.Model(&models.Submission{}).
 		Where("id = ?", id).
-		Updates(submission).Error; err != nil {
+		Updates(&submission).Error; err != nil {
 		return models.InternalError.Add(err)
 	}
 
 	return models.NoError
 }
 
-// GetSubmissionsByUserID(context.Context, uuid.UUID) ([]*models.Submission, models.AppError)
+// GetSubmissionsByUserID retrieves submissions by user ID.
 func (psql *submissionPostgres) GetSubmissionsByUserID(ctx context.Context, userID uuid.UUID) ([]*models.Submission, models.AppError) {
 	var submissions []*models.Submission
 	result := psql.db.WithContext(ctx).Where("created_by = ?", userID).Find(&submissions)
@@ -131,15 +135,15 @@ func (psql *submissionPostgres) GetSubmissionsByUserID(ctx context.Context, user
 	return submissions, models.NoError
 }
 
+// GetSubmissionsWithTitleByUserID retrieves submissions with titles by user ID.
 func (psql *submissionPostgres) GetSubmissionsWithTitleByUserID(ctx context.Context, userID uuid.UUID) ([]*models.SubmissionWithProblemTitle, models.AppError) {
 	var submissions []*models.SubmissionWithProblemTitle
 
 	// Join Submission and Problem tables based on ProblemID and CreatedBy
 	result := psql.db.WithContext(ctx).
-		Table("submissions").
 		Select("submissions.*, problems.title as ProblemTitle").
-		Joins("INNER JOIN problems ON submissions.Problem_id = problems.id").
-		Where("submissions.Created_by = ?", userID).
+		Joins("INNER JOIN problems ON submissions.problem_id = problems.id").
+		Where("submissions.created_by = ?", userID).
 		Find(&submissions)
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
@@ -151,7 +155,8 @@ func (psql *submissionPostgres) GetSubmissionsWithTitleByUserID(ctx context.Cont
 	return submissions, models.NoError
 }
 
-func (psql *submissionPostgres) GetSubmissionsByProblemID(ctx context.Context, problemID uuid.UUID) ([]*models.Submission, models.AppError) {
+// GetSubmissionsByProblemID retrieves submissions by problem ID.
+func (psql *submissionPostgres) GetSubmissionsByProblemID(ctx context.Context, problemID int) ([]*models.Submission, models.AppError) {
 	var submissions []*models.Submission
 	result := psql.db.WithContext(ctx).Where("problem_id = ?", problemID).Find(&submissions)
 
@@ -165,9 +170,10 @@ func (psql *submissionPostgres) GetSubmissionsByProblemID(ctx context.Context, p
 	return submissions, models.NoError
 }
 
-func (psql *submissionPostgres) GetSubmissionsByUserAndProblemID(ctx context.Context, userID uuid.UUID, problemID uuid.UUID) (*models.Submission, models.AppError) {
+// GetSubmissionsByUserAndProblemID retrieves a submission by user ID and problem ID.
+func (psql *submissionPostgres) GetSubmissionsByUserAndProblemID(ctx context.Context, userID uuid.UUID, problemID int) (*models.Submission, models.AppError) {
 	var submission models.Submission
-	result := psql.db.WithContext(ctx).Where("user_id = ? AND problem_id = ?", userID, problemID).First(&submission)
+	result := psql.db.WithContext(ctx).Where("created_by = ? AND problem_id = ?", userID, problemID).First(&submission)
 
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {

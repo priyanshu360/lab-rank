@@ -20,27 +20,27 @@ const (
 )
 
 type User struct {
-	ID           uuid.UUID  `json:"id" validate:"required"`
-	CollegeID    uuid.UUID  `json:"college_id" validate:"required"`
-	Status       UserStatus `json:"status" validate:"required,oneof=ACTIVE INACTIVE DELETED SPAM"`
-	CreatedAt    time.Time  `json:"created_at" validate:"required"`
-	Email        string     `json:"email" validate:"required,email"`
-	ContactNo    string     `json:"contact_no" validate:"required,len=10"`
-	UniversityID string     `json:"university_id"`
-	DOB          time.Time  `json:"dob" validate:"required"`
-	Name         string     `json:"name" validate:"required"`
-	UserName     string     `json:"user_name" validate:"required"`
+	ID           uuid.UUID  `json:"id" validate:"required" gorm:"column:id;primaryKey"`
+	CollegeID    int        `json:"college_id" validate:"required" gorm:"column:college_id"`
+	Status       UserStatus `json:"status" validate:"required,oneof=ACTIVE INACTIVE DELETED SPAM" gorm:"column:status"`
+	CreatedAt    time.Time  `json:"created_at" validate:"required" gorm:"column:created_at"`
+	Email        string     `json:"email" validate:"required,email" gorm:"column:email"`
+	ContactNo    string     `json:"contact_no" validate:"required,len=10" gorm:"column:contact_no"`
+	UniversityID int        `json:"university_id" gorm:"column:university_id"`
+	// DOB          time.Time  `json:"dob" validate:"required" gorm:"column:dob"`
+	Name     string `json:"name" validate:"required" gorm:"column:name"`
+	UserName string `json:"user_name" validate:"required" gorm:"column:user_name"`
 }
 
 type CreateUserAPIRequest struct {
-	CollegeID    uuid.UUID `json:"college_id" validate:"required"`
-	AccessID     uuid.UUID `json:"access_id" validate:"required"` // To do: Implement AccessID functionality
-	Email        string    `json:"email" validate:"required,email"`
-	ContactNo    string    `json:"contact_no" validate:"required"`
-	DOB          time.Time `json:"dob" validate:"required"`
-	UniversityID string    `json:"university_id"`
-	Name         string    `json:"name"`
-	UserName     string    `json:"user_name" validate:"required"`
+	CollegeID int    `json:"college_id" validate:"required"`
+	AccessID  int    `json:"access_id" validate:"required"` // To do: Implement AccessID functionality
+	Email     string `json:"email" validate:"required,email"`
+	ContactNo string `json:"contact_no" validate:"required"`
+	// DOB          time.Time `json:"dob" validate:"required"`
+	UniversityID int    `json:"university_id"`
+	Name         string `json:"name"`
+	UserName     string `json:"user_name" validate:"required"`
 }
 
 type GetUserAPIRequest struct {
@@ -127,9 +127,9 @@ func (r *CreateUserAPIRequest) ToUser() *User {
 		Email:        r.Email,
 		ContactNo:    r.ContactNo,
 		UniversityID: r.UniversityID,
-		DOB:          r.DOB,
-		Name:         r.Name,
-		UserName:     r.UserName,
+		// DOB:          r.DOB,
+		Name:     r.Name,
+		UserName: r.UserName,
 	}
 }
 

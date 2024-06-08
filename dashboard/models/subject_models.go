@@ -5,23 +5,21 @@ package models
 import (
 	"encoding/json"
 	"net/http"
-
-	"github.com/google/uuid"
 )
 
 // Subject struct
 type Subject struct {
-	ID           uuid.UUID       `json:"id" validate:"required"`
-	Title        string          `json:"title" validate:"required"`
-	Description  json.RawMessage `json:"description" validate:"required"`
-	UniversityID uuid.UUID       `json:"university_id" validate:"required"`
+	ID           int    `json:"id" validate:"required" gorm:"column:id;primaryKey;autoIncrement"`
+	Title        string `json:"title" validate:"required" gorm:"column:title"`
+	Description  string `json:"description" validate:"required" gorm:"column:description"`
+	UniversityID int    `json:"university_id" validate:"required" gorm:"column:university_id"`
 }
 
 // CreateSubjectAPIRequest struct
 type CreateSubjectAPIRequest struct {
-	Title        string          `json:"title" validate:"required"`
-	Description  json.RawMessage `json:"description" validate:"required"`
-	UniversityID uuid.UUID       `json:"university_id" validate:"required"`
+	Title        string `json:"title" validate:"required"`
+	Description  string `json:"description" validate:"required"`
+	UniversityID int    `json:"university_id" validate:"required"`
 }
 
 // SubjectAPIResponse struct
@@ -45,7 +43,6 @@ func (sr *SubjectAPIResponse) Write(w http.ResponseWriter) error {
 
 func (r *CreateSubjectAPIRequest) ToSubject() *Subject {
 	return &Subject{
-		ID:           uuid.New(),
 		Title:        r.Title,
 		Description:  r.Description,
 		UniversityID: r.UniversityID,

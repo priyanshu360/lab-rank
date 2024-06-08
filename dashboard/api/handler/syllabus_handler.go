@@ -4,8 +4,8 @@ import (
 	"context"
 	"log"
 	"net/http"
+	"strconv"
 
-	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	syllabus_svc "github.com/priyanshu360/lab-rank/dashboard/internal/syllabus"
 	"github.com/priyanshu360/lab-rank/dashboard/models"
@@ -58,25 +58,21 @@ func (h *syllabusHandler) handleCreate(ctx context.Context, r *http.Request) api
 }
 
 func (h *syllabusHandler) handleGet(ctx context.Context, r *http.Request) apiResponse {
-	id := r.URL.Query().Get("id")
-	limit := r.URL.Query().Get("limit")
-	syllabus, err := h.svc.Fetch(ctx, id, limit)
+	id, _ := strconv.Atoi(r.URL.Query().Get("id"))
+	syllabus, err := h.svc.Fetch(ctx, id)
 	if err != models.NoError {
 		return newAPIError(models.InternalError.Add(err))
 	}
-	if len(syllabus) == 1 {
-		return models.NewCreateSyllabusAPIResponse(syllabus[0]) // Reusing the same Response from Create in Get
-	} else {
-		response := models.NewListSyllabusAPIResponse(syllabus)
-		return response
-	}
+
+	return models.NewCreateSyllabusAPIResponse(syllabus) // Reusing the same Response from Create in Get
+
 }
 
 // Implement other handler methods for syllabus-related operations
 
 func (h *syllabusHandler) handleGetBySubjectID(ctx context.Context, r *http.Request) apiResponse {
 	vars := mux.Vars(r)
-	subjectID, err := uuid.Parse(vars["subject_id"])
+	subjectID, err := strconv.Atoi(vars["subject_id"])
 	if err != nil {
 		return newAPIError(models.BadRequest.Add(err))
 	}

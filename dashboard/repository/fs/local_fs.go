@@ -6,7 +6,6 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/google/uuid"
 	"github.com/priyanshu360/lab-rank/dashboard/models"
 )
 
@@ -20,13 +19,13 @@ func NewLocalFS(path string) local {
 	}
 }
 
-func (fs local) StoreFile(ctx context.Context, content []byte, id uuid.UUID, ftype models.FileType, extension string) (string, models.AppError) {
+func (fs local) StoreFile(ctx context.Context, content []byte, id string, ftype models.FileType, extension string) (string, models.AppError) {
 	typePath := filepath.Join(fs.basePath, string(ftype))
 	if err := os.MkdirAll(typePath, 0755); err != nil {
 		return "", models.InternalError.Add(err)
 	}
 
-	filename := fmt.Sprintf("%s.%s", id.String(), extension)
+	filename := fmt.Sprintf("%s.%s", id, extension)
 	filePath := filepath.Join(typePath, filename)
 
 	file, err := os.Create(filePath)

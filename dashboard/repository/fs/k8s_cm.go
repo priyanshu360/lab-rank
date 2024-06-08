@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/google/uuid"
 	"github.com/priyanshu360/lab-rank/dashboard/models"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -23,8 +22,8 @@ func NewK8sCMStore(clientset *kubernetes.Clientset, namespace string) *k8sCMStor
 	}
 }
 
-func (fs *k8sCMStore) StoreFile(ctx context.Context, content []byte, id uuid.UUID, ftype models.FileType, extension string) (string, models.AppError) {
-	configMapName := fmt.Sprintf("%s-%s", string(ftype), id.String())
+func (fs *k8sCMStore) StoreFile(ctx context.Context, content []byte, id string, ftype models.FileType, extension string) (string, models.AppError) {
+	configMapName := fmt.Sprintf("%s-%s", string(ftype), id)
 	fname := fmt.Sprintf("file.%s", extension)
 	configMapData := map[string][]byte{
 		fname: content,

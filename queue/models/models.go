@@ -3,17 +3,16 @@ package models
 import (
 	"fmt"
 
-	"github.com/google/uuid"
 	"github.com/streadway/amqp"
 )
 
 type submissionData struct {
-	Id   uuid.UUID
+	Id   int
 	Link string
 }
 
 type environmentData struct {
-	Id   uuid.UUID
+	Id   int
 	Link string
 }
 
@@ -35,7 +34,7 @@ type RabbitMQ struct {
 }
 
 // Todo : dirty constructor
-func NewQueueObj(submissionID uuid.UUID, submissionLink string, environmentID uuid.UUID, environmentLink, testLink string) *QueueObj {
+func NewQueueObj(submissionID int, submissionLink string, environmentID int, environmentLink, testLink string) *QueueObj {
 	return &QueueObj{
 		Submission:  submissionData{Id: submissionID, Link: submissionLink},
 		Environment: environmentData{Id: environmentID, Link: environmentLink},

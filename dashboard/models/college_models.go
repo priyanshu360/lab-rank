@@ -5,23 +5,21 @@ package models
 import (
 	"encoding/json"
 	"net/http"
-
-	"github.com/google/uuid"
 )
 
 // College struct
 type College struct {
-	ID           uuid.UUID       `json:"id" validate:"required"`
-	Title        string          `json:"title" validate:"required"`
-	UniversityID uuid.UUID       `json:"university_id" validate:"required"`
-	Description  json.RawMessage `json:"description" validate:"required"`
+	ID           int    `json:"id" validate:"required" gorm:"column:id;primaryKey;autoIncrement"`
+	Title        string `json:"title" validate:"required" gorm:"column:title"`
+	UniversityID int    `json:"university_id" validate:"required" gorm:"column:university_id"`
+	Description  string `json:"description" validate:"required" gorm:"column:description"`
 }
 
 // CreateCollegeAPIRequest struct
 type CreateCollegeAPIRequest struct {
-	Title        string          `json:"title" validate:"required"`
-	UniversityID uuid.UUID       `json:"university_id" validate:"required"`
-	Description  json.RawMessage `json:"description" validate:"required"`
+	Title        string `json:"title" validate:"required"`
+	UniversityID int    `json:"university_id" validate:"required"`
+	Description  string `json:"description" validate:"required"`
 }
 
 // CollegeAPIResponse struct
@@ -45,7 +43,6 @@ func (cr *CollegeAPIResponse) Write(w http.ResponseWriter) error {
 
 func (r *CreateCollegeAPIRequest) ToCollege() *College {
 	return &College{
-		ID:           uuid.New(),
 		Title:        r.Title,
 		UniversityID: r.UniversityID,
 		Description:  r.Description,
@@ -59,11 +56,11 @@ func NewCreateCollegeAPIResponse(college *College) *CollegeAPIResponse {
 }
 
 type CollegeIdName struct {
-	ID    uuid.UUID
+	ID    int
 	Title string
 }
 
-func NewCollegeIdName(id uuid.UUID, name string) *CollegeIdName {
+func NewCollegeIdName(id int, name string) *CollegeIdName {
 	return &CollegeIdName{
 		ID:    id,
 		Title: name,
