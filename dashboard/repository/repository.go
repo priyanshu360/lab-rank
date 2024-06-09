@@ -48,7 +48,7 @@ type SubjectRepository interface {
 }
 
 type ProblemRepository interface {
-	CreateProblem(context.Context, models.Problem) models.AppError
+	CreateProblem(context.Context, *models.Problem) models.AppError
 	GetProblemByID(context.Context, int) (models.Problem, models.AppError)
 	GetProblemsListByLimit(context.Context, int, int) ([]*models.Problem, models.AppError)
 	GetProblemsForSubject(context.Context, int, int) ([]*models.Problem, models.AppError)
