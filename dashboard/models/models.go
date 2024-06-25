@@ -44,6 +44,7 @@ var (
 	BadRequest               = NewAppError(ErrorBadData, "bad request")
 	NoError                  = NewAppError(ErrorNone, "")
 	UnauthorizedError        = NewAppError(ErrorUnauthorized, "unauthorized")
+	EditorNotFoundError      = NewAppError(ErrorNotFound, "editor not found")
 )
 
 type ErrorType string

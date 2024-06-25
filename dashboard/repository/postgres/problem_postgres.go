@@ -21,8 +21,8 @@ func NewProblemPostgresRepo(db *gorm.DB) *problemPostgres {
 }
 
 // CreateProblem creates a new problem.
-func (psql *problemPostgres) CreateProblem(ctx context.Context, problem models.Problem) models.AppError {
-	result := psql.db.WithContext(ctx).Create(&problem)
+func (psql *problemPostgres) CreateProblem(ctx context.Context, problem *models.Problem) models.AppError {
+	result := psql.db.WithContext(ctx).Create(problem)
 	if result.Error != nil {
 		return models.InternalError.Add(result.Error)
 	}
@@ -71,11 +71,11 @@ func (psql *problemPostgres) GetProblemsForSubject(ctx context.Context, subjectI
 	syllabusQuery := `
         WITH selected_syllabus AS (
             SELECT id
-            FROM lab_rank.syllabus
+            FROM syllabuses
             WHERE subject_id = ?
         )
         SELECT p.*
-        FROM lab_rank.problems p
+        FROM problems p
         JOIN selected_syllabus s ON p.syllabus_id = s.id
         WHERE p.syllabus_id IS NOT NULL AND p.problem_link IS NOT NULL;
     `

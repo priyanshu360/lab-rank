@@ -30,6 +30,10 @@ func New(repo repository.ProblemRepository, fs repository.FileSystem) *service {
 
 func (s *service) Create(ctx context.Context, problem *models.Problem) (*models.Problem, models.AppError) {
 	var err models.AppError
+	if err := s.repo.CreateProblem(ctx, problem); err != models.NoError {
+		return nil, err
+	}
+
 	if problem.ProblemLink, err = s.fs.StoreFile(ctx, []byte(problem.ProblemFile), fmt.Sprintf("%d", problem.ID), models.PROBLEM, models.Text.GetExtension()); err != models.NoError {
 		return nil, err
 	}
@@ -42,10 +46,6 @@ func (s *service) Create(ctx context.Context, problem *models.Problem) (*models.
 		}
 	}
 	problem.TestLinks = testLinks
-
-	if err := s.repo.CreateProblem(ctx, *problem); err != models.NoError {
-		return nil, err
-	}
 
 	return problem, models.NoError
 }

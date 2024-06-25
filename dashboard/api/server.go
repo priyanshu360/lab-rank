@@ -16,6 +16,7 @@ import (
 	"github.com/priyanshu360/lab-rank/dashboard/config"
 	"github.com/priyanshu360/lab-rank/dashboard/internal/auth"
 	"github.com/priyanshu360/lab-rank/dashboard/internal/college"
+	"github.com/priyanshu360/lab-rank/dashboard/internal/editor"
 	"github.com/priyanshu360/lab-rank/dashboard/internal/environment"
 	"github.com/priyanshu360/lab-rank/dashboard/internal/problem"
 	"github.com/priyanshu360/lab-rank/dashboard/internal/subject"
@@ -82,6 +83,7 @@ func (s *APIServer) initRoutesAndMiddleware() {
 	s.add("/environment", models.AccessLevelAdmin, handler.NewEnvironmentHandler(environment.New(psql.NewEnvironmentPostgresRepo(db), fileStorage)))
 	s.add("/problem", models.AccessLevelAdmin, handler.NewProblemsHandler(problem.New(psql.NewProblemPostgresRepo(db), fileStorage)))
 	s.add("/syllabus", models.AccessLevelAdmin, handler.NewSyllabusHandler(syllabus.New(psql.NewSyllabusPostgresRepo(db))))
+	s.add("/editor", models.AccessLevelAdmin, handler.NewEditorHandler(editor.New(psql.NewEditorPostgresRepo(db), psql.NewEnvironmentPostgresRepo(db))))
 
 	s.middlewares = []mux.MiddlewareFunc{
 		mux.CORSMethodMiddleware(s.router),

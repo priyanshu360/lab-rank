@@ -48,7 +48,7 @@ type SubjectRepository interface {
 }
 
 type ProblemRepository interface {
-	CreateProblem(context.Context, models.Problem) models.AppError
+	CreateProblem(context.Context, *models.Problem) models.AppError
 	GetProblemByID(context.Context, int) (models.Problem, models.AppError)
 	GetProblemsListByLimit(context.Context, int, int) ([]*models.Problem, models.AppError)
 	GetProblemsForSubject(context.Context, int, int) ([]*models.Problem, models.AppError)
@@ -96,4 +96,15 @@ type SessionRepository interface {
 	GetSession(context.Context, uuid.UUID) (*models.AuthSession, models.AppError)
 	SetSession(context.Context, *models.AuthSession) (uuid.UUID, models.AppError)
 	RemoveSession(context.Context, uuid.UUID) models.AppError
+}
+
+type EditorRepository interface {
+	CreateEditor(context.Context, *models.Editor) models.AppError
+	GetEditorByID(context.Context, int) (models.Editor, models.AppError)
+	GetEditorByUserID(context.Context, uuid.UUID) ([]models.Editor, models.AppError)
+	GetEditorByUserIDAndProblemID(context.Context, uuid.UUID, int) (models.Editor, models.AppError)
+	UpdateEditor(context.Context, int, models.Editor) models.AppError
+	DeleteEditor(context.Context, int) models.AppError
+	ListEditors(context.Context, int, int) ([]models.Editor, models.AppError)
+	ListEditorsWithLimit(context.Context, int, int) ([]*models.Editor, models.AppError)
 }
